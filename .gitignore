@@ -208,4 +208,7 @@ application.properties
 #Ds_Store
 .DS_Store
 
+#Docker
+Dockerfile
+
 # End of https://www.toptal.com/developers/gitignore/api/gradle,windows,java,intellij
