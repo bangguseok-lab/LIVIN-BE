@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/main")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Log4j2
 public class MainController {
@@ -25,8 +25,11 @@ public class MainController {
 
     // 1. 회원 정보 받아와 닉네임을 프론트에 전달
     //    닉네임 정보와 함께 인사말 출력.
-    @GetMapping("/user-info")
+    // TODO: api 명세서에 맞게 수정 완료, 인증(Authentication)을 authentication으로 받아오는건지 논의 필요,
+    //  try catch문 대신해서 쓸 new 명령문으로 vue에 출력되도록 전달.
+    @GetMapping("/users")
     public ResponseEntity<?> getUserNickname(Authentication authentication) {
+        // Authentication - Spring Security에서 로그인 인증을 받아오기 위한 객체.
         log.info("회원 닉네임 조회 요청");
 
         // try catch 사용 없이 new exception으로 vue에 해당 요청 보낼 것.
@@ -37,6 +40,7 @@ public class MainController {
             }
 
             String username = authentication.getName();
+            // getName() : 보통 “로그인한 사용자의 ID(이메일/username)”
             UserInfoDTO userInfo = mainService.getUserInfo(username);
 
             // 닉네임만 전달
@@ -55,7 +59,7 @@ public class MainController {
 
 
     // 2. 찜한 매물 정보를 최신 순서대로 3개를 가져와서 프론트에 전달
-    @GetMapping("/favorite-properties")
+    @GetMapping("/users/favorite")
     public ResponseEntity<?> getLatestFavoriteProperties(Authentication authentication) {
         log.info("찜한 매물 최신 3개 조회 요청");
 
@@ -84,7 +88,7 @@ public class MainController {
 
 
     // 3. 현재 위치 정보를 받아와서 해당 위치의 최신 순서대로 매물 4개를 가져와서 프론트에 전달
-    @PostMapping("/nearby-properties")
+    @PostMapping("/properties")
     public ResponseEntity<?> getNearbyLatestProperties(@RequestBody LocationRequest locationRequest) {
 
         // 네이버지도에서 보낸 위도/경도를 받아서 처리
