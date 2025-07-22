@@ -12,13 +12,13 @@ public class FavoritePropertyDTO {
     private Long propertyId;
     private String propertyName;
     private String address;
-    private String propertyType; // 원룸, 투룸, 오피스텔 등
-    private Integer monthlyRent; // 월세
-    private Integer deposit; // 보증금
-    private Double area; // 면적
-    private Integer floor; // 층수
-    private String imageUrl; // 대표 이미지
-    private LocalDateTime favoriteDate; // 찜한 날짜
+    private String propertyType;
+    private Integer monthlyRent;
+    private Integer deposit;
+    private Double area;
+    private Integer floor;
+    private String imageUrl;
+    private LocalDateTime favoriteDate;
     private Double latitude;
     private Double longitude;
 }

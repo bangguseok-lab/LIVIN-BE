@@ -27,8 +27,8 @@ public class PropertyDTO {
     private Boolean hasElevator;
     private Boolean hasParking;
     private LocalDateTime availableDate;
-    private LocalDateTime createdAt; // 생성일 추가
+    private LocalDateTime createdAt;
 
     @JsonIgnore
-    private Double distance; // 현재 위치로부터의 거리 (km)
+    private Double distance;
 }
