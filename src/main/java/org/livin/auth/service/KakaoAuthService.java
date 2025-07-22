@@ -95,7 +95,7 @@ public class KakaoAuthService {
                     .nickname(additional.getNickname())
                     .birthDate(additional.getBirthDate())
                     .role(additional.getRole())
-                    .profileImage(additional.getProfileImage()) // 사용하지 않음
+                    .profileImage(additional.getProfileImage())
                     .createdAt(LocalDateTime.now())
                     .build();
 
@@ -104,8 +104,6 @@ public class KakaoAuthService {
 
         User user = (existingUser != null) ? existingUser :
                 userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
-        System.out.println(user.getProvider());
-        System.out.println(user.getProviderId());
         String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId());
         tokenService.saveRefreshToken(user.getProviderId(), refreshToken);
         return jwtUtil.generateAccessToken(user.getProvider(), user.getProviderId(), user.getRole());
