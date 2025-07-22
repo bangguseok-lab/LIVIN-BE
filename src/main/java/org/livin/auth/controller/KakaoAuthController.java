@@ -52,7 +52,9 @@ public class KakaoAuthController {
         kakaoUser.setProviderId(providerId);
 
         String jwt = authService.loginOrRegisterUser(kakaoUser, request);
-        return ResponseEntity.ok(jwt);
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + jwt)
+                .build();
     }
 
 }

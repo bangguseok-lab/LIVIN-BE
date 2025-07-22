@@ -52,7 +52,9 @@ public class NaverAuthController {
         userInfo.setProviderId(providerId);
 
         String jwt = authService.loginOrRegisterUser(userInfo, request);
-        return ResponseEntity.ok(jwt);
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + jwt)
+                .build();
     }
 }
 
