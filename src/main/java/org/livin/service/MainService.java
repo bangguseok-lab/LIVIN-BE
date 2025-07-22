@@ -3,9 +3,11 @@ package org.livin.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.livin.dto.*;
+import org.livin.exception.MainPageException;
 import org.livin.mapper.PropertyMapper;
 import org.livin.mapper.UserMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 import org.springframework.core.ParameterizedTypeReference;
@@ -39,15 +41,19 @@ public class MainService {
             }
 
             // 방법 2: 직접 DB 조회 (백업)
-            return userMapper.findUserByUsername(username);
+            UserInfoDTO userInfoDTO = userMapper.findUserByUsername(username);
 
+            if (userInfoDTO == null) {
+                throw new MainPageException.ResourceNotFoundException("회원 정보를 찾을 수 없습니다." + username);
+            }
+
+            return userInfoDTO;
+
+        } catch (MainPageException.ResourceNotFoundException e) {
+            throw e; // 그대로 던지기
         } catch (Exception e) {
-            log.error("회원 정보 조회 실패: " + username, e);
-            // 기본값 반환
-            UserInfoDTO defaultUser = new UserInfoDTO();
-            defaultUser.setUserId(username);
-            defaultUser.setNickname("게스트");
-            return defaultUser;
+            log.error("회원 정보 조회 실패" + username, e);
+            throw new MainPageException.InternalServerException("회원 정보 조회 중 오류가 발생했습니다.", e);
         }
     }
 
@@ -77,7 +83,8 @@ public class MainService {
                     url,
                     HttpMethod.POST,
                     requestEntity,
-                    new ParameterizedTypeReference<List<FavoritePropertyDTO>>() {}
+                    new ParameterizedTypeReference<List<FavoritePropertyDTO>>() {
+                    }
             );
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
@@ -87,11 +94,19 @@ public class MainService {
             }
 
             // 백업: DB에서 직접 조회
-            return propertyMapper.findFavoritePropertiesByUserId(username, limit);
+//            기존 코드(예외 처리 통합 전 코드 흐름 알기): return propertyMapper.findFavoritePropertiesByUserId(username, limit);
+            List<FavoritePropertyDTO> favorites = propertyMapper.findFavoritePropertiesByUserId(username, limit);
+
+
+            if (favorites == null) {
+                return new ArrayList<>();
+            }
+
+            return favorites;
 
         } catch (Exception e) {
             log.error("찜한 매물 조회 실패: " + username, e);
-            return new ArrayList<>();
+            throw new MainPageException.InternalServerException("찜한 매물 조회 중 오류가 발생했습니다.", e);
         }
     }
 
@@ -110,7 +125,8 @@ public class MainService {
                     url,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<PropertyDTO>>() {}
+                    new ParameterizedTypeReference<List<PropertyDTO>>() {
+                    }
             );
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
@@ -118,11 +134,17 @@ public class MainService {
             }
 
             // 백업: DB에서 위치 기반 + 최신순 조회
-            return propertyMapper.findNearbyLatestProperties(lat, lng, 2.0, limit);
+            List<PropertyDTO> properties = propertyMapper.findNearbyLatestProperties(lat, lng, 2.0, limit);
+
+            if (properties == null) {
+                return new ArrayList<>();
+            }
+
+            return properties;
 
         } catch (Exception e) {
             log.error("주변 최신 매물 조회 실패", e);
-            return new ArrayList<>();
+            throw new MainPageException.InternalServerException("주변 매물 조회 중 오류가 발생했습니다.", e);
         }
     }
 
