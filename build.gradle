@@ -94,7 +94,7 @@ dependencies {
 
     //jackson
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.2'
-
+    
 }
 
 test {
