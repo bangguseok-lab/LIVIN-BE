@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.livin.user.mapper.UserMapper">
+
+    <select id="findById" parameterType="long" resultType="org.livin.user.entity.User">
+        SELECT * FROM user WHERE user_id = #{userId}
+    </select>
+
+    <update id="updateUser">
+        UPDATE user
+        SET
+            nickname = #{dto.nickname},
+            profile_image = #{dto.profileImage},
+            phone_number = #{dto.phoneNumber}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateUserRole">
+        UPDATE user
+        SET role = #{role}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>
