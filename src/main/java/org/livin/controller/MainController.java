@@ -90,38 +90,33 @@ public class MainController {
      */
     @PostMapping("/nearby-properties")
     public ResponseEntity<?> getNearbyLatestProperties(@RequestBody LocationRequest locationRequest) {
-        log.info("위치 기반 최신 매물 4개 조회 요청 - 위도: {}, 경도: {}",
+        // 네이버지도에서 보낸 위도/경도를 받아서 처리
+        log.info("네이버지도 위치 정보 수신 - 위도: {}, 경도: {}",
                 locationRequest.getLat(), locationRequest.getLng());
 
-        try {
-            // 위치 정보 검증
-            if (locationRequest.getLat() == null || locationRequest.getLng() == null) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "위도와 경도 정보가 필요합니다."));
-            }
-
-            List<PropertyDTO> properties = mainService.getNearbyLatestProperties(
-                    locationRequest.getLat(),
-                    locationRequest.getLng(),
-                    4
-            );
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("properties", properties);
-            response.put("count", properties.size());
-            response.put("location", Map.of(
-                    "lat", locationRequest.getLat(),
-                    "lng", locationRequest.getLng()
-            ));
-
-            log.info("주변 매물 조회 성공: {}개", properties.size());
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("주변 매물 조회 실패", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "주변 매물 조회에 실패했습니다."));
+        // 위치 검증
+        if (locationRequest.getLat() == null || locationRequest.getLng() == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "위도와 경도 정보가 필요합니다."));
         }
+
+        // 해당 위치 주변 매물 검색
+        List<PropertyDTO> properties = mainService.getNearbyLatestProperties(
+                locationRequest.getLat(),
+                locationRequest.getLng(),
+                4  // 4개만 가져오기
+        );
+
+        // 응답에 위치 정보도 함께 전달 (프론트에서 지도에 표시할 때 사용)
+        Map<String, Object> response = new HashMap<>();
+        response.put("properties", properties);
+        response.put("count", properties.size());
+        response.put("searchLocation", Map.of(
+                "lat", locationRequest.getLat(),
+                "lng", locationRequest.getLng()
+        ));
+
+        return ResponseEntity.ok(response);
     }
 }
 
