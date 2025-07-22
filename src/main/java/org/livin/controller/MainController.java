@@ -22,14 +22,14 @@ public class MainController {
 
     private final MainService mainService;
 
-    /**
-     * 1. 회원 정보 받아와 닉네임을 프론트에 전달
-     * GET /api/main/user-info
-     */
+
+    // 1. 회원 정보 받아와 닉네임을 프론트에 전달
+    //    닉네임 정보와 함께 인사말 출력.
     @GetMapping("/user-info")
     public ResponseEntity<?> getUserNickname(Authentication authentication) {
         log.info("회원 닉네임 조회 요청");
 
+        // try catch 사용 없이 new exception으로 vue에 해당 요청 보낼 것.
         try {
             if (authentication == null || !authentication.isAuthenticated()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -53,10 +53,8 @@ public class MainController {
         }
     }
 
-    /**
-     * 2. 찜한 매물 정보를 최신 순서대로 3개를 가져와서 프론트에 전달
-     * GET /api/main/favorite-properties
-     */
+
+    // 2. 찜한 매물 정보를 최신 순서대로 3개를 가져와서 프론트에 전달
     @GetMapping("/favorite-properties")
     public ResponseEntity<?> getLatestFavoriteProperties(Authentication authentication) {
         log.info("찜한 매물 최신 3개 조회 요청");
@@ -84,12 +82,11 @@ public class MainController {
         }
     }
 
-    /**
-     * 3. 현재 위치 정보를 받아와서 해당 위치의 최신 순서대로 매물 4개를 가져와서 프론트에 전달
-     * POST /api/main/nearby-properties
-     */
+
+    // 3. 현재 위치 정보를 받아와서 해당 위치의 최신 순서대로 매물 4개를 가져와서 프론트에 전달
     @PostMapping("/nearby-properties")
     public ResponseEntity<?> getNearbyLatestProperties(@RequestBody LocationRequest locationRequest) {
+
         // 네이버지도에서 보낸 위도/경도를 받아서 처리
         log.info("네이버지도 위치 정보 수신 - 위도: {}, 경도: {}",
                 locationRequest.getLat(), locationRequest.getLng());
@@ -107,14 +104,14 @@ public class MainController {
                 4  // 4개만 가져오기
         );
 
-        // 응답에 위치 정보도 함께 전달 (프론트에서 지도에 표시할 때 사용)
+        // 응답에 위치 정보도 함께 전달해야 할 지 (프론트에서 지도에 표시할 때 사용)
         Map<String, Object> response = new HashMap<>();
         response.put("properties", properties);
         response.put("count", properties.size());
-        response.put("searchLocation", Map.of(
-                "lat", locationRequest.getLat(),
-                "lng", locationRequest.getLng()
-        ));
+//        response.put("searchLocation", Map.of(
+//                "lat", locationRequest.getLat(),
+//                "lng", locationRequest.getLng()
+//        ));
 
         return ResponseEntity.ok(response);
     }
