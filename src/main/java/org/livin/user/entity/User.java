@@ -22,5 +22,5 @@ public class User {
     private LocalDate birthDate;
     private String phone;
     private String nickname;
-    private String profileImage;
+    private int profileImage;
 }

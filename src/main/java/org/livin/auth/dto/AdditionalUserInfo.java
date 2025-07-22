@@ -10,6 +10,6 @@ public class AdditionalUserInfo {
     private String phone;
     private String nickname;
     private LocalDate birthDate;
-    private String profileImage;
+    private int profileImage;
     private UserRole role;
 }
