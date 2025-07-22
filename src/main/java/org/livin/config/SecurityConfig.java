@@ -21,6 +21,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
+                //나중에 hasRole("LANDLORD") 이거 쓸수 있음
                 .antMatchers(
                         "/api-docs/**",
                         "/api/**",

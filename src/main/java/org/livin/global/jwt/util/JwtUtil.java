@@ -1,6 +1,7 @@
 package org.livin.global.jwt.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.livin.user.entity.UserRole;
@@ -23,10 +24,14 @@ public class JwtUtil {
 
     // 토큰 검증
     public Claims validateToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parser()
+                    .setSigningKey(secret)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            throw new RuntimeException("JWT 토큰 유효성 검증 실패", e);
+        }
     }
 
     // 소셜로그인용 Access Token 발급
@@ -35,7 +40,7 @@ public class JwtUtil {
                 .setSubject(provider + ":" + providerId) // subject로 식별
                 .claim("provider", provider)
                 .claim("providerId", providerId)
-                .claim("role", role.getLabel())
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(SignatureAlgorithm.HS256, secret)
