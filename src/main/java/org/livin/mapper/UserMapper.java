@@ -8,7 +8,9 @@ import org.livin.dto.UserInfoDTO;
 @Mapper
 public interface UserMapper {
 
-    @Select("SELECT user_id as userId, nickname, email, profile_image as profileImage, " +
-            "phone_number as phoneNumber FROM users WHERE user_id = #{username}")
-    UserInfoDTO findUserByUsername(@Param("username") String username);
+//    @Select("SELECT user_id as userId, nickname, email, profile_image as profileImage, " +
+//            "phone_number as phoneNumber FROM users WHERE user_id = #{username}")
+//    UserInfoDTO findUserByUsername(@Param("username") String username);
+
+    String findUserByUsername(Long userId);
 }

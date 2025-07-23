@@ -19,7 +19,7 @@ import java.util.*;
 @Log4j2
 public class MainService {
 
-    private final UserMapper userMapper;
+//    private final UserMapper userMapper;
     private final PropertyMapper propertyMapper;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -30,31 +30,37 @@ public class MainService {
     /**
      * 회원 정보 조회 - GET /api/users 호출
      */
-    public UserInfoDTO getUserInfo(String username) {
-        try {
-            // 방법 1: 외부 API 호출
-            String url = USER_API_BASE_URL + "/" + username;
-            ResponseEntity<UserInfoDTO> response = restTemplate.getForEntity(url, UserInfoDTO.class);
+//    public UserInfoDTO getUserInfo(String username) {
+//        try {
+//            // 방법 1: 외부 API 호출
+//            String url = USER_API_BASE_URL + "/" + username;
+//            ResponseEntity<UserInfoDTO> response = restTemplate.getForEntity(url, UserInfoDTO.class);
+//
+//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+//                return response.getBody();
+//            }
+//
+//            // 방법 2: 직접 DB 조회 (백업)
+//            UserInfoDTO userInfoDTO = userMapper.findUserByUsername(username);
+//
+//            if (userInfoDTO == null) {
+//                throw new MainPageException.ResourceNotFoundException("회원 정보를 찾을 수 없습니다." + username);
+//            }
+//
+//            return userInfoDTO;
+//
+//        } catch (MainPageException.ResourceNotFoundException e) {
+//            throw e; // 그대로 던지기
+//        } catch (Exception e) {
+//            log.error("회원 정보 조회 실패" + username, e);
+//            throw new MainPageException.InternalServerException("회원 정보 조회 중 오류가 발생했습니다.", e);
+//        }
+//    }
 
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return response.getBody();
-            }
+    private final UserMapper userMapper;
 
-            // 방법 2: 직접 DB 조회 (백업)
-            UserInfoDTO userInfoDTO = userMapper.findUserByUsername(username);
-
-            if (userInfoDTO == null) {
-                throw new MainPageException.ResourceNotFoundException("회원 정보를 찾을 수 없습니다." + username);
-            }
-
-            return userInfoDTO;
-
-        } catch (MainPageException.ResourceNotFoundException e) {
-            throw e; // 그대로 던지기
-        } catch (Exception e) {
-            log.error("회원 정보 조회 실패" + username, e);
-            throw new MainPageException.InternalServerException("회원 정보 조회 중 오류가 발생했습니다.", e);
-        }
+    public String getUserNickname(Long userId) {
+        return userMapper.findUserByUsername(userId);
     }
 
     /**

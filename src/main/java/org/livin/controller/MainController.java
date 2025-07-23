@@ -21,50 +21,73 @@ import java.util.Map;
 @Log4j2
 public class MainController {
 
-    private final MainService mainService;
-
 
     // 1. 회원 정보 받아와 닉네임을 프론트에 전달
     //    닉네임 정보와 함께 인사말 출력.
     // TODO: 인증(Authentication)을 authentication으로 받아오는건지 논의 필요,
     //  try catch문 대신해서 쓸 new 명령문으로 vue에 출력되도록 전달.
+//    @GetMapping("/users")
+//    public ResponseEntity<?> getUserNickname(Authentication authentication) {
+//        // Authentication - Spring Security에서 로그인 인증을 받아오기 위한 객체.
+//        log.info("회원 닉네임 조회 요청");
+//
+//            if (authentication == null || !authentication.isAuthenticated()) {
+//                throw new MainPageException.UnauthorizedException("인증되지 않은 회원입니다."); // 회원 정보 인증 검증 과정 - 실패 예외 처리
+//            }
+//
+//            String username = authentication.getName(); // getName() : 보통 “로그인한 사용자의 ID(이메일/username)”
+//            UserInfoDTO userInfo = mainService.getUserInfo(username);
+//
+//            // 회원 인증 이후, 정보가 없을 경우
+//            if (userInfo == null) {
+//                throw new MainPageException.ResourceNotFoundException("회원 정보를 찾을 수 없습니다.");
+//            }
+//
+//            // 정상 응답
+//            // 닉네임만 전달
+//            Map<String, String> response = new HashMap<>();
+//            response.put("nickname", userInfo.getNickname());
+//
+//            log.info("닉네임 조회 성공: {}", userInfo.getNickname());
+//            return ResponseEntity.ok(response);
+//
+//    }
+
+    private final MainService mainService;
+
+    // 1) 로그인 이후 진입한 메인 페이지
     @GetMapping("/users")
-    public ResponseEntity<?> getUserNickname(Authentication authentication) {
-        // Authentication - Spring Security에서 로그인 인증을 받아오기 위한 객체.
-        log.info("회원 닉네임 조회 요청");
+    //    user_id를 쿼리문으로 받는다
+    public ResponseEntity<String> getUserNickname(@RequestParam("userId") Long userId) {
+        log.info("getUserNickname: " + userId);
 
-            if (authentication == null || !authentication.isAuthenticated()) {
-                throw new MainPageException.UnauthorizedException("인증되지 않은 회원입니다."); // 회원 정보 인증 검증 과정 - 실패 예외 처리
-            }
+//        String username = "Haaaaaha";
+        String username = mainService.getUserNickname(userId);
 
-            String username = authentication.getName(); // getName() : 보통 “로그인한 사용자의 ID(이메일/username)”
-            UserInfoDTO userInfo = mainService.getUserInfo(username);
-
-            // 회원 인증 이후, 정보가 없을 경우
-            if (userInfo == null) {
-                throw new MainPageException.ResourceNotFoundException("회원 정보를 찾을 수 없습니다.");
-            }
-
-            // 정상 응답
-            // 닉네임만 전달
-            Map<String, String> response = new HashMap<>();
-            response.put("nickname", userInfo.getNickname());
-
-            log.info("닉네임 조회 성공: {}", userInfo.getNickname());
-            return ResponseEntity.ok(response);
-
+        // 1 JSON 처리를 위해서는 DTO 방식을 활용하거나
+        // 2 key Map 형태로 변환해서 해보기
+        return ResponseEntity.ok(username);
     }
+    // 2) 인증된 로그인 정보를 바탕으로 PK 값인 user_id를 전달 받는다
+    // 3) 유저 id 정보로 회원의 닉네임 정보 서비스에서 받아오는 처리
+    // 4)
 
 
     // 2. 찜한 매물 정보를 최신 순서대로 3개를 가져와서 프론트에 전달
+    // 찜 목록 조회 api 호출 => /users/favorite
     @GetMapping("/users/favorite")
+    // 로그인 인증 요청 (회원 전용 관심 매물을 출력하기 위해) => (Authentication authentication)으로 인증 정보 가져온다(추후 인증 관련 조정)
     public ResponseEntity<?> getLatestFavoriteProperties(Authentication authentication) {
         log.info("찜한 매물 최신 3개 조회 요청");
 
+            // 인증되지 않았을 경우 예외 처리
             if (authentication == null || !authentication.isAuthenticated()) {
                 throw new MainPageException.UnauthorizedException("인증되지 않은 회원입니다.");
             }
 
+            // TODO: 랜딩 페이지에서 로그인 과정을 거치고 난 다음에 들어오는 메인 페이지이기 때문에 로그인 id 정보만 받아도 되는거 아닌지? 확인
+
+            //
             String username = authentication.getName();
             List<FavoritePropertyDTO> favorites = mainService.getFavoriteProperties(username, 3);
 
@@ -76,6 +99,11 @@ public class MainController {
             log.info("찜한 매물 조회 성공: {}개", favorites.size());
             return ResponseEntity.ok(response);
     }
+    // 1) 로그인 후 진입한 메인 페이지
+    //
+    // 2) 인증된 회원의 로그인 정보(토큰값, 회원 id 등)를 받아서
+    // 3) 서비스 로직에서 닉네임만 요청
+    // 4) Mapper에서 닉네임만
 
 
     // 3. 현재 위치 정보를 받아와서 해당 위치의 최신 순서대로 매물 4개를 가져와서 프론트에 전달
