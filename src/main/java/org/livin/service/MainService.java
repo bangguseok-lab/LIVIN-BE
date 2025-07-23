@@ -19,7 +19,7 @@ import java.util.*;
 @Log4j2
 public class MainService {
 
-//    private final UserMapper userMapper;
+    //    private final UserMapper userMapper;
     private final PropertyMapper propertyMapper;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -60,7 +60,7 @@ public class MainService {
     private final UserMapper userMapper;
 
     public String getUserNickname(Long userId) {
-        return userMapper.findUserByUsername(userId);
+        return userMapper.findNicknameByUserId(userId);
     }
 
     /**

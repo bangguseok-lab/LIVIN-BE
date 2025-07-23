@@ -32,7 +32,7 @@ public class MainControllerTest {
         try {
             // 테스트용 하드코딩된 사용자
             String testUsername = "testuser";
-            UserInfoDTO userInfo = mainService.getUserInfo(testUsername);
+            UserNicknameDTO userInfo = mainService.getUserInfo(testUsername);
 
             Map<String, String> response = new HashMap<>();
             response.put("nickname", userInfo.getNickname());
