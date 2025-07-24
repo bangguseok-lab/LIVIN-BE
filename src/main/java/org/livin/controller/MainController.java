@@ -110,14 +110,18 @@ public class MainController {
     // 4) + 매물 3개만 받아오도록 처리하기
     // 5) mapper에서 해당 정보만 받아오기
     @GetMapping("/users/favorite")
-    public ResponseEntity<?> getFavoriteProperties(@RequestParam(defaultValue = "3") int limit, Authentication authentication) {
-        log.info("관심 매물 요청: limit = {}", limit);
+    public ResponseEntity<?> getFavoriteProperties(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "3") int limit
+//            , Authentication authentication
+    ) {
+        log.info("TEST: userId = {}로 관심 매물 요청: limit = {}", userId, limit);
 
-        String providerId = authentication.getName();                 // authentication: 로그인 회원 정보, getName: 회원 이름(?) 아이디(?)
-        // todo: 세션 정보라 해서 Authentication을 활용했는데, 여기에서 회원 아이디 정보를 받아오기 위해서 임의로 설정한 getName과 같은 변수로 받아오는건지? 확인
-        User user = userMapper.findNicknameByUserId(providerId);
-
-        Long userId = user.getUserId();
+//        String providerId = authentication.getName();                 // authentication: 로그인 회원 정보, getName: 회원 이름(?) 아이디(?)
+//        // todo: 세션 정보라 해서 Authentication을 활용했는데, 여기에서 회원 아이디 정보를 받아오기 위해서 임의로 설정한 getName과 같은 변수로 받아오는건지? 확인
+//        User user = userMapper.findNicknameByUserId(providerId);
+//
+//        Long userId = user.getUserId();
         List<Property> result = mainService.getFavoritePropertiesForMain(userId, limit);
 
         log.info("회원 {}의 관심 매물 {}건 조회 완료", userId, result.size());
@@ -126,34 +130,33 @@ public class MainController {
     }
 
 
-
     // 3. 현재 위치 정보를 받아와서 해당 위치의 최신 순서대로 매물 4개를 가져와서 프론트에 전달
-    @PostMapping("/properties")
-    public ResponseEntity<?> getNearbyLatestProperties(@RequestBody LocationRequest locationRequest) {
-
-        // 네이버지도에서 보낸 위도/경도를 받아서 처리
-        log.info("네이버지도 위치 정보 수신 - 위도: {}, 경도: {}",
-                locationRequest.getLat(), locationRequest.getLng());
-
-        // 위치 검증 - MainPageException에서 모아둔 예외 처리를 한번에 처리함.
-        // 기존 if 문에서 위도 또는 경도 값의 null 여부를 판별해 처리함.
-        MainPageException.validateLocation(locationRequest.getLat(), locationRequest.getLng());
-
-        // 해당 위치 주변 매물 검색
-        List<PropertyDTO> properties = mainService.getNearbyLatestProperties(
-                locationRequest.getLat(),
-                locationRequest.getLng(),
-                4  // 4개만 가져오기
-        );
-
-        // 정상 응답
-        Map<String, Object> response = new HashMap<>();
-        response.put("properties", properties);
-        response.put("count", properties.size());
-
-        log.info("주변 매물 조회 성공: {}", properties.size());
-        return ResponseEntity.ok(response);
-    }
+//    @PostMapping("/properties")
+//    public ResponseEntity<?> getNearbyLatestProperties(@RequestBody LocationRequest locationRequest) {
+//
+//        // 네이버지도에서 보낸 위도/경도를 받아서 처리
+//        log.info("네이버지도 위치 정보 수신 - 위도: {}, 경도: {}",
+//                locationRequest.getLat(), locationRequest.getLng());
+//
+//        // 위치 검증 - MainPageException에서 모아둔 예외 처리를 한번에 처리함.
+//        // 기존 if 문에서 위도 또는 경도 값의 null 여부를 판별해 처리함.
+//        MainPageException.validateLocation(locationRequest.getLat(), locationRequest.getLng());
+//
+//        // 해당 위치 주변 매물 검색
+//        List<PropertyDTO> properties = mainService.getNearbyLatestProperties(
+//                locationRequest.getLat(),
+//                locationRequest.getLng(),
+//                4  // 4개만 가져오기
+//        );
+//
+//        // 정상 응답
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("properties", properties);
+//        response.put("count", properties.size());
+//
+//        log.info("주변 매물 조회 성공: {}", properties.size());
+//        return ResponseEntity.ok(response);
+//    }
 }
 
 // 위치 정보 요청 DTO
