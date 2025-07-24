@@ -61,12 +61,12 @@ public class MainService {
 //    }
 
 
-//    private final UserMapper userMapper;
-//
-//    public UserNicknameDTO getUserNickname(Long userId) {
-//        return userMapper.findNicknameByUserId(userId);
-//    }
-//
+    private final UserMapper userMapper;
+
+    public UserNicknameDTO getUserNickname(Long userId) {
+        return userMapper.findNicknameByUserId(userId);
+    }
+
 //    /**
 //     * 찜한 매물 조회 - POST /api/users/favorite 호출
 //     */
@@ -128,6 +128,11 @@ public class MainService {
     public List<Property> getFavoritePropertiesForMain(Long userId, int limit) {
         List<Long> propertyIds = favoritePropertyMapper.getFavoritePropertyIdsByUserId(userId);
 
+        if (propertyIds == null || propertyIds.isEmpty()) {
+            log.info("userId={}의 관심 매물이 없습니다.", userId);
+            return List.of(); // SQL 실행하지 않음
+        }
+
         return favoritePropertyMapper.getPropertiesByIdsSorted(propertyIds, limit);
     }
 
@@ -137,74 +142,74 @@ public class MainService {
      * 현재 위치 기반 최신 매물 조회 - GET /api/properties 호출
      * 위치 정보를 받아 해당 위치의 최신 순서대로 매물 4개 반환
      */
-    public List<PropertyDTO> getNearbyLatestProperties(double lat, double lng, int limit) {
-        try {
-            // 쿼리 파라미터 구성 - 최신순 정렬 추가
-            String url = String.format("%s?lat=%f&lng=%f&limit=%d&radius=2&sort=createdAt,desc",
-                    PROPERTY_API_BASE_URL, lat, lng, limit);
-
-            // API 호출
-            ResponseEntity<List<PropertyDTO>> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<List<PropertyDTO>>() {
-                    }
-            );
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return response.getBody();
-            }
-
-            // 백업: DB에서 위치 기반 + 최신순 조회
-            List<PropertyDTO> properties = propertyMapper.findNearbyLatestProperties(lat, lng, 2.0, limit);
-
-            if (properties == null) {
-                return new ArrayList<>();
-            }
-
-            return properties;
-
-        } catch (Exception e) {
-            log.error("주변 최신 매물 조회 실패", e);
-            throw new MainPageException.InternalServerException("주변 매물 조회 중 오류가 발생했습니다.", e);
-        }
-    }
-
-    /**
-     * 거리 기반 매물 필터링 (백업용)
-     */
-    private List<PropertyDTO> filterNearbyProperties(List<PropertyDTO> properties,
-                                                     double centerLat, double centerLng, int limit) {
-        // 각 매물에 대해 거리 계산
-        properties.forEach(property -> {
-            double distance = calculateDistance(centerLat, centerLng,
-                    property.getLatitude(), property.getLongitude());
-            property.setDistance(distance);
-        });
-
-        // 거리순 정렬
-        properties.sort(Comparator.comparing(PropertyDTO::getDistance));
-
-        // 상위 limit개 반환
-        return properties.size() > limit ? properties.subList(0, limit) : properties;
-    }
-
-    /**
-     * 두 지점 간 거리 계산 (Haversine formula)
-     */
-    private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
-        final int R = 6371; // 지구 반경(km)
-
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lngDistance = Math.toRadians(lng2 - lng1);
-
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return R * c; // 거리(km)
-    }
+//    public List<PropertyDTO> getNearbyLatestProperties(double lat, double lng, int limit) {
+//        try {
+//            // 쿼리 파라미터 구성 - 최신순 정렬 추가
+//            String url = String.format("%s?lat=%f&lng=%f&limit=%d&radius=2&sort=createdAt,desc",
+//                    PROPERTY_API_BASE_URL, lat, lng, limit);
+//
+//            // API 호출
+//            ResponseEntity<List<PropertyDTO>> response = restTemplate.exchange(
+//                    url,
+//                    HttpMethod.GET,
+//                    null,
+//                    new ParameterizedTypeReference<List<PropertyDTO>>() {
+//                    }
+//            );
+//
+//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+//                return response.getBody();
+//            }
+//
+//            // 백업: DB에서 위치 기반 + 최신순 조회
+//            List<PropertyDTO> properties = propertyMapper.findNearbyLatestProperties(lat, lng, 2.0, limit);
+//
+//            if (properties == null) {
+//                return new ArrayList<>();
+//            }
+//
+//            return properties;
+//
+//        } catch (Exception e) {
+//            log.error("주변 최신 매물 조회 실패", e);
+//            throw new MainPageException.InternalServerException("주변 매물 조회 중 오류가 발생했습니다.", e);
+//        }
+//    }
+//
+//    /**
+//     * 거리 기반 매물 필터링 (백업용)
+//     */
+//    private List<PropertyDTO> filterNearbyProperties(List<PropertyDTO> properties,
+//                                                     double centerLat, double centerLng, int limit) {
+//        // 각 매물에 대해 거리 계산
+//        properties.forEach(property -> {
+//            double distance = calculateDistance(centerLat, centerLng,
+//                    property.getLatitude(), property.getLongitude());
+//            property.setDistance(distance);
+//        });
+//
+//        // 거리순 정렬
+//        properties.sort(Comparator.comparing(PropertyDTO::getDistance));
+//
+//        // 상위 limit개 반환
+//        return properties.size() > limit ? properties.subList(0, limit) : properties;
+//    }
+//
+//    /**
+//     * 두 지점 간 거리 계산 (Haversine formula)
+//     */
+//    private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+//        final int R = 6371; // 지구 반경(km)
+//
+//        double latDistance = Math.toRadians(lat2 - lat1);
+//        double lngDistance = Math.toRadians(lng2 - lng1);
+//
+//        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+//                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+//                * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
+//
+//        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//
+//        return R * c; // 거리(km)
+//    }
 }
