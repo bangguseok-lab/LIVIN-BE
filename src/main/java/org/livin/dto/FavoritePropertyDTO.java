@@ -9,16 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FavoritePropertyDTO {
-    private Long propertyId;
-    private String propertyName;
-    private String address;
-    private String propertyType;
-    private Integer monthlyRent;
-    private Integer deposit;
-    private Double area;
-    private Integer floor;
-    private String imageUrl;
-    private LocalDateTime favoriteDate;
-    private Double latitude;
-    private Double longitude;
+    private String name;
+    private String detail_address;
+    private String description;
 }
