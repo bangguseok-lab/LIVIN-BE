@@ -59,7 +59,7 @@ public class MainService {
 
     private final UserMapper userMapper;
 
-    public String getUserNickname(Long userId) {
+    public UserNicknameDTO getUserNickname(Long userId) {
         return userMapper.findNicknameByUserId(userId);
     }
 

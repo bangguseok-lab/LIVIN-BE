@@ -7,10 +7,7 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserInfoDTO {
+public class UserNicknameDTO {
     private String userId;
     private String nickname;
-    private String email;
-    private String profileImage;
-    private String phoneNumber;
 }

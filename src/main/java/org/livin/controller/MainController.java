@@ -58,15 +58,15 @@ public class MainController {
     // 1) 로그인 이후 진입한 메인 페이지
     @GetMapping("/users")
     //    user_id를 쿼리문으로 받는다
-    public ResponseEntity<String> getUserNickname(@RequestParam("userId") Long userId) {
+    public ResponseEntity<UserNicknameDTO> getUserNickname(@RequestParam("userId") Long userId) {
         log.info("getUserNickname: " + userId);
 
 //        String username = "Haaaaaha";
-        String username = mainService.getUserNickname(userId);
+        UserNicknameDTO userNicknameDTO = mainService.getUserNickname(userId);
 
         // 1 JSON 처리를 위해서는 DTO 방식을 활용하거나
         // 2 key Map 형태로 변환해서 해보기
-        return ResponseEntity.ok(username);
+        return ResponseEntity.ok(userNicknameDTO);
     }
     // 2) 인증된 로그인 정보를 바탕으로 PK 값인 user_id를 전달 받는다
     // 3) 유저 id 정보로 회원의 닉네임 정보 서비스에서 받아오는 처리
