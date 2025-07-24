@@ -7,7 +7,7 @@ import org.livin.vo.Property;
 import java.util.List;
 
 @Mapper
-public class FavoritePropertyMapper {
+public interface FavoritePropertyMapper {
 
     // 1) user_id로 관심으로 등록된 매물들 id를 조회
     List<Long> getFavoritePropertyIdsByUserId(Long userId);
