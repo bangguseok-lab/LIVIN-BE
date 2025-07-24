@@ -4,10 +4,17 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="org.livin.mapper.UserMapper">
+
 <!--    파라미터 타입(parameterType)을 long으로 전달받아서 결과 타입(resultType)을 string 값으로 Vue에 전달   -->
     <select id="findNicknameByUserId" resultType="org.livin.dto.UserNicknameDTO" parameterType="long">
         SELECT user_id, nickname
         FROM `user`
         WHERE user_id = #{userId}
+    </select>
+
+    <select id="findByProviderId" resultType="org.livin.vo.User">
+        SELECT *
+        FROM user
+        WHERE provider_id = #{providerId}
     </select>
 </mapper>

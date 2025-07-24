@@ -2,6 +2,7 @@ package org.livin.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.livin.dto.UserNicknameDTO;
+import org.livin.vo.User;
 
 @Mapper
 public interface UserMapper {
@@ -13,4 +14,6 @@ public interface UserMapper {
 //    String findNicknameByUserId(Long userId);
 
     UserNicknameDTO findNicknameByUserId(Long userId);
+
+    User findByProviderId(String providerId);
 }
