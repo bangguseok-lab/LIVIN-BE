@@ -11,10 +11,5 @@ public class User {
     private String provider;
     private String providerId;
     private String name;
-    private String role;                    // enum('LANDLORD','TENANT')
-    private LocalDateTime createdAt;
-    private LocalDate birthDate;
-    private String phone;
     private String nickname;
-    private Integer profileImage;
 }
