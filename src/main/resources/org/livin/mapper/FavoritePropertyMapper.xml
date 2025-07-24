@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.livin.mapper.FavoritePropertyMapper">
+
+    <select id="getFavoritePropertyIdsByUserId" resultType="long">
+        SELECT property_id
+        FROM FavoriteProperty
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="getPropertiesByIdsSorted" resultType="org.livin.vo.Property">
+        SELECT property_id, name, detail_address, description
+        FROM Property
+        WHERE property_id IN
+        <foreach item="id" collection="propertyIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+</mapper>
+
+<!--        @Data-->
+<!--        public class Property {-->
+<!--        private Long propertyId;-->
+<!--        private String name;-->
+<!--        private String detailAddress;-->
+<!--        private String description;-->
+<!--        }-->
