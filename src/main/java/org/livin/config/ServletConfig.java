@@ -9,7 +9,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
 @EnableWebMvc
-@ComponentScan(basePackages = {"org.livin.controller"})
+@ComponentScan(basePackages = {"org.livin"})
 public class ServletConfig implements WebMvcConfigurer {
 
     // Spring MVC용 컴포넌트 등록을 위한 스캔 패키지
