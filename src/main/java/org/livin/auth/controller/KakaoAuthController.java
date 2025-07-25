@@ -5,6 +5,7 @@ import org.livin.auth.dto.AdditionalUserInfo;
 import org.livin.auth.dto.KakaoTokenResponse;
 import org.livin.auth.dto.KakaoUserInfo;
 import org.livin.auth.service.KakaoAuthService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,21 +27,14 @@ public class KakaoAuthController {
         if (exists) {
             // 이미 등록된 사용자 - JWT 발급
             String jwt = authService.loginOrRegisterUser(kakaoUser, null);
-            return ResponseEntity.ok()
-                    .header("Authorization", "Bearer " + jwt)
-                    .build();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + jwt);
+
+            return new ResponseEntity<>(kakaoUser.getProviderId(), headers, HttpStatus.OK);
         } else {
             // 미등록 사용자 - 추가정보 입력 요청
-            return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                    .header("Location", "/additional-info-form?providerId=" + kakaoUser.getProviderId())
-                    .build();
-
-            //프론트엔드 완성시 사용
-//            return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-//                       프론트가 처리(LIVIN 회원가입 폼으로 이동 -> url은 수정가능)
-//                    .header("Location", "/additional-info-form")
-//                    providerId 전달
-//                    .body(kakaoUser);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(kakaoUser.getProviderId());
         }
     }
 

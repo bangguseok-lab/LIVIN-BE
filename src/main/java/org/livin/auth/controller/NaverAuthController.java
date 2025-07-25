@@ -1,5 +1,6 @@
 package org.livin.auth.controller;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
@@ -25,19 +26,21 @@ public class NaverAuthController {
             @RequestParam("state") String state) {
 
         NaverTokenResponse tokenResponse = authService.getNaverAccessToken(code, state);
-        NaverUserInfo userInfo = authService.getUserInfo(tokenResponse.getAccessToken());
+        NaverUserInfo naverUser = authService.getUserInfo(tokenResponse.getAccessToken());
 
-        boolean exists = authService.existsUserByProviderId("naver", userInfo.getProviderId());
+        boolean exists = authService.existsUserByProviderId("naver", naverUser.getProviderId());
 
         if (exists) {
             // 이미 등록된 사용자 - JWT 발급
-            String jwt = authService.loginOrRegisterUser(userInfo, null);
-            return ResponseEntity.ok(jwt);
+            String jwt = authService.loginOrRegisterUser(naverUser, null);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + jwt);
+
+            return new ResponseEntity<>(naverUser.getProviderId(), headers, HttpStatus.OK);
         } else {
-            // 미등록 사용자 - 추가 정보 입력 필요
-            return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                    .header("Location", "/additional-info-form?providerId=" + userInfo.getProviderId())
-                    .build();
+            // 미등록 사용자 - 추가정보 입력 요청
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(naverUser.getProviderId());
         }
     }
 
