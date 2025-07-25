@@ -5,28 +5,28 @@
 
 <mapper namespace="org.livin.mapper.FavoritePropertyMapper">
 
-    <select id="getFavoritePropertyIdsByUserId" resultType="long">
-        SELECT property_id
-        FROM FavoriteProperty
-        WHERE user_id = #{userId}
+    <select id="getFavoritePropertiesWithImageByUserId" resultMap="PropertyWithImageMap">
+        SELECT p.property_id,
+               p.name,
+               p.detail_address,
+               p.description,
+               i.image_url
+        FROM FavoriteProperty f
+                 JOIN Property p ON f.property_id = p.property_id
+                 LEFT JOIN PropertyImage i ON p.property_id = i.property_id AND i.represent = TRUE
+        WHERE f.user_id = #{userId}
+        ORDER BY f.saved_at DESC
+            LIMIT #{limit}
     </select>
 
-    <select id="getPropertiesByIdsSorted" resultType="org.livin.vo.Property">
-        SELECT property_id, name, detail_address, description
-        FROM Property
-        WHERE property_id IN
-        <foreach item="id" collection="propertyIds" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-        ORDER BY created_at DESC
-        LIMIT #{limit}
-    </select>
+    <resultMap id="PropertyWithImageMap" type="org.livin.vo.Property">
+        <result column="property_id" property="propertyId"/>
+        <result column="name" property="name"/>
+        <result column="detail_address" property="detailAddress"/>
+        <result column="description" property="description" />
+        <result column="image_url" property="imageUrl"/>
+    </resultMap>
+
+
 </mapper>
 
-<!--        @Data-->
-<!--        public class Property {-->
-<!--        private Long propertyId;-->
-<!--        private String name;-->
-<!--        private String detailAddress;-->
-<!--        private String description;-->
-<!--        }-->
