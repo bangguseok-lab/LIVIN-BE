@@ -26,7 +26,9 @@ public class KakaoAuthController {
         if (exists) {
             // 이미 등록된 사용자 - JWT 발급
             String jwt = authService.loginOrRegisterUser(kakaoUser, null);
-            return ResponseEntity.ok(jwt);
+            return ResponseEntity.ok()
+                    .header("Authorization", "Bearer " + jwt)
+                    .build();
         } else {
             // 미등록 사용자 - 추가정보 입력 요청
             return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
