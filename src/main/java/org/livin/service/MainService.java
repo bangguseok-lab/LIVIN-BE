@@ -3,16 +3,9 @@ package org.livin.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.livin.dto.*;
-import org.livin.exception.MainPageException;
 import org.livin.mapper.FavoritePropertyMapper;
-import org.livin.mapper.PropertyMapper;
 import org.livin.mapper.UserMapper;
-import org.livin.vo.Property;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.*;
-import org.springframework.core.ParameterizedTypeReference;
 
 import java.util.*;
 
@@ -21,195 +14,27 @@ import java.util.*;
 @Log4j2
 public class MainService {
 
-//    //    private final UserMapper userMapper;
-//    private final PropertyMapper propertyMapper;
-//    private final RestTemplate restTemplate = new RestTemplate();
-//
-//    // 다른 팀원이 구현한 API 엔드포인트 (예시)
-//    private static final String USER_API_BASE_URL = "http://localhost:8080/api/users";
-//    private static final String PROPERTY_API_BASE_URL = "http://localhost:8080/api/properties";
-
-
-    /**
-     * 회원 정보 조회 - GET /api/users 호출
-     */
-//    public UserInfoDTO getUserInfo(String username) {
-//        try {
-//            // 방법 1: 외부 API 호출
-//            String url = USER_API_BASE_URL + "/" + username;
-//            ResponseEntity<UserInfoDTO> response = restTemplate.getForEntity(url, UserInfoDTO.class);
-//
-//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-//                return response.getBody();
-//            }
-//
-//            // 방법 2: 직접 DB 조회 (백업)
-//            UserInfoDTO userInfoDTO = userMapper.findUserByUsername(username);
-//
-//            if (userInfoDTO == null) {
-//                throw new MainPageException.ResourceNotFoundException("회원 정보를 찾을 수 없습니다." + username);
-//            }
-//
-//            return userInfoDTO;
-//
-//        } catch (MainPageException.ResourceNotFoundException e) {
-//            throw e; // 그대로 던지기
-//        } catch (Exception e) {
-//            log.error("회원 정보 조회 실패" + username, e);
-//            throw new MainPageException.InternalServerException("회원 정보 조회 중 오류가 발생했습니다.", e);
-//        }
-//    }
-
-
     private final UserMapper userMapper;
-
-    public UserNicknameDTO getUserNickname(Long userId) {
-        return userMapper.findNicknameByUserId(userId);
-    }
-
-//    /**
-//     * 찜한 매물 조회 - POST /api/users/favorite 호출
-//     */
-//    public List<FavoritePropertyDTO> getFavoriteProperties(String username, int limit) {
-//        try {
-//            // POST 요청 준비
-//            String url = USER_API_BASE_URL + "/favorite";
-//
-//            // 요청 바디 생성
-//            Map<String, Object> requestBody = new HashMap<>();
-//            requestBody.put("userId", username);
-//            requestBody.put("limit", limit);
-//            requestBody.put("sort", "createdAt,desc"); // 최신순 정렬
-//
-//            // 헤더 설정
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentType(MediaType.APPLICATION_JSON);
-//
-//            // 요청 엔티티 생성
-//            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
-//
-//            // API 호출
-//            ResponseEntity<List<FavoritePropertyDTO>> response = restTemplate.exchange(
-//                    url,
-//                    HttpMethod.POST,
-//                    requestEntity,
-//                    new ParameterizedTypeReference<List<FavoritePropertyDTO>>() {
-//                    }
-//            );
-//
-//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-//                List<FavoritePropertyDTO> favorites = response.getBody();
-//                // 상위 limit개만 반환
-//                return favorites.size() > limit ? favorites.subList(0, limit) : favorites;
-//            }
-//
-//            // 백업: DB에서 직접 조회
-////            기존 코드(예외 처리 통합 전 코드 흐름 알기): return propertyMapper.findFavoritePropertiesByUserId(username, limit);
-//            List<FavoritePropertyDTO> favorites = propertyMapper.findFavoritePropertiesByUserId(username, limit);
-//
-//
-//            if (favorites == null) {
-//                return new ArrayList<>();
-//            }
-//
-//            return favorites;
-//
-//        } catch (Exception e) {
-//            log.error("찜한 매물 조회 실패: " + username, e);
-//            throw new MainPageException.InternalServerException("찜한 매물 조회 중 오류가 발생했습니다.", e);
-//        }
-//    }
-
     private final FavoritePropertyMapper favoritePropertyMapper;
 
-//    먼저 회원이 관심으로 지정한 매물들을 리스트들로 출력 받고,
-//    그 리스트들을 바탕으로 매물 하나하나 매물 세부 정보를 받고,
-//    프론트에 하나하나에 매물 정보가 담긴 매물 리스트를 전달해준다.
-    public List<Property> getFavoritePropertiesForMain(Long userId, int limit) {
-        List<Long> propertyIds = favoritePropertyMapper.getFavoritePropertyIdsByUserId(userId);
 
-        if (propertyIds == null || propertyIds.isEmpty()) {
-            log.info("userId={}의 관심 매물이 없습니다.", userId);
-            return List.of(); // SQL 실행하지 않음
-        }
+//    1) 닉네임
+    public UserNicknameDTO getUserNickname(String providerId) {
+        return userMapper.findNicknameByUserId(providerId);
+    }
 
-        return favoritePropertyMapper.getPropertiesByIdsSorted(propertyIds, limit);
+
+//    2) 관심 매물
+    public List<PropertyWithImageDTO> getFavoritePropertiesForMain(String providerId, int limit) {
+
+        Long userId = userMapper.findUserIdByProviderId(providerId);
+
+//      2. providerId를 통해 받은 userId로 관심으로 등록한 매물들 조회
+
+        return favoritePropertyMapper.getFavoritePropertiesWithImageByUserId(userId, limit);
     }
 
 
 
-    /**
-     * 현재 위치 기반 최신 매물 조회 - GET /api/properties 호출
-     * 위치 정보를 받아 해당 위치의 최신 순서대로 매물 4개 반환
-     */
-//    public List<PropertyDTO> getNearbyLatestProperties(double lat, double lng, int limit) {
-//        try {
-//            // 쿼리 파라미터 구성 - 최신순 정렬 추가
-//            String url = String.format("%s?lat=%f&lng=%f&limit=%d&radius=2&sort=createdAt,desc",
-//                    PROPERTY_API_BASE_URL, lat, lng, limit);
-//
-//            // API 호출
-//            ResponseEntity<List<PropertyDTO>> response = restTemplate.exchange(
-//                    url,
-//                    HttpMethod.GET,
-//                    null,
-//                    new ParameterizedTypeReference<List<PropertyDTO>>() {
-//                    }
-//            );
-//
-//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-//                return response.getBody();
-//            }
-//
-//            // 백업: DB에서 위치 기반 + 최신순 조회
-//            List<PropertyDTO> properties = propertyMapper.findNearbyLatestProperties(lat, lng, 2.0, limit);
-//
-//            if (properties == null) {
-//                return new ArrayList<>();
-//            }
-//
-//            return properties;
-//
-//        } catch (Exception e) {
-//            log.error("주변 최신 매물 조회 실패", e);
-//            throw new MainPageException.InternalServerException("주변 매물 조회 중 오류가 발생했습니다.", e);
-//        }
-//    }
-//
-//    /**
-//     * 거리 기반 매물 필터링 (백업용)
-//     */
-//    private List<PropertyDTO> filterNearbyProperties(List<PropertyDTO> properties,
-//                                                     double centerLat, double centerLng, int limit) {
-//        // 각 매물에 대해 거리 계산
-//        properties.forEach(property -> {
-//            double distance = calculateDistance(centerLat, centerLng,
-//                    property.getLatitude(), property.getLongitude());
-//            property.setDistance(distance);
-//        });
-//
-//        // 거리순 정렬
-//        properties.sort(Comparator.comparing(PropertyDTO::getDistance));
-//
-//        // 상위 limit개 반환
-//        return properties.size() > limit ? properties.subList(0, limit) : properties;
-//    }
-//
-//    /**
-//     * 두 지점 간 거리 계산 (Haversine formula)
-//     */
-//    private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
-//        final int R = 6371; // 지구 반경(km)
-//
-//        double latDistance = Math.toRadians(lat2 - lat1);
-//        double lngDistance = Math.toRadians(lng2 - lng1);
-//
-//        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-//                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-//                * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
-//
-//        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//
-//        return R * c; // 거리(km)
-//    }
+
 }

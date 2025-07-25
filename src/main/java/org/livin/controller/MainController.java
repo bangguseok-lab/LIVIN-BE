@@ -1,22 +1,15 @@
 package org.livin.controller;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.livin.dto.*;
-import org.livin.exception.MainPageException;
 import org.livin.mapper.UserMapper;
 import org.livin.service.MainService;
 import org.livin.vo.Property;
-import org.livin.vo.User;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -27,141 +20,33 @@ public class MainController {
     private final MainService mainService;
     private final UserMapper userMapper;
 
-    // 1. 회원 정보 받아와 닉네임을 프론트에 전달
-    //    닉네임 정보와 함께 인사말 출력.
-    // TODO: 인증(Authentication)을 authentication으로 받아오는건지 논의 필요,
-    //  try catch문 대신해서 쓸 new 명령문으로 vue에 출력되도록 전달.
-//    @GetMapping("/users")
-//    public ResponseEntity<?> getUserNickname(Authentication authentication) {
-//        // Authentication - Spring Security에서 로그인 인증을 받아오기 위한 객체.
-//        log.info("회원 닉네임 조회 요청");
-//
-//            if (authentication == null || !authentication.isAuthenticated()) {
-//                throw new MainPageException.UnauthorizedException("인증되지 않은 회원입니다."); // 회원 정보 인증 검증 과정 - 실패 예외 처리
-//            }
-//
-//            String username = authentication.getName(); // getName() : 보통 “로그인한 사용자의 ID(이메일/username)”
-//            UserInfoDTO userInfo = mainService.getUserInfo(username);
-//
-//            // 회원 인증 이후, 정보가 없을 경우
-//            if (userInfo == null) {
-//                throw new MainPageException.ResourceNotFoundException("회원 정보를 찾을 수 없습니다.");
-//            }
-//
-//            // 정상 응답
-//            // 닉네임만 전달
-//            Map<String, String> response = new HashMap<>();
-//            response.put("nickname", userInfo.getNickname());
-//
-//            log.info("닉네임 조회 성공: {}", userInfo.getNickname());
-//            return ResponseEntity.ok(response);
-//
-//    }
-
-
     // 1) 로그인 이후 진입한 메인 페이지
     @GetMapping("/users")
-    //    user_id를 쿼리문으로 받는다
-    // (@RequestParam("userId") Long userId)에서 어노테이션 활용이 안될 수 있음.
-    public ResponseEntity<UserNicknameDTO> getUserNickname(@RequestParam("userId") Long userId) {
-        log.info("getUserNickname: " + userId);
+    //    provider_id를 쿼리문으로 전달 받아 처리.
+    public ResponseEntity<UserNicknameDTO> getUserNickname(@RequestParam("providerId") String providerId) {
+        log.info("getUserNickname: " + providerId);
 
-//        String username = "Haaaaaha";
-        UserNicknameDTO userNicknameDTO = mainService.getUserNickname(userId);
+        UserNicknameDTO userNicknameDTO = mainService.getUserNickname(providerId);
 
-        // 1 JSON 처리를 위해서는 DTO 방식을 활용하거나
-        // 2 key Map 형태로 변환해서 해보기
         return ResponseEntity.ok(userNicknameDTO);
     }
-    // 2) 인증된 로그인 정보를 바탕으로 PK 값인 user_id를 전달 받는다
-    // 3) 유저 id 정보로 회원의 닉네임 정보 서비스에서 받아오는 처리
-    // 4)
 
 
-    // 2. 찜한 매물 정보를 최신 순서대로 3개를 가져와서 프론트에 전달
-    // 찜 목록 조회 api 호출 => /users/favorite
-//    @GetMapping("/users/favorite")
-//    // 로그인 인증 요청 (회원 전용 관심 매물을 출력하기 위해) => (Authentication authentication)으로 인증 정보 가져온다(추후 인증 관련 조정)
-//    public ResponseEntity<?> getLatestFavoriteProperties(Authentication authentication) {
-//        log.info("찜한 매물 최신 3개 조회 요청");
-//
-//            // 인증되지 않았을 경우 예외 처리
-//            if (authentication == null || !authentication.isAuthenticated()) {
-//                throw new MainPageException.UnauthorizedException("인증되지 않은 회원입니다.");
-//            }
-//
-//            // TODO: 랜딩 페이지에서 로그인 과정을 거치고 난 다음에 들어오는 메인 페이지이기 때문에 로그인 id 정보만 받아도 되는거 아닌지? 확인
-//
-//            //
-//            String username = authentication.getName();
-//            List<FavoritePropertyDTO> favorites = mainService.getFavoriteProperties(username, 3);
-//
-//            // 정상 응답
-//            Map<String, Object> response = new HashMap<>();
-//            response.put("properties", favorites);
-//            response.put("count", favorites.size());
-//
-//            log.info("찜한 매물 조회 성공: {}개", favorites.size());
-//            return ResponseEntity.ok(response);
-//    }
-    // 1) 인증 정보를 거치고 도달한 메인 페이지는 인증된 회원 아이디를 받아 처리.
-    // 2) 해당 유저 id의 관심 매물 id들을 받아오기
-    // 3) 관심 매물 리스트 출력에 필요한 데이터인 '매물명', '매물 주소', '매물 설명', '매물 사진' 4가지 서비스 객체에서 처리하기
-    // 4) + 매물 3개만 받아오도록 처리하기
-    // 5) mapper에서 해당 정보만 받아오기
+    // 2) 관심 매물 조회
     @GetMapping("/users/favorite")
     public ResponseEntity<?> getFavoriteProperties(
-            @RequestParam Long userId,
+            @RequestParam String providerId,
             @RequestParam(defaultValue = "3") int limit
-//            , Authentication authentication
     ) {
-        log.info("TEST: userId = {}로 관심 매물 요청: limit = {}", userId, limit);
+        log.info("providerId = {}로 관심 매물 요청, limit = {}만큼 매물 정보 전달", providerId, limit);
 
-//        String providerId = authentication.getName();                 // authentication: 로그인 회원 정보, getName: 회원 이름(?) 아이디(?)
-//        // todo: 세션 정보라 해서 Authentication을 활용했는데, 여기에서 회원 아이디 정보를 받아오기 위해서 임의로 설정한 getName과 같은 변수로 받아오는건지? 확인
-//        User user = userMapper.findNicknameByUserId(providerId);
-//
-//        Long userId = user.getUserId();
-        List<Property> result = mainService.getFavoritePropertiesForMain(userId, limit);
 
-        log.info("회원 {}의 관심 매물 {}건 조회 완료", userId, result.size());
+        List<PropertyWithImageDTO> result = mainService.getFavoritePropertiesForMain(providerId, limit);
+        log.info("회원 {}의 관심 매물 {}건 조회 완료", providerId, result.size());
+
 
         return ResponseEntity.ok(result);
     }
 
 
-    // 3. 현재 위치 정보를 받아와서 해당 위치의 최신 순서대로 매물 4개를 가져와서 프론트에 전달
-//    @PostMapping("/properties")
-//    public ResponseEntity<?> getNearbyLatestProperties(@RequestBody LocationRequest locationRequest) {
-//
-//        // 네이버지도에서 보낸 위도/경도를 받아서 처리
-//        log.info("네이버지도 위치 정보 수신 - 위도: {}, 경도: {}",
-//                locationRequest.getLat(), locationRequest.getLng());
-//
-//        // 위치 검증 - MainPageException에서 모아둔 예외 처리를 한번에 처리함.
-//        // 기존 if 문에서 위도 또는 경도 값의 null 여부를 판별해 처리함.
-//        MainPageException.validateLocation(locationRequest.getLat(), locationRequest.getLng());
-//
-//        // 해당 위치 주변 매물 검색
-//        List<PropertyDTO> properties = mainService.getNearbyLatestProperties(
-//                locationRequest.getLat(),
-//                locationRequest.getLng(),
-//                4  // 4개만 가져오기
-//        );
-//
-//        // 정상 응답
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("properties", properties);
-//        response.put("count", properties.size());
-//
-//        log.info("주변 매물 조회 성공: {}", properties.size());
-//        return ResponseEntity.ok(response);
-//    }
-}
-
-// 위치 정보 요청 DTO
-@Data
-class LocationRequest {
-    private Double lat;
-    private Double lng;
 }
