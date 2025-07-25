@@ -10,25 +10,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PropertyDTO {
+public class PropertyWithImageDTO {
     private Long propertyId;
-    private String propertyName;
-    private String address;
-    private String propertyType;
-    private Integer monthlyRent;
-    private Integer deposit;
-    private Double area;
-    private Integer floor;
-    private Integer totalFloors;
-    private String imageUrl;
-    private Double latitude;
-    private Double longitude;
+    private String name;
+    private String detailAddress;
     private String description;
-    private Boolean hasElevator;
-    private Boolean hasParking;
-    private LocalDateTime availableDate;
-    private LocalDateTime createdAt;
-
-    @JsonIgnore
-    private Double distance;
+    private String imageUrl;            // 대표 이미지 url 하나만 받을 것이므로 리스트 처리 X
 }
