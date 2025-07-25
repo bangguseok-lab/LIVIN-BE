@@ -1,13 +1,12 @@
 package org.livin.user.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.livin.user.dto.UserUpdateRequestDto;
 import org.livin.user.entity.User;
 
 import java.util.Optional;
 
-@Mapper
+
 
 public interface UserMapper {
     Optional<User> findById(Long userId);

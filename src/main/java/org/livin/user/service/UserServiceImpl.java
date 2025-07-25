@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService{
    public void changeUserRole(Long userId, String newRole) {
       int result = userMapper.updateUserRole(userId, newRole);
       if (result == 0) {
-         throw new RuntimeException("역할 전환 실패");
+         throw new RuntimeException("전환 실패");
       }
    }
 
