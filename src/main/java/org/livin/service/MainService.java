@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.livin.dto.*;
 import org.livin.mapper.FavoritePropertyMapper;
+import org.livin.mapper.PropertyMapper;
 import org.livin.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ public class MainService {
 
     private final UserMapper userMapper;
     private final FavoritePropertyMapper favoritePropertyMapper;
+    private final PropertyMapper propertyMapper;
 
 
 //    1) 닉네임
@@ -35,6 +37,10 @@ public class MainService {
     }
 
 
+//    3) 현재 위치 매물 리스트
+    public List<PropertyNearLocationDTO> getSimplePropertiesNearLocation(String sido, String sigungu, String eupmyendong) {
+        return propertyMapper.selectPropertyNearLocationByUserId(sido, sigungu, eupmyendong);
+    }
 
 
 }

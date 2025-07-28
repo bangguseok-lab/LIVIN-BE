@@ -40,13 +40,22 @@ public class MainController {
     ) {
         log.info("providerId = {}로 관심 매물 요청, limit = {}만큼 매물 정보 전달", providerId, limit);
 
-
         List<PropertyWithImageDTO> result = mainService.getFavoritePropertiesForMain(providerId, limit);
         log.info("회원 {}의 관심 매물 {}건 조회 완료", providerId, result.size());
-
 
         return ResponseEntity.ok(result);
     }
 
+
+    @GetMapping("/properties")
+    public ResponseEntity<List<PropertyNearLocationDTO>> getNearbyProperties(
+            @RequestParam("sido") String sido,
+            @RequestParam("sigungu") String sigungu,
+            @RequestParam("eupmyendong") String eupmyendong
+    ) {
+        List<PropertyNearLocationDTO> result = mainService.getSimplePropertiesNearLocation(sido, sigungu, eupmyendong);
+
+        return ResponseEntity.ok(result);
+    }
 
 }
