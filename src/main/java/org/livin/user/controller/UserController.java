@@ -6,7 +6,6 @@ import lombok.extern.log4j.Log4j2;
 import org.livin.user.dto.UserNicknameDTO;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
-import org.livin.property.service.PropertyService;
 import org.livin.user.entity.UserRole;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;

@@ -21,8 +21,6 @@ import javax.sql.DataSource;
 @PropertySource({"classpath:/application.properties"})
 @ComponentScan(basePackages = {"org.livin.property.service", "org.livin.user.service", "org.livin.auth.service"})
 @MapperScan(basePackages = {"org.livin.property.mapper", "org.livin.user.mapper"})
-//@ComponentScan(basePackages = {"org.livin"})
-//@MapperScan(basePackages = {"org.livin"})
 public class RootConfig {
     @Value("${jdbc.driver}")
     String driver;
