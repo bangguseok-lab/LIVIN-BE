@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.livin.dto.*;
 import org.livin.mapper.UserMapper;
+import org.livin.dto.PropertyWithImageDTO;
 import org.livin.service.MainService;
-import org.livin.vo.Property;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,13 +48,8 @@ public class MainController {
 
 
     @GetMapping("/properties")
-    public ResponseEntity<List<PropertyNearLocationDTO>> getNearbyProperties(
-            @RequestParam("sido") String sido,
-            @RequestParam("sigungu") String sigungu,
-            @RequestParam("eupmyendong") String eupmyendong,
-            @RequestParam(defaultValue = "4") int limit
-    ) {
-        List<PropertyNearLocationDTO> result = mainService.getSimplePropertiesNearLocation(sido, sigungu, eupmyendong, limit);
+    public ResponseEntity<List<PropertyNearLocationDTO>> getNearbyProperties(AddressDTO address) {
+        List<PropertyNearLocationDTO> result = mainService.getSimplePropertiesNearLocation(address);
 
         return ResponseEntity.ok(result);
     }

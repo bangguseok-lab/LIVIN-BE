@@ -19,7 +19,7 @@
             LIMIT #{limit}
     </select>
 
-    <resultMap id="PropertyWithImageMap" type="org.livin.vo.Property">
+    <resultMap id="PropertyWithImageMap" type="PropertyVO">
         <result column="property_id" property="propertyId"/>
         <result column="name" property="name"/>
         <result column="detail_address" property="detailAddress"/>
