@@ -203,7 +203,7 @@ gradle-app.setting
 *.hprof
 
 # Spring Boot application properties (sensitive or local settings)
-
+application.properties
 
 #Ds_Store
 .DS_Store
