@@ -11,11 +11,12 @@
         WHERE sido = #{sido}
         AND sigungu = #{sigungu}
         AND eupmyendong = #{eupmyendong}
-        LIMIT 4
+        LIMIT #{limit}
     </select>
 
     <resultMap id="SelectPropertyNearLocationMap" type="org.livin.dto.PropertyNearLocationDTO">
         <result column="property_id" property="propertyId"/>
         <result column="name" property="name"/>
     </resultMap>
+
 </mapper>

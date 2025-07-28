@@ -38,8 +38,8 @@ public class MainService {
 
 
 //    3) 현재 위치 매물 리스트
-    public List<PropertyNearLocationDTO> getSimplePropertiesNearLocation(String sido, String sigungu, String eupmyendong) {
-        return propertyMapper.selectPropertyNearLocationByUserId(sido, sigungu, eupmyendong);
+    public List<PropertyNearLocationDTO> getSimplePropertiesNearLocation(String sido, String sigungu, String eupmyendong, int limit) {
+        return propertyMapper.selectPropertyNearLocationByUserId(sido, sigungu, eupmyendong, limit);
     }
 
 

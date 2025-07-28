@@ -51,9 +51,10 @@ public class MainController {
     public ResponseEntity<List<PropertyNearLocationDTO>> getNearbyProperties(
             @RequestParam("sido") String sido,
             @RequestParam("sigungu") String sigungu,
-            @RequestParam("eupmyendong") String eupmyendong
+            @RequestParam("eupmyendong") String eupmyendong,
+            @RequestParam(defaultValue = "4") int limit
     ) {
-        List<PropertyNearLocationDTO> result = mainService.getSimplePropertiesNearLocation(sido, sigungu, eupmyendong);
+        List<PropertyNearLocationDTO> result = mainService.getSimplePropertiesNearLocation(sido, sigungu, eupmyendong, limit);
 
         return ResponseEntity.ok(result);
     }

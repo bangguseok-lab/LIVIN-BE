@@ -11,6 +11,7 @@ public interface PropertyMapper {
     List<PropertyNearLocationDTO> selectPropertyNearLocationByUserId(
             @Param("sido") String sido,
             @Param("sigungu") String sigungu,
-            @Param("eupmyendong") String eupmyendong
+            @Param("eupmyendong") String eupmyendong,
+            @Param("limit") int limit
     );
 }
