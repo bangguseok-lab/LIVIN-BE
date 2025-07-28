@@ -1,13 +1,13 @@
-package org.livin.service;
+package org.livin.property.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.livin.dto.*;
-import org.livin.mapper.FavoritePropertyMapper;
-import org.livin.mapper.PropertyMapper;
-import org.livin.mapper.UserMapper;
-import org.livin.dto.PropertyWithImageDTO;
-import org.livin.property.entity.UserVO;
+import org.livin.property.mapper.FavoritePropertyMapper;
+import org.livin.property.mapper.PropertyMapper;
+import org.livin.property.dto.AddressDTO;
+import org.livin.property.dto.PropertyNearLocationDTO;
+import org.livin.property.dto.PropertyWithImageDTO;
+import org.livin.user.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -15,20 +15,11 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public class MainService {
+public class PropertyService {
 
     private final UserMapper userMapper;
     private final FavoritePropertyMapper favoritePropertyMapper;
     private final PropertyMapper propertyMapper;
-
-
-//    1) 닉네임
-    public UserNicknameDTO getUserNickname(String providerId) {
-        UserVO user = userMapper.findNicknameByUserId(providerId);
-        return UserNicknameDTO.builder()
-                .nickname(user.getNickname())
-                .build();
-    }
 
 
 //    2) 관심 매물

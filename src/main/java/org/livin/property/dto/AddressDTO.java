@@ -1,4 +1,4 @@
-package org.livin.dto;
+package org.livin.property.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

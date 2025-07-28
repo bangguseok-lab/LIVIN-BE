@@ -2,14 +2,18 @@ package org.livin.user.controller;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.livin.user.dto.UserNicknameDTO;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
+import org.livin.property.service.PropertyService;
 import org.livin.user.entity.UserRole;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Log4j2
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -51,6 +55,16 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@RequestParam("providerId") String providerId) {
         userService.deleteUser(providerId);
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+    }
+
+    // 1) 로그인 이후 진입한 메인 페이지
+    @GetMapping("")
+    public ResponseEntity<UserNicknameDTO> getUserNickname(@RequestParam("providerId") String providerId) {
+        log.info("getUserNickname: " + providerId);
+
+        UserNicknameDTO userNicknameDTO = userService.getUserNickname(providerId);
+
+        return ResponseEntity.ok(userNicknameDTO);
     }
 
 }

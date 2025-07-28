@@ -8,5 +8,6 @@
     </settings>
     <typeAliases>
         <package name="org.livin.property.entity"/>
+        <package name="org.livin.user.entity"/>
     </typeAliases>
 </configuration>

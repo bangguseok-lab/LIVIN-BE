@@ -1,10 +1,9 @@
-package org.livin.property.entity;
+package org.livin.user.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.livin.user.entity.UserRole;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -1,11 +1,12 @@
-package org.livin.controller;
+package org.livin.property.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.livin.dto.*;
-import org.livin.mapper.UserMapper;
-import org.livin.dto.PropertyWithImageDTO;
-import org.livin.service.MainService;
+import org.livin.property.dto.AddressDTO;
+import org.livin.property.dto.PropertyNearLocationDTO;
+import org.livin.property.dto.PropertyWithImageDTO;
+import org.livin.property.service.PropertyService;
+import org.livin.user.mapper.UserMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,22 +16,10 @@ import java.util.List;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @Log4j2
-public class MainController {
+public class PropertyController {
 
-    private final MainService mainService;
+    private final PropertyService propertyService;
     private final UserMapper userMapper;
-
-    // 1) 로그인 이후 진입한 메인 페이지
-    @GetMapping("/users")
-    //    provider_id를 쿼리문으로 전달 받아 처리.
-    public ResponseEntity<UserNicknameDTO> getUserNickname(@RequestParam("providerId") String providerId) {
-        log.info("getUserNickname: " + providerId);
-
-        UserNicknameDTO userNicknameDTO = mainService.getUserNickname(providerId);
-
-        return ResponseEntity.ok(userNicknameDTO);
-    }
-
 
     // 2) 관심 매물 조회
     @GetMapping("/users/favorite")
@@ -40,7 +29,7 @@ public class MainController {
     ) {
         log.info("providerId = {}로 관심 매물 요청, limit = {}만큼 매물 정보 전달", providerId, limit);
 
-        List<PropertyWithImageDTO> result = mainService.getFavoritePropertiesForMain(providerId, limit);
+        List<PropertyWithImageDTO> result = propertyService.getFavoritePropertiesForMain(providerId, limit);
         log.info("회원 {}의 관심 매물 {}건 조회 완료", providerId, result.size());
 
         return ResponseEntity.ok(result);
@@ -49,7 +38,7 @@ public class MainController {
 
     @GetMapping("/properties")
     public ResponseEntity<List<PropertyNearLocationDTO>> getNearbyProperties(AddressDTO address) {
-        List<PropertyNearLocationDTO> result = mainService.getSimplePropertiesNearLocation(address);
+        List<PropertyNearLocationDTO> result = propertyService.getSimplePropertiesNearLocation(address);
 
         return ResponseEntity.ok(result);
     }

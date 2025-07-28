@@ -1,4 +1,4 @@
-package org.livin.dto;
+package org.livin.user.dto;
 
 import lombok.Builder;
 import lombok.Data;

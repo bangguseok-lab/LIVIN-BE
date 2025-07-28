@@ -1,7 +1,6 @@
-package org.livin.mapper;
+package org.livin.property.mapper;
 
-import org.apache.ibatis.annotations.Param;
-import org.livin.dto.AddressDTO;
+import org.livin.property.dto.AddressDTO;
 import org.livin.property.entity.PropertyVO;
 
 import java.util.List;

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.livin.global.jwt.filter.JwtAuthenticationFilter;
 import org.livin.global.jwt.util.JwtUtil;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
+@ComponentScan(basePackages = {"org.livin.global.jwt", "org.livin.config"})
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtUtil jwtUtil;

@@ -1,4 +1,4 @@
-package org.livin.mapper;
+package org.livin.property.mapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.livin.property.entity.PropertyVO;
