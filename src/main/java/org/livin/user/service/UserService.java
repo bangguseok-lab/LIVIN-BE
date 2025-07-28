@@ -1,11 +1,15 @@
 package org.livin.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.livin.global.exception.CustomException;
+import org.livin.global.exception.ErrorCode;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.user.dto.UserNicknameDTO;
 import org.livin.user.entity.UserVO;
 import org.livin.user.mapper.UserMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +25,10 @@ public class UserService {
 
     //    1) 닉네임
     public UserNicknameDTO getUserNickname(String providerId) {
-        UserVO user = userMapper.findNicknameByUserId(providerId);
+        Optional<UserVO> user = Optional.ofNullable(userMapper.findNicknameByUserId(providerId))
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         return UserNicknameDTO.builder()
-                .nickname(user.getNickname())
+                .nickname(user.get().getNickname())
                 .build();
     }
 }
