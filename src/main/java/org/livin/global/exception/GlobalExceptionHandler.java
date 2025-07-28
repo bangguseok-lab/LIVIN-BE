@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     // 일반 Exception 처리 (커스텀 제외 모든 예외를 처리)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        ErrorResponse response = new ErrorResponse(false, "서버 내부 오류가 발생했습니다.", 500);
-        return ResponseEntity.status(500).body(response);
+        ErrorResponse response = new ErrorResponse(false, "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
