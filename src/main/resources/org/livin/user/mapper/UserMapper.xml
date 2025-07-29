@@ -40,4 +40,23 @@
                )
     </insert>
 
+
+    <select id="findNicknameByUserId" resultType="UserVO" parameterType="String">
+        SELECT nickname
+        FROM user
+        WHERE provider_Id = #{providerId}
+    </select>
+
+
+    <select id="findUserIdByProviderId" parameterType="string" resultType="long">
+        SELECT user_id
+        FROM user
+        WHERE provider_id = #{providerId}
+    </select>
+
+    <select id="findByProviderId" resultType="org.livin.user.entity.UserVO">
+        SELECT *
+        FROM user
+        WHERE user_id = #{userId}
+    </select>
 </mapper>
