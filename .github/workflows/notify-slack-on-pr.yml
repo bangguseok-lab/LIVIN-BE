@@ -1,0 +1,61 @@
+name: 🔔 Notify Slack on Pull Request
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  notify-slack-on-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install yq and jq
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq curl
+          YQ_VERSION=v4.40.5
+          sudo curl -L "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -o /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Send Slack PR Notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_CREATOR: ${{ github.actor }}
+          REPO_NAME: ${{ github.repository }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: |
+          echo "✅ PR 작성자: $PR_CREATOR"
+
+          # 1. 팀 조회
+          AUTHOR_TEAM=$(yq ".\"$PR_CREATOR\"" user-team-map.yml)
+          echo "📌 PR 작성자 팀: $AUTHOR_TEAM"
+
+          # 2. 슬랙 사용자 이름 변환
+          CREATOR_SLACK_ID=$(yq ".\"$PR_CREATOR\"" user-slack-display-map.yml)
+          if [ "$CREATOR_SLACK_ID" != "null" ]; then
+            FORMATTED_CREATOR="<@$CREATOR_SLACK_ID>"
+          else
+            FORMATTED_CREATOR="$PR_CREATOR"
+          fi
+
+          # 3. 팀 멘션 구성
+          TEAM_MEMBERS=$(yq 'to_entries | map(select(.value == "'"$AUTHOR_TEAM"'")) | .[].key' user-team-map.yml)
+          SLACK_MENTIONS=""
+          for MEMBER_ID in $TEAM_MEMBERS; do
+            SLACK_ID=$(yq ".\"$MEMBER_ID\"" user-slack-display-map.yml)
+            if [ "$SLACK_ID" != "null" ]; then
+              SLACK_MENTIONS="$SLACK_MENTIONS <@$SLACK_ID>"
+            fi
+          done
+
+          # 4. 슬랙 메시지 전송
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{
+            \"username\": \"GitHub Bot\",
+            \"icon_emoji\": \":rocket:\",
+            \"text\": \"🚀 *PR 생성 알림 *\n\n📌 *제목:* $PR_TITLE\n👤 *작성자:* $FORMATTED_CREATOR\n🔗 <$PR_URL>\n\n🔔 *멘션:* <!here>\"
+          }" "$SLACK_WEBHOOK_URL"
