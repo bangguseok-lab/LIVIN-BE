@@ -1,5 +1,6 @@
 package org.livin.global.jwt.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.livin.global.jwt.util.JwtUtil;
 import org.livin.user.entity.UserRole;
