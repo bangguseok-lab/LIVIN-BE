@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDTO;
+import org.livin.checklist.dto.ChecklistDetailDTO;
 import org.livin.checklist.service.ChecklistService;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
@@ -34,23 +35,18 @@ public class ChecklistController {
 	private final UserService userService;
 	private final ChecklistService checklistService;
 
-	// 체크리스트 조회
+	// 체크리스트 전체 목록 조회
 	@GetMapping("")
 	public ResponseEntity<SuccessResponse<List<ChecklistDTO>>> getAllList(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestParam("providerId") String providerId, HttpServletRequest request) {
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		try {
+			log.info("🍀 체크리스트 전체 목록 조회 실행");
 			log.info("================================> userDetails:{} ", userDetails);
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			log.info("=== 컨트롤러 인증 정보 확인 ===");
-			log.info("SecurityContext: {}", SecurityContextHolder.getContext());
-			log.info("Authentication: {}", auth);
-			log.info("User Principal: {}", userDetails);
 
 			if (auth != null && auth.isAuthenticated()) {
 				log.info("Principal type: {}", auth.getPrincipal().getClass().getName());
 
-				// 🔽 여기서 String → CustomUserDetails로 캐스팅
 				if (auth.getPrincipal() instanceof CustomUserDetails) {
 					CustomUserDetails principal = (CustomUserDetails)auth.getPrincipal();
 					log.info("✅ provider: {}", principal.getProvider());
@@ -68,48 +64,45 @@ public class ChecklistController {
 					log.warn("⚠️ 예상과 다른 Principal 타입: {}", auth.getPrincipal());
 				}
 			}
-			return null;
-
 		} catch (Exception e) {
-			log.error("============> 체크리스트 전체 목록 조회 중 에러 발생", e);
+			log.error("❌ 체크리스트 전체 목록 조회 중 에러 발생", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new SuccessResponse<>(false, "서버 오류", null));
 		}
+			return null;
 	}
+
+	// 체크리스트 상세 조회
+
 
 	// 체크리스트 생성
 	@PostMapping("")
-	public ResponseEntity<SuccessResponse<ChecklistDTO>> createChecklist(
-		@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam("providerId") String providerId,
+	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> createChecklist(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody ChecklistCreateRequestDTO createRequestDTO) {
 		try {
-			Long userId = userService.getUserIdByProviderId(providerId);
-			ChecklistDTO checklist = checklistService.createChecklist(createRequestDTO, userId);
+			log.info("🍀 체크리스트 생성 실행");
+			log.info("================================> userDetails:{} ", userDetails);
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-			return ResponseEntity.status(HttpStatus.CREATED)
-				.body(new SuccessResponse<>(true, "체크리스트가 성공적으로 생성되었습니다.", checklist));
+			if (auth != null && auth.isAuthenticated()) {
+				CustomUserDetails principal = (CustomUserDetails)auth.getPrincipal();
+				log.info("✅ provider: {}", principal.getProvider());
+				log.info("✅ providerId: {}", principal.getProviderId());
+				log.info("✅ role: {}", principal.getRole());
+
+				Long userId = userService.getUserIdByProviderId(principal.getProviderId());
+
+				ChecklistDetailDTO checklist = checklistService.createChecklist(createRequestDTO, userId);
+				return ResponseEntity.status(HttpStatus.OK)
+					.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 생성했습니다.", checklist));
+			}
 		} catch (Exception e) {
-			log.error("============> 체크리스트 생성 중 에러 발생", e);
+			log.error("❌ 체크리스트 생성 중 에러 발생", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new SuccessResponse<>(false, "서버 오류", null));
 		}
-
-		// Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		// log.info("=== 컨트롤러 인증 정보 확인 ===");
-		// log.info("SecurityContext: {}", SecurityContextHolder.getContext());
-		// log.info("Authentication: {}", auth);
-		// log.info("User Principal: {}", user);
-
-		// if (auth != null) {
-		// 	log.info("Principal type: {}", auth.getPrincipal().getClass().getName());
-		// 	log.info("Authorities: {}", auth.getAuthorities());
-		// }
-
-		// log.info(SecurityContextHolder.getContext());
-		// log.info("▶ auth: {}", auth);
-
-		// String providerId = (String) auth.getPrincipal();
-		// Long userId = userService.getUserIdByProviderId(user.getProviderId());
+		return null;
 	}
 
 }
