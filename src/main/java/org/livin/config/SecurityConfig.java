@@ -63,7 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.csrf().disable()
 			.authorizeRequests()
 			.antMatchers("/api/auth/**", "/swagger-ui/**").permitAll()	// 인증 없이 접근 허용
-			.antMatchers("/api/kakao/**").permitAll()
+			.antMatchers("/api/kakao/**", "/api/naver/**").permitAll()
 			.antMatchers("/api/**").authenticated()	// 반드시 인증(로그인)된 사용자만 접근 가능
 			.anyRequest().permitAll()	// 위에서 지정한 경로 외에는 모두 인증 없이 접근 허용
 			.and()
