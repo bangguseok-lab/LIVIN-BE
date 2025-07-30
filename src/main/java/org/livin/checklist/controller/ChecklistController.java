@@ -2,13 +2,19 @@ package org.livin.checklist.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.checklist.service.ChecklistService;
+import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,27 +37,50 @@ public class ChecklistController {
 	// 체크리스트 조회
 	@GetMapping("")
 	public ResponseEntity<SuccessResponse<List<ChecklistDTO>>> getAllList(
-		@RequestParam("providerId") String providerId) {
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam("providerId") String providerId, HttpServletRequest request) {
 		try {
-			Long userId = userService.getUserIdByProviderId(providerId);
+			log.info("================================> userDetails:{} ", userDetails);
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			log.info("=== 컨트롤러 인증 정보 확인 ===");
+			log.info("SecurityContext: {}", SecurityContextHolder.getContext());
+			log.info("Authentication: {}", auth);
+			log.info("User Principal: {}", userDetails);
 
-			List<ChecklistDTO> allList = checklistService.getAllList(userId);
+			if (auth != null && auth.isAuthenticated()) {
+				log.info("Principal type: {}", auth.getPrincipal().getClass().getName());
 
-			return ResponseEntity.status(HttpStatus.OK)
-				.body(new SuccessResponse<>(true, "체크리스트 목록을 성공적으로 조회했습니다.", allList));
+				// 🔽 여기서 String → CustomUserDetails로 캐스팅
+				if (auth.getPrincipal() instanceof CustomUserDetails) {
+					CustomUserDetails principal = (CustomUserDetails)auth.getPrincipal();
+					log.info("✅ provider: {}", principal.getProvider());
+					log.info("✅ providerId: {}", principal.getProviderId());
+					log.info("✅ role: {}", principal.getRole());
 
+					Long userId = userService.getUserIdByProviderId(principal.getProviderId());
+
+					List<ChecklistDTO> allList = checklistService.getAllList(userId);
+
+					return ResponseEntity.status(HttpStatus.OK)
+						.body(new SuccessResponse<>(true, "체크리스트 목록을 성공적으로 조회했습니다.", allList));
+
+				} else {
+					log.warn("⚠️ 예상과 다른 Principal 타입: {}", auth.getPrincipal());
+				}
+			}
+			return null;
 
 		} catch (Exception e) {
 			log.error("============> 체크리스트 전체 목록 조회 중 에러 발생", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new SuccessResponse<>(false, "서버 오류", null));
-
 		}
 	}
 
 	// 체크리스트 생성
 	@PostMapping("")
-	public ResponseEntity<SuccessResponse<ChecklistDTO>> createChecklist(@RequestParam("providerId") String providerId,
+	public ResponseEntity<SuccessResponse<ChecklistDTO>> createChecklist(
+		@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam("providerId") String providerId,
 		@RequestBody ChecklistCreateRequestDTO createRequestDTO) {
 		try {
 			Long userId = userService.getUserIdByProviderId(providerId);

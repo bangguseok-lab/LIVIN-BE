@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.livin.global.jwt.util.JwtUtil;
 import org.livin.user.entity.UserRole;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,17 +33,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OnceP
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
-    }
-
-    @PostConstruct
-    public void init() {
-        log.info("🚀 JwtAuthenticationFilter @PostConstruct 호출됨");
+        System.out.println("🟡 JwtAuthenticationFilter 인스턴스 생성됨: " + this);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        log.info("🔍 필터 적용 대상 URI: {}", request.getRequestURI());
-        return false; // 무조건 필터 실행되도록
+        try {
+            log.info("🔍 필터 적용 대상 URI: {}", request.getRequestURI());
+            return false; // 무조건 실행
+        } catch (Exception e) {
+            log.error("❌ shouldNotFilter 예외 발생", e);
+            return true;
+        }
     }
 
     // 요청이 들어올 때마다 실행, 핵심 인증 로직이 들어 있는 부분
@@ -51,8 +53,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OnceP
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("✅ JwtAuthenticationFilter#doFilterInternal 진입");
-        log.info("🧩 JwtAuthenticationFilter#doFilterInternal 실행됨");
+        System.out.println("🟢 doFilterInternal() 호출됨: " + this);
+        // System.out.println("✅ METHOD: " + request.getMethod() + " | URI: " + request.getRequestURI());
+        // System.out.println("✅ JwtAuthenticationFilter#doFilterInternal 진입");
+        // log.info("🧩 JwtAuthenticationFilter#doFilterInternal 실행됨");
 
         // 요청 로그 출력
         String requestURI = request.getRequestURI();

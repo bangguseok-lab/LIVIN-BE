@@ -26,8 +26,8 @@ public class CustomUserDetails implements UserDetails {
 	}
 
 	@Override public String getPassword() { return null; }
-	// @Override public String getUsername() { return provider + ":" + providerId; }
-	@Override public String getUsername() { return providerId; }
+	@Override public String getUsername() { return provider + ":" + providerId; }
+	// @Override public String getUsername() { return providerId; }
 	@Override public boolean isAccountNonExpired() { return true; }
 	@Override public boolean isAccountNonLocked() { return true; }
 	@Override public boolean isCredentialsNonExpired() { return true; }
