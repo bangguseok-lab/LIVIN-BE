@@ -6,7 +6,7 @@
 <mapper namespace="org.livin.user.mapper.UserMapper">
 
 
-    <resultMap id="userResultMap" type="org.livin.user.entity.User">
+    <resultMap id="userResultMap" type="org.livin.user.entity.UserVO">
         <id property="userId" column="user_id"/>
         <result property="provider" column="provider"/>
         <result property="providerId" column="provider_id"/>
@@ -32,7 +32,7 @@
           AND provider_id = #{providerId}
     </select>
 
-    <insert id="insertUser" parameterType="org.livin.user.entity.User" useGeneratedKeys="true" keyProperty="userId">
+    <insert id="insertUser" parameterType="org.livin.user.entity.UserVO" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO User (provider, provider_id, name, role, created_at, birth_date, phone, nickname, profile_image)
         VALUES (#{provider}, #{providerId}, #{name}, #{role}, now(), #{birthDate},
                 #{phone}, #{nickname}, #{profileImage})

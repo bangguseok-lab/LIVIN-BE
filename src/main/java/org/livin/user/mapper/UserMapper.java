@@ -3,15 +3,14 @@ package org.livin.user.mapper;
 import java.util.Optional;
 
 import org.apache.ibatis.annotations.Param;
-import org.livin.user.entity.User;
 import org.livin.user.entity.UserVO;
 
 public interface UserMapper {
 
-	User findByProviderAndProviderId(@Param("provider") String provider,
+	UserVO findByProviderAndProviderId(@Param("provider") String provider,
 		@Param("providerId") String providerId);
 
-	void insertUser(User user);
+	void insertUser(UserVO user);
 
 	void deleteByProviderAndProviderId(@Param("providerId") String providerId);
 
