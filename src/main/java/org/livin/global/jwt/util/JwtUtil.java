@@ -4,31 +4,37 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.log4j.Log4j2;
+
 import org.livin.user.entity.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
+@Log4j2
 @Component
 public class JwtUtil {
 
+    // JWT 서명 키, JWT 토큰의 무결성을 보장하는 비밀 키
+    // 이 키가 노출되면 토큰 위조 가능 -> 보안 매우 중요!
     @Value("${jwt.secret}")
     private String secret;
 
-    // 1시간
+    // Access Token 만료시간: 1시간
     private final long expiration = 1000 * 60 * 60;
 
-    // 7일
+    // Refresh Token 만료시간: 7일
     private final long refreshExpiration = 1000L * 60 * 60 * 24 * 7;
 
     // 토큰 검증
     public Claims validateToken(String token) {
+        log.info("🔍 토큰 유효성 검사 시작: {}", token);
         try {
             return Jwts.parser()
                     .setSigningKey(secret)
                     .parseClaimsJws(token)
-                    .getBody();
+                    .getBody();     // 토큰의 페이로드(Claims) 부분 반환
         } catch (JwtException e) {
             throw new RuntimeException("JWT 토큰 유효성 검증 실패", e);
         }

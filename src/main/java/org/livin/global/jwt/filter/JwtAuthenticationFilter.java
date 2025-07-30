@@ -1,6 +1,9 @@
 package org.livin.global.jwt.filter;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
 import org.livin.global.jwt.util.JwtUtil;
 import org.livin.user.entity.UserRole;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,41 +20,93 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import javax.annotation.PostConstruct;
 
-@RequiredArgsConstructor
+@Log4j2
+// @RequiredArgsConstructor
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OncePerRequestFilter: 요청당 한 번만 실행되는 필터
 
+    // JWT 생성/검증 유틸 클래스
     private final JwtUtil jwtUtil;
 
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+
+    @PostConstruct
+    public void init() {
+        log.info("🚀 JwtAuthenticationFilter @PostConstruct 호출됨");
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        log.info("🔍 필터 적용 대상 URI: {}", request.getRequestURI());
+        return false; // 무조건 필터 실행되도록
+    }
+
+    // 요청이 들어올 때마다 실행, 핵심 인증 로직이 들어 있는 부분
+    // request: 현재 요청, response: 응답 객체, filterChain: 다음 필터로 요청을 넘기기 위한 객체
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
+        System.out.println("✅ JwtAuthenticationFilter#doFilterInternal 진입");
+        log.info("🧩 JwtAuthenticationFilter#doFilterInternal 실행됨");
 
+        // 요청 로그 출력
+        String requestURI = request.getRequestURI();
+        String method = request.getMethod();
+        log.info("요청 URI: {} {}", method, requestURI);
+
+        // Authorization 헤더 추출 및 검증
+        String authHeader = request.getHeader("Authorization");     // HTTP 헤더에서 "Authorization" 값을 가져와서
+        log.info("Authorization Header: {}", authHeader);
+
+        // Bearer {token} 형식으로 전달된 경우에만 처리
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            // "Bearer " 문자열을 잘라내고 실제 토큰 추출
             String token = authHeader.substring(7);
+            log.info("추출된 액세스 토큰: {}", token.substring(0, Math.min(token.length(), 20)));
 
             try {
-                var claims = jwtUtil.validateToken(token);
-                String username = claims.getSubject(); // provider:providerId
+                // JWT 토큰 유효성 검증
+                Claims claims = jwtUtil.validateToken(token);  // 토큰 검증, 안에 있는 claims(JWT Claims) 꺼냄
+                String username = claims.getSubject(); // 사용자 식별 값, provider:providerId 형태
                 String roleName = (String) claims.get("role"); // LANDLORD 또는 TENANT
+
+                log.info("토큰에서 추출된 사용자: {}, 역할: {}", username, roleName);
+
+                // provider와 providerId 분리
+                String[] parts = username.split(":", 2);
+                String provider = parts.length > 1 ? parts[0] : "unknown";
+                String providerId = parts.length > 1 ? parts[1] : username;
 
                 // UserRole enum 매칭
                 UserRole userRole = UserRole.valueOf(roleName);
 
-                // ROLE_ 접두사 붙인 권한 생성
+                // Spring Security 에서 요구하는 ROLE_ 접두사 붙인 권한 객체 생성
                 List<GrantedAuthority> authorities = List.of(
-                        new SimpleGrantedAuthority("ROLE_" + userRole.name())
+                    new SimpleGrantedAuthority("ROLE_" + userRole.name())
                 );
 
-                var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                // 인증 객체 생성 및 SecurityContext 등록
+                CustomUserDetails userDetails = new CustomUserDetails(provider, providerId, userRole);
+
+                // UsernamePasswordAuthenticationToken: 인증 객체 생성 (비밀번호는 null로 둠)
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // SecurityContextHolder: 현재 요청의 SecurityContext에 인증 객체를 저장
+                // → 이후 컨트롤러에서 @AuthenticationPrincipal 사용 가능
                 SecurityContextHolder.getContext().setAuthentication(auth);
+
+                log.info("Authentication 객체 설정 완료: {}", auth);
 
             } catch (Exception e) {
                 // 토큰 무효화 등 예외는 무시하고 필터 체인 계속
+                log.error("토큰 검증 실패: ", e);
+                log.error("❌ JWT 검증 중 예외 발생: {}", e.getMessage(), e);
             }
         }
 
