@@ -3,13 +3,11 @@ package org.livin.property.controller;
 import java.util.List;
 
 import org.livin.property.dto.AddressDTO;
-import org.livin.property.dto.PropertyNearLocationDTO;
-import org.livin.property.dto.PropertyWithImageDTO;
+import org.livin.property.dto.PropertyDTO;
 import org.livin.property.service.PropertyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,16 +31,16 @@ public class PropertyController {
 	) {
 		log.info("providerId = {}로 관심 매물 요청, limit = {}만큼 매물 정보 전달", providerId, limit);
 
-		List<PropertyWithImageDTO> result = propertyService.getFavoritePropertiesForMain(providerId, limit);
+		List<PropertyDTO> result = propertyService.getFavoritePropertiesForMain(providerId, limit);
 		log.info("회원 {}의 관심 매물 {}건 조회 완료", providerId, result.size());
 
 		return ResponseEntity.ok(result);
 	}
 
-	// 위치 정보 기반 전체 매물 조회
-	@PostMapping("/properties")
-	public ResponseEntity<List<PropertyNearLocationDTO>> getNearbyProperties(@RequestBody AddressDTO address) {
-		List<PropertyNearLocationDTO> result = propertyService.getPropertiesNearLocation(address);
+	// 위치 정보(읍, 명, 동) 기반 전체 매물 조회
+	@GetMapping("/properties")
+	public ResponseEntity<List<PropertyDTO>> getNearbyProperties(@ModelAttribute AddressDTO address) {
+		List<PropertyDTO> result = propertyService.getPropertiesNearLocation(address);
 
 		return ResponseEntity.ok(result);
 	}

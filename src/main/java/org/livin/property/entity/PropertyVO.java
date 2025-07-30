@@ -43,8 +43,10 @@ public class PropertyVO {
 	private String propertyNum;
 	private AbleStatus pet;
 	private AbleStatus loan;
-	private Long buildingId;
+	private Long buildingId; //여기까지가 Property Table Fields
 
 	private List<PropertyImageVO> images;
-	// 안전 매물 여부, 관심 매물 여부를 단일로
+	private Boolean isSafe;
+	private Boolean isFavorite;
+	private Integer totalFloors;
 }
