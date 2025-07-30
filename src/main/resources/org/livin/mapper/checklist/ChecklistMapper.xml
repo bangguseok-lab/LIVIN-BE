@@ -12,9 +12,43 @@
         ORDER BY created_at DESC
     </select>
 
+    <!--  체크리스트 상세 조회  -->
+    <select id="getChecklistDetail" parameterType="long" resultType="org.livin.checklist.dto.ChecklistItemJoinDTO">
+        SELECT
+            c.checklist_id,
+            c.title,
+            c.description,
+            c.type AS checklist_type,
+            i.checklistItem_id,
+            i.keyword,
+            i.is_active,
+            i.type AS item_type
+        FROM livin.Checklist c
+        JOIN livin.ChecklistItem i ON c.checklist_id = i.checklist_id
+        WHERE c.checklist_id = #{checklistId}
+    </select>
+
     <!--  체크리스트 생성  -->
     <insert id="create" useGeneratedKeys="true" keyProperty="checklistId">
         INSERT INTO checklist (user_id, title, description, type, created_at, update_at)
         VALUES (#{userId}, #{title}, #{description}, #{type}, #{createdAt}, #{updateAt})
+    </insert>
+
+    <!--  체크리스트의 기본 항목 생성  -->
+    <insert id="createChecklistDefaultItem">
+        INSERT INTO livin.ChecklistItem (keyword, is_active, type, checklist_id)
+        VALUES
+            ('강한 수압', false, 'ROOM', #{checklistId}),
+            ('방의 기울기', false, 'ROOM', #{checklistId}),
+            ('채광', false, 'ROOM', #{checklistId}),
+            ('누수', false, 'ROOM', #{checklistId}),
+            ('결로 흔적', false, 'ROOM', #{checklistId}),
+            ('곰팡이', false, 'ROOM', #{checklistId}),
+            ('벌레', false, 'ROOM', #{checklistId}),
+            ('난방 컨디션', false, 'ROOM', #{checklistId}),
+            ('전기 컨디션', false, 'ROOM', #{checklistId}),
+            ('창문 컨디션', false, 'ROOM', #{checklistId}),
+            ('CCTV', false, 'BUILDING', #{checklistId}),
+            ('엘레베이터 여부', false, 'BUILDING', #{checklistId})
     </insert>
 </mapper>

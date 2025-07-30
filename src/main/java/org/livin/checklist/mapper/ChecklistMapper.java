@@ -2,6 +2,8 @@ package org.livin.checklist.mapper;
 
 import java.util.List;
 
+import org.livin.checklist.dto.ChecklistDTO;
+import org.livin.checklist.dto.ChecklistItemJoinDTO;
 import org.livin.checklist.entity.ChecklistVO;
 import org.mapstruct.Mapper;
 
@@ -11,7 +13,10 @@ public interface ChecklistMapper {
 	List<ChecklistVO> getAllList(Long userId);
 
 	// 체크리스트 목록 상세 조회
+	List<ChecklistItemJoinDTO> getChecklistDetail(Long ChecklistId);
 
 	// 체크리스트 생성
-	void create(ChecklistVO checklist);
+	Long create(ChecklistVO checklist);
+	// 체크리스트 기본 아이템 생성
+	void createChecklistDefaultItem(Long checklistId);
 }
