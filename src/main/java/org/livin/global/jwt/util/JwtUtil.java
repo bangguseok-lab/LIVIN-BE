@@ -43,6 +43,7 @@ public class JwtUtil {
 				.parseClaimsJws(token)
 				.getBody();
 		} catch (JwtException e) {
+			log.info(e);
 			log.error("❌ JWT 토큰 유효성 검증 실패", e);
 			throw new RuntimeException("JWT 토큰 유효성 검증 실패", e);
 		}
