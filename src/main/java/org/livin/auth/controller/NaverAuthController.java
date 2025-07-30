@@ -34,7 +34,7 @@ public class NaverAuthController {
             // 이미 등록된 사용자 - JWT 발급
             String jwt = authService.loginOrRegisterUser(naverUser, null);
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + jwt);
+            headers.set("Authorization",  jwt);
 
             return new ResponseEntity<>(naverUser.getProviderId(), headers, HttpStatus.OK);
         } else {
@@ -56,7 +56,7 @@ public class NaverAuthController {
 
         String jwt = authService.loginOrRegisterUser(userInfo, request);
         return ResponseEntity.ok()
-                .header("Authorization", "Bearer " + jwt)
+                .header("Authorization", jwt)
                 .build();
     }
 }
