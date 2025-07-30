@@ -3,6 +3,7 @@ package org.livin.user.controller;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
 import org.livin.user.dto.UserNicknameDTO;
+import org.livin.user.dto.UserResponseDTO;
 import org.livin.user.entity.UserRole;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -64,13 +65,20 @@ public class UserController {
 	}
 
 	// 회원 닉네임 조회
-	@GetMapping("")
+	@GetMapping("/nickname")
 	public ResponseEntity<UserNicknameDTO> getUserNickname(@RequestParam("providerId") String providerId) {
 		log.info("getUserNickname: " + providerId);
 
 		UserNicknameDTO userNicknameDTO = userService.getUserNickname(providerId);
 
 		return ResponseEntity.ok(userNicknameDTO);
+	}
+
+	// 회원 정보 조회
+	@GetMapping("")
+	public ResponseEntity<UserResponseDTO> getUserInfo(@RequestParam Long userId) {
+		UserResponseDTO userInfo = userService.getUserInfo(userId);
+		return ResponseEntity.ok(userInfo);
 	}
 
 }

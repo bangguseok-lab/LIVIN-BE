@@ -20,24 +20,22 @@
     </resultMap>
 
     <delete id="deleteByProviderAndProviderId">
-        DELETE FROM user
+        DELETE
+        FROM user
         WHERE provider_id = #{providerId}
     </delete>
 
     <select id="findByProviderAndProviderId" resultMap="userResultMap">
-        SELECT * FROM User
+        SELECT *
+        FROM User
         WHERE provider = #{provider}
           AND provider_id = #{providerId}
     </select>
 
     <insert id="insertUser" parameterType="org.livin.user.entity.User" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO User (
-            provider, provider_id, name, role, created_at, birth_date, phone, nickname, profile_image
-        )
-        VALUES (
-                   #{provider}, #{providerId}, #{name}, #{role}, now(), #{birthDate},
-                   #{phone}, #{nickname}, #{profileImage}
-               )
+        INSERT INTO User (provider, provider_id, name, role, created_at, birth_date, phone, nickname, profile_image)
+        VALUES (#{provider}, #{providerId}, #{name}, #{role}, now(), #{birthDate},
+                #{phone}, #{nickname}, #{profileImage})
     </insert>
 
 
@@ -59,4 +57,11 @@
         FROM user
         WHERE user_id = #{userId}
     </select>
+
+    <select id="findById" resultType="org.livin.user.entity.UserVO">
+        SELECT *
+        FROM users
+        WHERE id = #{id}
+    </select>
+
 </mapper>
