@@ -44,20 +44,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		// http
-		//         .cors() // ✅ cors 설정 활성화
-		//         .and()
-		//         .csrf().disable()
-		//         .authorizeRequests()
-		//         .antMatchers(
-		//                 "/api-docs/**",
-		//                 "/api/**",
-		//                 "/swagger-ui.html",
-		//                 "/swagger-ui/**").permitAll()
-		//         .anyRequest().permitAll()
-		//         .and()
-		//         .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
-
 		http
 			.cors().and()
 			.csrf().disable()
