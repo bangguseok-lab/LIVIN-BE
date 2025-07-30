@@ -29,7 +29,6 @@ public class JwtUtil {
 
 	// 토큰 검증
 	public Claims validateToken(String token) {
-		log.info("🔍 토큰 유효성 검사 시작 (원본): '{}'", token);
 		try {
 			// "Bearer " 접두사 제거
 			if (token != null && token.startsWith("Bearer ")) {
@@ -38,6 +37,7 @@ public class JwtUtil {
 				token = token.trim(); // 그냥 공백만 제거
 			}
 			log.info("🔍 토큰 유효성 검사 시작 (정제 후): '{}'", token);
+
 			return Jwts.parser()
 				.setSigningKey(secret)
 				.parseClaimsJws(token)

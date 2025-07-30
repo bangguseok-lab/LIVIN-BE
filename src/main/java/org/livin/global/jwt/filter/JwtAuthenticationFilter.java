@@ -39,7 +39,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OnceP
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         try {
-            log.info("🔍 필터 적용 대상 URI: {}", request.getRequestURI());
             return false; // 무조건 실행
         } catch (Exception e) {
             log.error("❌ shouldNotFilter 예외 발생", e);
@@ -54,24 +53,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OnceP
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         System.out.println("🟢 doFilterInternal() 호출됨: " + this);
-        // System.out.println("✅ METHOD: " + request.getMethod() + " | URI: " + request.getRequestURI());
-        // System.out.println("✅ JwtAuthenticationFilter#doFilterInternal 진입");
-        // log.info("🧩 JwtAuthenticationFilter#doFilterInternal 실행됨");
 
         // 요청 로그 출력
         String requestURI = request.getRequestURI();
         String method = request.getMethod();
-        log.info("요청 URI: {} {}", method, requestURI);
 
         // Authorization 헤더 추출 및 검증
         String authHeader = request.getHeader("Authorization");     // HTTP 헤더에서 "Authorization" 값을 가져와서
-        log.info("Authorization Header: {}", authHeader);
+        log.info("✅ Authorization Header: {}", authHeader);
 
         // Bearer {token} 형식으로 전달된 경우에만 처리
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             // "Bearer " 문자열을 잘라내고 실제 토큰 추출
             String token = authHeader.substring(7);
-            log.info("추출된 액세스 토큰: {}", token.substring(0, Math.min(token.length(), 20)));
 
             try {
                 // JWT 토큰 유효성 검증
@@ -79,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OnceP
                 String username = claims.getSubject(); // 사용자 식별 값, provider:providerId 형태
                 String roleName = (String) claims.get("role"); // LANDLORD 또는 TENANT
 
-                log.info("토큰에서 추출된 사용자: {}, 역할: {}", username, roleName);
+                log.info("📌 토큰에서 추출된 사용자: {}, 역할: {}", username, roleName);
 
                 // provider와 providerId 분리
                 String[] parts = username.split(":", 2);
@@ -104,8 +98,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OnceP
                 // SecurityContextHolder: 현재 요청의 SecurityContext에 인증 객체를 저장
                 // → 이후 컨트롤러에서 @AuthenticationPrincipal 사용 가능
                 SecurityContextHolder.getContext().setAuthentication(auth);
-
-                log.info("Authentication 객체 설정 완료: {}", auth);
 
             } catch (Exception e) {
                 // 토큰 무효화 등 예외는 무시하고 필터 체인 계속
