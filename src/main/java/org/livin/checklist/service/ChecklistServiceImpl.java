@@ -43,14 +43,7 @@ public class ChecklistServiceImpl implements ChecklistService {
 	@Override
 	public ChecklistDetailDTO createChecklist(ChecklistCreateRequestDTO checklistDto, Long userId) {
 		// DTO -> VO 변환
-		ChecklistVO checklistVO = ChecklistVO.builder()
-			.userId(userId)
-			.title(checklistDto.getTitle())
-			.description(checklistDto.getDescription())
-			.type(checklistDto.getType())
-			.createdAt(LocalDateTime.now())
-			.updatedAt(LocalDateTime.now())
-			.build();
+		ChecklistVO checklistVO = checklistDto.toVo(userId);
 
 		log.info("============> request VO: {}", checklistVO);
 
