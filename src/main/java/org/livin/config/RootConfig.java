@@ -55,15 +55,16 @@ public class RootConfig {
         sqlSessionFactory.setConfigLocation(applicationContext.getResource("classpath:/mybatis-config.xml"));
 
         // Mapper XML 파일 위치 설정 (src/main/resources/mapper 하위 구조 포함)
-        sqlSessionFactory.setMapperLocations(
-            new PathMatchingResourcePatternResolver().getResources("classpath:/org/livin/mapper/**/*.xml")
-        );
+        // sqlSessionFactory.setMapperLocations(
+        //     new PathMatchingResourcePatternResolver().getResources("classpath:/org/livin/mapper/**/*.xml")
+        // );
 
         // DB 연결 설정
         sqlSessionFactory.setDataSource(dataSource());
 
         // 최종 SqlSessionFactory 객체 반환
-        return sqlSessionFactory.getObject();
+        return (SqlSessionFactory) sqlSessionFactory.getObject();
+        // return sqlSessionFactory.getObject();
     }
 
     @Bean
