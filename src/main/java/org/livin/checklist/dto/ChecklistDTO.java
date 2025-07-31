@@ -24,7 +24,7 @@ public class ChecklistDTO {
 	private String description;
 	private String type;
 	private LocalDateTime createdAt;
-	private LocalDateTime updateAt;
+	private LocalDateTime updatedAt;
 
 	// VO -> DTO 변환 (of())
 	public static ChecklistDTO of(ChecklistVO vo) {
@@ -35,7 +35,7 @@ public class ChecklistDTO {
 			.description(vo.getDescription())
 			.type(vo.getType())
 			.createdAt(vo.getCreatedAt())
-			.updateAt(vo.getUpdateAt())
+			.updatedAt(vo.getUpdatedAt())
 			.build();
 	}
 
@@ -48,7 +48,7 @@ public class ChecklistDTO {
 			.description(description)
 			.type(type)
 			.createdAt(createdAt)
-			.updateAt(updateAt)
+			.updatedAt(updatedAt)
 			.build();
 	}
 

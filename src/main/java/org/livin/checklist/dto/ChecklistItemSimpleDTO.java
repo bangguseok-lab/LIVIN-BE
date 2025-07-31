@@ -10,4 +10,5 @@ public class ChecklistItemSimpleDTO {
 	private Long checklistItemId;
 	private String keyword;
 	private boolean isActive;
+	private String type;
 }

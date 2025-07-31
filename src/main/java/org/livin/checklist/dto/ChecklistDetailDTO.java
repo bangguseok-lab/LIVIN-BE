@@ -1,8 +1,11 @@
 package org.livin.checklist.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +22,8 @@ public class ChecklistDetailDTO {
 	private String title;
 	private String description;
 	private String type;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 
 	// type별로 묶인 item 리스트 (type: ROOM, BUILDING, OPTION, INFRA, CIRCUMSTANCE, CUSTOM)
 	private Map<String, List<ChecklistItemSimpleDTO>> items;
@@ -42,6 +47,7 @@ public class ChecklistDetailDTO {
 					.checklistItemId(join.getChecklistItemId())
 					.keyword(join.getKeyword())
 					.isActive(join.isActive())
+					.type(join.getItemType())
 					.build(),
 					Collectors.toList()
 				)
@@ -51,7 +57,9 @@ public class ChecklistDetailDTO {
 			.checklistId(first.getChecklistId())
 			.title(first.getTitle())
 			.description(first.getDescription())
-			.type(first.getItemType())
+			.type(first.getChecklistType())
+			.createdAt(first.getCreatedAt())
+			.updatedAt(first.getUpdatedAt())
 			.items(typeGrouped)
 			.build();
 	}

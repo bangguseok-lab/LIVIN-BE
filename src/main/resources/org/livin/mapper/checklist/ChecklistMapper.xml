@@ -19,6 +19,8 @@
             c.title,
             c.description,
             c.type AS checklist_type,
+            c.created_at,
+            c.updated_at,
             i.checklistItem_id,
             i.keyword,
             i.is_active,
@@ -30,8 +32,8 @@
 
     <!--  체크리스트 생성  -->
     <insert id="create" useGeneratedKeys="true" keyProperty="checklistId">
-        INSERT INTO checklist (user_id, title, description, type, created_at, update_at)
-        VALUES (#{userId}, #{title}, #{description}, #{type}, #{createdAt}, #{updateAt})
+        INSERT INTO checklist (user_id, title, description, type, created_at, updated_at)
+        VALUES (#{userId}, #{title}, #{description}, #{type}, NOW(), #{updatedAt})
     </insert>
 
     <!--  체크리스트의 기본 항목 생성  -->

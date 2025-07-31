@@ -1,5 +1,7 @@
 package org.livin.checklist.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +20,8 @@ public class ChecklistItemJoinDTO {
 	private String title;
 	private String description;
 	private String checklistType;	// 두 테이블 모두 type 필드를 가지고 있어서 지정한 Alias로 필드명 지정
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 
 	// ChecklistItem
 	private Long checklistItemId;

@@ -18,5 +18,5 @@ public class ChecklistVO {
 	private String description;
 	private String type;
 	private LocalDateTime createdAt;
-	private LocalDateTime updateAt;
+	private LocalDateTime updatedAt;
 }

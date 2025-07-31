@@ -35,7 +35,7 @@ public class ChecklistController {
 	private final UserService userService;
 	private final ChecklistService checklistService;
 
-	// 체크리스트 전체 목록 조회
+	// 체크리스트 전체 목록 조회 => todo: 무한스크롤 기능 구현
 	@GetMapping("")
 	public ResponseEntity<SuccessResponse<List<ChecklistDTO>>> getAllList(
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -72,7 +72,7 @@ public class ChecklistController {
 			return null;
 	}
 
-	// 체크리스트 상세 조회
+	// todo: 체크리스트 상세 조회
 
 
 	// 체크리스트 생성

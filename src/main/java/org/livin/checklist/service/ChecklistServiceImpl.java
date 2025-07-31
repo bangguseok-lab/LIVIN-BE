@@ -32,7 +32,6 @@ public class ChecklistServiceImpl implements ChecklistService {
 	}
 
 	// 체크리스트 상세 조회
-
 	@Override
 	public ChecklistDetailDTO getChecklistDetail(Long checklistId) {
 		List<ChecklistItemJoinDTO> joinRows = checklistMapper.getChecklistDetail(checklistId);
@@ -50,7 +49,7 @@ public class ChecklistServiceImpl implements ChecklistService {
 			.description(checklistDto.getDescription())
 			.type(checklistDto.getType())
 			.createdAt(LocalDateTime.now())
-			.updateAt(LocalDateTime.now())
+			.updatedAt(LocalDateTime.now())
 			.build();
 
 		log.info("============> request VO: {}", checklistVO);
