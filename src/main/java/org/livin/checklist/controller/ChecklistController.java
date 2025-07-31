@@ -72,8 +72,41 @@ public class ChecklistController {
 			return null;
 	}
 
-	// todo: 체크리스트 상세 조회
+	// 체크리스트 상세 조회
+	@GetMapping("")
+	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> getChecklistDetail() {
+		try{
+			log.info("🍀 체크리스트 전체 목록 조회 실행");
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
+			if (auth != null && auth.isAuthenticated()) {
+				log.info("Principal type: {}", auth.getPrincipal().getClass().getName());
+
+				if (auth.getPrincipal() instanceof CustomUserDetails) {
+					CustomUserDetails principal = (CustomUserDetails)auth.getPrincipal();
+					log.info("✅ provider: {}", principal.getProvider());
+					log.info("✅ providerId: {}", principal.getProviderId());
+					log.info("✅ role: {}", principal.getRole());
+
+					Long userId = userService.getUserIdByProviderId(principal.getProviderId());
+
+					ChecklistDetailDTO checklistDetailList = checklistService.getChecklistDetail(userId);
+
+					return ResponseEntity.status(HttpStatus.OK)
+						.body(new SuccessResponse<>(true, "체크리스트 목록을 성공적으로 조회했습니다.", checklistDetailList));
+
+				} else {
+					log.warn("⚠️ 예상과 다른 Principal 타입: {}", auth.getPrincipal());
+				}
+			}
+
+		} catch (Exception e) {
+			log.error("❌ 체크리스트 전체 목록 조회 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new SuccessResponse<>(false, "서버 오류", null));
+		}
+		return null;
+	}
 
 	// 체크리스트 생성
 	@PostMapping("")

@@ -23,6 +23,7 @@ public class ChecklistServiceImpl implements ChecklistService {
 
 	final ChecklistMapper checklistMapper;
 
+	// 체크리스트 전체 목록 조회
 	@Override
 	public List<ChecklistDTO> getAllList(Long userId) {
 		List<ChecklistVO> voList = checklistMapper.getAllList(userId);
