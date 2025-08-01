@@ -22,7 +22,9 @@ public class ChecklistDetailDTO {
 	private String title;
 	private String description;
 	private String type;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt;
 
 	// type별로 묶인 item 리스트 (type: ROOM, BUILDING, OPTION, INFRA, CIRCUMSTANCE, CUSTOM)
