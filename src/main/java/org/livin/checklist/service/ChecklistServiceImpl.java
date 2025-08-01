@@ -1,6 +1,5 @@
 package org.livin.checklist.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,8 +45,6 @@ public class ChecklistServiceImpl implements ChecklistService {
 		// DTO -> VO 변환
 		ChecklistVO checklistVO = checklistDto.toVo(userId);
 
-		log.info("============> request VO: {}", checklistVO);
-
 		try {
 			// Checklist 생성
 			checklistMapper.create(checklistVO);
@@ -60,8 +57,6 @@ public class ChecklistServiceImpl implements ChecklistService {
 			// Checklist + ChecklistItem 테이블 조인해서 상세정보 함께 반환
 			List<ChecklistItemJoinDTO> joinList = checklistMapper.getChecklistDetail(checklistId);
 			ChecklistDetailDTO resultDto = ChecklistDetailDTO.from(joinList);
-
-			log.info("✅ 생성된 resultDTO: {}", resultDto);
 
 			return resultDto;
 
