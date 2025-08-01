@@ -5,11 +5,15 @@
 
 <mapper namespace="org.livin.checklist.mapper.ChecklistMapper">
     <!--  체크리스트 전체 목록 조회  -->
-    <select id="getAllList" parameterType="long" resultType="org.livin.checklist.entity.ChecklistVO">
+    <select id="getAllList" resultType="org.livin.checklist.entity.ChecklistVO">
         SELECT *
         FROM livin.Checklist
         WHERE user_id = #{userId}
+        <if test="lastId != null">
+            AND checklist_id &lt; #{lastId}
+        </if>
         ORDER BY created_at DESC
+        LIMIT #{size}
     </select>
 
     <!--  체크리스트 상세 조회  -->

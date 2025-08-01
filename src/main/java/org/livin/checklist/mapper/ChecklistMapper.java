@@ -2,7 +2,7 @@ package org.livin.checklist.mapper;
 
 import java.util.List;
 
-import org.livin.checklist.dto.ChecklistDTO;
+import org.apache.ibatis.annotations.Param;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
 import org.livin.checklist.entity.ChecklistVO;
 import org.mapstruct.Mapper;
@@ -10,7 +10,7 @@ import org.mapstruct.Mapper;
 @Mapper
 public interface ChecklistMapper {
 	// 체크리스트 목록 전체 조회
-	List<ChecklistVO> getAllList(Long userId);
+	List<ChecklistVO> getAllList(@Param("userId") Long userId, @Param("lastId") Long lastId, @Param("size") int size);
 
 	// 체크리스트 목록 상세 조회
 	List<ChecklistItemJoinDTO> getChecklistDetail(Long ChecklistId);

@@ -5,20 +5,20 @@ import java.util.List;
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
+import org.livin.checklist.dto.ChecklistListResponseDTO;
 import org.livin.checklist.service.ChecklistService;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -33,15 +33,18 @@ public class ChecklistController {
 	private final UserService userService;
 	private final ChecklistService checklistService;
 
-	// 체크리스트 전체 목록 조회 => todo: 무한스크롤 기능 구현
 	// 체크리스트 전체 목록 조회
 	@GetMapping("")
-	public ResponseEntity<SuccessResponse<List<ChecklistDTO>>> getAllList(
-		@AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ResponseEntity<SuccessResponse<ChecklistListResponseDTO>> getAllList(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam(required = false) Long lastId,
+		@RequestParam(defaultValue = "20") int size) {
 
 		log.info("🍀 체크리스트 전체 목록 조회 요청");
+
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
-		List<ChecklistDTO> allList = checklistService.getAllList(userId);
+		log.info("🍀 체크리스트 전체 목록 조회 요청: userId={}, lastId={}, size={}", userId, lastId, size);
+		ChecklistListResponseDTO allList = checklistService.getAllList(userId, lastId, size);
 
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "체크리스트 목록을 성공적으로 조회했습니다.", allList)

@@ -1,5 +1,7 @@
 package org.livin.checklist.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,6 +9,7 @@ import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
+import org.livin.checklist.dto.ChecklistListResponseDTO;
 import org.livin.checklist.entity.ChecklistVO;
 import org.livin.checklist.mapper.ChecklistMapper;
 import org.springframework.stereotype.Service;
@@ -24,11 +27,22 @@ public class ChecklistServiceImpl implements ChecklistService {
 
 	// 체크리스트 전체 목록 조회
 	@Override
-	public List<ChecklistDTO> getAllList(Long userId) {
-		List<ChecklistVO> voList = checklistMapper.getAllList(userId);
-		return voList.stream()
+	public ChecklistListResponseDTO getAllList(Long userId, Long lastId, int size) {
+
+		// 뒤에 체크리스트가 더 남았는지 확인하기 위해서 1개 더 많이 요청하고 실제 반환할 때는 앞에서 부터 5개만 반환
+		List<ChecklistVO> voList = checklistMapper.getAllList(userId, lastId, size + 1);
+		boolean hasNext = voList.size() > size;		// 더 조회될 체크리스트가 남았는 지 체크할 변수, isLast
+
+		// 아직 마지막 페이지가 아닐 때
+		if(hasNext) {
+			voList = voList.subList(0, size); // 초과한 1개 제거
+		}
+
+		List<ChecklistDTO> dtoList = voList.stream()
 			.map(ChecklistDTO::of)
 			.collect(Collectors.toList());
+
+		return new ChecklistListResponseDTO(dtoList, !hasNext);
 	}
 
 	// 체크리스트 상세 조회
