@@ -17,10 +17,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -73,8 +73,8 @@ public class ChecklistController {
 	}
 
 	// 체크리스트 상세 조회
-	@GetMapping("")
-	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> getChecklistDetail() {
+	@GetMapping("/{checklistId}")
+	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> getChecklistDetail(@PathVariable Long checklistId) {
 		try{
 			log.info("🍀 체크리스트 전체 목록 조회 실행");
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -90,7 +90,8 @@ public class ChecklistController {
 
 					Long userId = userService.getUserIdByProviderId(principal.getProviderId());
 
-					ChecklistDetailDTO checklistDetailList = checklistService.getChecklistDetail(userId);
+					log.info("✅ 조회할 체크리스트 ID: {}", checklistId);
+					ChecklistDetailDTO checklistDetailList = checklistService.getChecklistDetail(checklistId);
 
 					return ResponseEntity.status(HttpStatus.OK)
 						.body(new SuccessResponse<>(true, "체크리스트 목록을 성공적으로 조회했습니다.", checklistDetailList));
