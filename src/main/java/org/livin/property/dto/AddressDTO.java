@@ -13,5 +13,10 @@ public class AddressDTO {
     private String sido;
     private String sigungu;
     private String eupmyendong;
+
+    private Long providerId;
+    private Long userId;
+
+    private int lastId;
     private int limit;
 }

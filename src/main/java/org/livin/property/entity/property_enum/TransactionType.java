@@ -5,10 +5,9 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum ParkingStatus {
-	ABLE("가능"),
-	UNABLE("불가능"),
-	NEEDS_CHECK("확인 필요");
+public enum TransactionType {
+	JEONSE("전세"),
+	MONTHLY_RENT("월세");
 
 	private final String label;
 }

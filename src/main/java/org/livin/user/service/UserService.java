@@ -30,4 +30,13 @@ public class UserService {
 			.nickname(user.getNickname())
 			.build();
 	}
+
+	// providerId를 통해서 UserId를 조회해서 가져오는 메서드
+	public Long getUserIdByProviderId(String providerId) {
+		Long userId = userMapper.findUserIdByProviderId(providerId);
+		if (userId == null) {
+			throw new CustomException(ErrorCode.BAD_REQUEST);
+		}
+		return userId;
+	}
 }
