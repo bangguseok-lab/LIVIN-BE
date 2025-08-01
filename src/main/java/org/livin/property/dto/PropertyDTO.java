@@ -39,13 +39,16 @@ public class PropertyDTO {
 	private BigDecimal exclusiveAreaM2;        // 전용 면적
 	private LocalDateTime createdAt;           // 등록일 (String 또는 LocalDateTime)
 
+	private Integer totalFloors;				// 총 층수
+	private String roadAddress;					// 도로명 주소
+
 	private Boolean isSafe;                    // 안전 매물 여부
 	private Boolean isFavorite;                // 관심 매물 여부
 
 	private List<PropertyImageVO> imageUrls;   // 이미지 리스트
 
-	public static PropertyDTO of(PropertyVO propertyVO, List<PropertyImageVO> propertyImageVO) {
-		return (propertyVO == null || propertyImageVO == null) ? null : PropertyDTO.builder()
+	public static PropertyDTO of(PropertyVO propertyVO) {
+		return (propertyVO == null) ? null : PropertyDTO.builder()
 			.propertyId(propertyVO.getPropertyId())
 			.name(propertyVO.getName())
 			.detailAddress(propertyVO.getDetailAddress())
@@ -67,12 +70,44 @@ public class PropertyDTO {
 			.exclusiveAreaM2(propertyVO.getExclusiveAreaM2())
 			.createdAt(propertyVO.getCreatedAt())
 
+			.totalFloors(propertyVO.getTotalFloors())
+			.roadAddress(propertyVO.getRoadAddress())
+
 			.isSafe(propertyVO.getIsSafe())
 			.isFavorite(propertyVO.getIsFavorite())
-
-			.imageUrls(propertyImageVO)
+			.imageUrls(propertyVO.getImages())
 			.build();
 	}
+
+	// public static PropertyDTO of(PropertyVO propertyVO, List<PropertyImageVO> propertyImageVO) {
+	// 	return (propertyVO == null || propertyImageVO == null) ? null : PropertyDTO.builder()
+	// 		.propertyId(propertyVO.getPropertyId())
+	// 		.name(propertyVO.getName())
+	// 		.detailAddress(propertyVO.getDetailAddress())
+	// 		.description(propertyVO.getDescription())
+	//
+	// 		.jeonseDeposit(propertyVO.getJeonseDeposit())
+	// 		.monthlyDeposit(propertyVO.getMonthlyDeposit())
+	// 		.monthlyRent(propertyVO.getMonthlyRent())
+	// 		.transactionType(propertyVO.getTransactionType())
+	// 		.propertyType(propertyVO.getPropertyType())
+	//
+	// 		.sido(propertyVO.getSido())
+	// 		.sigungu(propertyVO.getSigungu())
+	// 		.eupmyendong(propertyVO.getEupmyendong())
+	//
+	// 		.floor(propertyVO.getFloor())
+	// 		.mainDirection(propertyVO.getMainDirection())
+	// 		.supplyAreaM2(propertyVO.getSupplyAreaM2())
+	// 		.exclusiveAreaM2(propertyVO.getExclusiveAreaM2())
+	// 		.createdAt(propertyVO.getCreatedAt())
+	//
+	// 		.isSafe(propertyVO.getIsSafe())
+	// 		.isFavorite(propertyVO.getIsFavorite())
+	//
+	// 		.imageUrls(propertyImageVO)
+	// 		.build();
+	// }
 
 	public PropertyVO toVO() {
 		return PropertyVO.builder()

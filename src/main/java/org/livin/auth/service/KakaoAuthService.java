@@ -7,6 +7,7 @@ import org.livin.auth.dto.KakaoTokenResponse;
 import org.livin.auth.dto.KakaoUserInfo;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
+import org.livin.user.entity.UserVO;
 import org.livin.user.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -90,9 +92,9 @@ public class KakaoAuthService {
 	}
 
 	public String loginOrRegisterUser(KakaoUserInfo userInfo, AdditionalUserInfo additional) {
-		User existingUser = userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
+		UserVO existingUser = userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
 		if (existingUser == null) {
-			User newUser = User.builder()
+			UserVO newUser = UserVO.builder()
 				.provider("kakao")
 				.providerId(userInfo.getProviderId())
 				.name(additional.getName())
@@ -107,7 +109,7 @@ public class KakaoAuthService {
 			userMapper.insertUser(newUser);
 		}
 
-		User user = (existingUser != null) ? existingUser :
+		UserVO user = (existingUser != null) ? existingUser :
 			userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
 		String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId());
 		tokenService.saveRefreshToken(user.getProviderId(), refreshToken);

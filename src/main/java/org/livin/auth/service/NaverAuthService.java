@@ -7,6 +7,7 @@ import org.livin.auth.dto.NaverTokenResponse;
 import org.livin.auth.dto.NaverUserInfo;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
+import org.livin.user.entity.UserVO;
 import org.livin.user.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -97,11 +99,11 @@ public class NaverAuthService {
 
 	public String loginOrRegisterUser(NaverUserInfo userInfo, AdditionalUserInfo additional) {
 		// 기존 회원 조회
-		User existingUser = userMapper.findByProviderAndProviderId("naver", userInfo.getProviderId());
+		UserVO existingUser = userMapper.findByProviderAndProviderId("naver", userInfo.getProviderId());
 
 		// 신규 회원일 경우 DB에 저장
 		if (existingUser == null) {
-			User newUser = User.builder()
+			UserVO newUser = UserVO.builder()
 				.provider("naver")
 				.providerId(userInfo.getProviderId())
 				.name(additional.getName())
@@ -117,7 +119,7 @@ public class NaverAuthService {
 			existingUser = newUser;
 		}
 
-		User user = existingUser;
+		UserVO user = existingUser;
 
 		String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId());
 		tokenService.saveRefreshToken(user.getProviderId(), refreshToken);

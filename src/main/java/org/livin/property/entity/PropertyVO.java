@@ -46,7 +46,12 @@ public class PropertyVO {
 	private Long buildingId; //여기까지가 Property Table Fields
 
 	private List<PropertyImageVO> images;
+	private String thumbnailImageUrl;
+
 	private Boolean isSafe;
 	private Boolean isFavorite;
+	private LocalDateTime savedAt;
+
 	private Integer totalFloors;
+	private String roadAddress; // 도로명 주소
 }

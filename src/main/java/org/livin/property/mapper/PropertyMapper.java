@@ -1,10 +1,18 @@
 package org.livin.property.mapper;
 
 import org.livin.property.dto.AddressDTO;
+import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
 
 import java.util.List;
 
 public interface PropertyMapper {
-    List<PropertyVO> selectPropertyNearLocationByUserId(AddressDTO address);
+    List<PropertyVO> selectPropertyListByRegion(AddressDTO address);
+
+    List<PropertyVO> selectFavoritePropertiesWithFilter(AddressDTO address);
+
+    List<PropertyImageVO> selectThumbnailImageByPropertyId(Long propertyId);
+
+    List<PropertyImageVO> selectImagesByPropertyId(Long propertyId);
+
 }
