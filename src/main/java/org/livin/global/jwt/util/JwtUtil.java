@@ -36,7 +36,6 @@ public class JwtUtil {
 			} else if (token != null) {
 				token = token.trim(); // 그냥 공백만 제거
 			}
-			log.info("🔍 토큰 유효성 검사 시작 (정제 후): '{}'", token);
 
 			return Jwts.parser()
 				.setSigningKey(secret)

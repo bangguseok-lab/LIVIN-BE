@@ -60,7 +60,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OnceP
 
         // Authorization 헤더 추출 및 검증
         String authHeader = request.getHeader("Authorization");     // HTTP 헤더에서 "Authorization" 값을 가져와서
-        log.info("✅ Authorization Header: {}", authHeader);
 
         // Bearer {token} 형식으로 전달된 경우에만 처리
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
