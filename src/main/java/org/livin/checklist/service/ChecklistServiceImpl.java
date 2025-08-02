@@ -1,7 +1,5 @@
 package org.livin.checklist.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,12 +43,14 @@ public class ChecklistServiceImpl implements ChecklistService {
 		return new ChecklistListResponseDTO(dtoList, !hasNext);
 	}
 
+
 	// 체크리스트 상세 조회
 	@Override
 	public ChecklistDetailDTO getChecklistDetail(Long checklistId) {
 		List<ChecklistItemJoinDTO> joinRows = checklistMapper.getChecklistDetail(checklistId);
 		return ChecklistDetailDTO.from(joinRows);
 	}
+
 
 	// 체크리스트 생성
 	@Transactional    // 전체 과정이 하나의 트랜잭션으로 처리되도록 보장하는 어노테이션
@@ -77,6 +77,31 @@ public class ChecklistServiceImpl implements ChecklistService {
 		} catch (Exception e) {
 			log.error("============> 체크리스트 생성 중 에러 발생", e);
 			throw new RuntimeException("체크리스트 생성 실패", e); // 예외를 던져야 controller에서 500 처리 가능
+		}
+	}
+
+
+	// 체크리스트 이름, 설명 수정
+	@Override
+	public ChecklistDetailDTO updateChecklist(Long userId, Long checklistId,
+		ChecklistCreateRequestDTO updateChecklistDTO) {
+
+		// DTO -> VO 변환
+		ChecklistVO updateChecklistVO = updateChecklistDTO.toVo(userId);
+
+		try{
+			// 체크리스트 이름, 설명 수정
+			checklistMapper.updateChecklist(updateChecklistVO.getTitle(), updateChecklistVO.getDescription(), checklistId);
+
+			// Checklist + ChecklistItem 테이블 조인해서 상세정보 함께 반환
+			List<ChecklistItemJoinDTO> joinList = checklistMapper.getChecklistDetail(checklistId);
+			ChecklistDetailDTO resultDto = ChecklistDetailDTO.from(joinList);
+
+			return resultDto;
+
+		} catch (Exception e) {
+			log.error("============> 체크리스트 이름, 설명 수정 중 에러 발생", e);
+			throw new RuntimeException("체크리스트 이름, 설명 수정 실패", e);
 		}
 	}
 }

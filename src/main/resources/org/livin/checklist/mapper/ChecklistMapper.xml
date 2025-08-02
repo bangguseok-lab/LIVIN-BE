@@ -57,4 +57,10 @@
             ('CCTV', false, 'BUILDING', #{checklistId}),
             ('엘레베이터 여부', false, 'BUILDING', #{checklistId})
     </insert>
+
+    <update id="updateChecklist" parameterType="org.livin.checklist.entity.ChecklistVO">
+        UPDATE livin.Checklist
+        SET livin.Checklist.title = #{title}, livin.Checklist.description = #{description}
+        WHERE livin.Checklist.checklist_id = #{checklistId}
+    </update>
 </mapper>

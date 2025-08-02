@@ -1,9 +1,6 @@
 package org.livin.checklist.controller;
 
-import java.util.List;
-
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
-import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
 import org.livin.checklist.service.ChecklistService;
@@ -16,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,8 +38,6 @@ public class ChecklistController {
 		@RequestParam(required = false) Long lastId,
 		@RequestParam(defaultValue = "20") int size) {
 
-		log.info("🍀 체크리스트 전체 목록 조회 요청");
-
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		log.info("🍀 체크리스트 전체 목록 조회 요청: userId={}, lastId={}, size={}", userId, lastId, size);
 		ChecklistListResponseDTO allList = checklistService.getAllList(userId, lastId, size);
@@ -56,6 +52,7 @@ public class ChecklistController {
 	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> getChecklistDetail(@PathVariable Long checklistId) {
 
 		log.info("🍀 체크리스트 상세 목록 조회 실행");
+
 		// 체크리스트 ID로 해당 체크리스트의 상세 정보 조회
 		ChecklistDetailDTO checklistDetailList = checklistService.getChecklistDetail(checklistId);
 
@@ -80,7 +77,22 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 생성했습니다.", checklist));
 	}
 
-	// todo: 체크리스트 이름, 설명 수정
+	// 체크리스트 이름, 설명 수정 실행
+	@PutMapping("/{checklistId}")
+	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> modifyChecklist(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long checklistId,
+		@RequestBody ChecklistCreateRequestDTO updateChecklistDTO) {
+
+		log.info("🍀 체크리스트 이름, 설명 수정 실행");
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		// 체크리스트 이름, 설명 수정 실행
+		ChecklistDetailDTO updatedChecklist = checklistService.updateChecklist(userId, checklistId, updateChecklistDTO);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 수정했습니다.", updatedChecklist));
+	}
 
 	// todo: 체크리스트 아이템 수정
 
