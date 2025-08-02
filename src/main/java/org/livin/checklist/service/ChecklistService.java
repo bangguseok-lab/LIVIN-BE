@@ -16,4 +16,7 @@ public interface ChecklistService {
 
 	// 체크리스트 이름, 설명 수정
 	ChecklistDetailDTO updateChecklist(Long userId, Long checklistId, ChecklistCreateRequestDTO updateChecklistDTO);
+
+	// 체크리스트 삭제
+	void deleteChecklist(Long checklistId);
 }

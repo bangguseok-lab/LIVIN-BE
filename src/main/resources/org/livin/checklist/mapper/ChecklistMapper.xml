@@ -58,9 +58,16 @@
             ('엘레베이터 여부', false, 'BUILDING', #{checklistId})
     </insert>
 
-    <update id="updateChecklist" parameterType="org.livin.checklist.entity.ChecklistVO">
+    <!--  체크리스트의 이름, 설명 수정  -->
+    <update id="updateChecklist">
         UPDATE livin.Checklist
         SET livin.Checklist.title = #{title}, livin.Checklist.description = #{description}
         WHERE livin.Checklist.checklist_id = #{checklistId}
     </update>
+
+    <!--  체크리스트 삭제  -->
+    <delete id="deleteChecklist">
+        DELETE FROM livin.Checklist
+        WHERE livin.Checklist.checklist_id = #{checklistId}
+    </delete>
 </mapper>

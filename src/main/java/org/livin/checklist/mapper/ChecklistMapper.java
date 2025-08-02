@@ -17,9 +17,14 @@ public interface ChecklistMapper {
 
 	// 체크리스트 생성
 	Long create(ChecklistVO checklist);
+
 	// 체크리스트 기본 아이템 생성
 	void createChecklistDefaultItem(Long checklistId);
 
 	// 체크리스트 이름, 설명 수정
-	Long updateChecklist(@Param("title") String title, @Param("description") String description, @Param("checklistId") Long checklistId);
+	Long updateChecklist(@Param("title") String title, @Param("description") String description,
+		@Param("checklistId") Long checklistId);
+
+	// 체크리스트 삭제
+	void deleteChecklist(Long checklistId);
 }

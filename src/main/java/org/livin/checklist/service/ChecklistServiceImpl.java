@@ -104,4 +104,16 @@ public class ChecklistServiceImpl implements ChecklistService {
 			throw new RuntimeException("체크리스트 이름, 설명 수정 실패", e);
 		}
 	}
+
+	// 체크리스트 삭제
+	@Override
+	public void deleteChecklist(Long checklistId) {
+		try {
+			// 체크리스트 삭제
+			checklistMapper.deleteChecklist(checklistId);
+		} catch (Exception e) {
+			log.error("============> 체크리스트 삭제 중 에러 발생", e);
+			throw new RuntimeException("체크리스트 삭제 실패", e);
+		}
+	}
 }
