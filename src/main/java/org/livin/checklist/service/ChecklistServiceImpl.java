@@ -7,7 +7,9 @@ import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
+import org.livin.checklist.dto.ChecklistItemStatusDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
+import org.livin.checklist.dto.RequestChecklistItemDTO;
 import org.livin.checklist.entity.ChecklistVO;
 import org.livin.checklist.mapper.ChecklistMapper;
 import org.springframework.stereotype.Service;
@@ -102,6 +104,33 @@ public class ChecklistServiceImpl implements ChecklistService {
 		} catch (Exception e) {
 			log.error("============> 체크리스트 이름, 설명 수정 중 에러 발생", e);
 			throw new RuntimeException("체크리스트 이름, 설명 수정 실패", e);
+		}
+	}
+
+
+	// 체크리스트 아이템 활성 상태 수정
+	@Override
+	public ChecklistDetailDTO updateItem(Long checklistId, RequestChecklistItemDTO requestChecklistItemDTO) {
+		try {
+			// 요청 들어온 체크리스트 아이템들
+			List<ChecklistItemStatusDTO> requestItems = requestChecklistItemDTO.getItems();
+
+			// 체크리스트 아이템 수정
+			for(ChecklistItemStatusDTO item : requestItems) {
+				checklistMapper.updateItem(item.getChecklistItemId(), item.getIsActive());
+			}
+
+			// 수정된 타입의 아이템 리스트 반환
+			// Checklist + ChecklistItem 테이블 조인해서 상세정보 함께 반환
+			List<ChecklistItemJoinDTO> joinList = checklistMapper.getChecklistDetail(checklistId);
+			ChecklistDetailDTO resultDto = ChecklistDetailDTO.from(joinList);
+
+			return resultDto;
+
+
+		} catch (Exception e) {
+			log.error("============> 체크리스트 아이템 수정 중 에러 발생", e);
+			throw new RuntimeException("체크리스트 아이템 수정 실패", e);
 		}
 	}
 

@@ -3,6 +3,7 @@ package org.livin.checklist.service;
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
+import org.livin.checklist.dto.RequestChecklistItemDTO;
 
 public interface ChecklistService {
 	// 체크리스트 전체 목록 조회
@@ -16,6 +17,9 @@ public interface ChecklistService {
 
 	// 체크리스트 이름, 설명 수정
 	ChecklistDetailDTO updateChecklist(Long userId, Long checklistId, ChecklistCreateRequestDTO updateChecklistDTO);
+
+	// 체크리스트 아이템 활성 상태 수정
+	ChecklistDetailDTO updateItem(Long checklistId, RequestChecklistItemDTO requestChecklistItemDTO);
 
 	// 체크리스트 삭제
 	void deleteChecklist(Long checklistId);

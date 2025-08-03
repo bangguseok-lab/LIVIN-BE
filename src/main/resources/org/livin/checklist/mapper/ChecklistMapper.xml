@@ -65,6 +65,13 @@
         WHERE livin.Checklist.checklist_id = #{checklistId}
     </update>
 
+    <!--  체크리스트 아이템 활성 상태 수정  -->
+    <update id="updateItem">
+        UPDATE livin.ChecklistItem
+        SET livin.ChecklistItem.is_active = #{isActive}
+        WHERE livin.ChecklistItem.checklistItem_id = #{checklistItemId};
+    </update>
+
     <!--  체크리스트 삭제  -->
     <delete id="deleteChecklist">
         DELETE FROM livin.Checklist

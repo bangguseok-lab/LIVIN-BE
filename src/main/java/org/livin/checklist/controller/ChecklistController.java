@@ -3,6 +3,7 @@ package org.livin.checklist.controller;
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
+import org.livin.checklist.dto.RequestChecklistItemDTO;
 import org.livin.checklist.service.ChecklistService;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
@@ -48,6 +49,7 @@ public class ChecklistController {
 		);
 	}
 
+
 	// 체크리스트 상세 조회
 	@GetMapping("/{checklistId}")
 	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> getChecklistDetail(@PathVariable Long checklistId) {
@@ -61,6 +63,7 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "체크리스트 목록을 성공적으로 조회했습니다.", checklistDetailList));
 
 	}
+
 
 	// 체크리스트 생성
 	@PostMapping("")
@@ -78,12 +81,14 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 생성했습니다.", checklist));
 	}
 
+
 	// 체크리스트 이름, 설명 수정 실행
 	@PutMapping("/{checklistId}")
 	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> modifyChecklist(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long checklistId,
 		@RequestBody ChecklistCreateRequestDTO updateChecklistDTO) {
+		log.info("🔥 checklistId 수정 핸들러가 실행되었습니다. checklistId = {}", checklistId);
 
 		log.info("🍀 체크리스트 이름, 설명 수정 실행");
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
@@ -95,7 +100,22 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 수정했습니다.", updatedChecklist));
 	}
 
-	// todo: 체크리스트 아이템 수정
+	// 체크리스트 아이템 수정 (is_active의 true, false 값 수정)
+	@PutMapping("/{checklistId}/items")
+	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> checklistNewItem(
+		@PathVariable Long checklistId,
+		@RequestBody RequestChecklistItemDTO requestChecklistItemDTO) {
+
+		log.info("🍀 체크리스트 아이템 활성 상태 수정 실행");
+
+		// 체크리스트 아이템 활성 상태 수정
+		ChecklistDetailDTO checklistItemsResponseDTO = checklistService.updateItem(checklistId, requestChecklistItemDTO);
+		log.info(checklistItemsResponseDTO);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "체크리스트에 새로운 항목을 추가했습니다.", checklistItemsResponseDTO));
+	}
+
 
 	// 체크리스트 삭제
 	@DeleteMapping("/{checklistId}")
@@ -110,6 +130,7 @@ public class ChecklistController {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 삭제했습니다.", "{}"));
 	}
+
 
 	// todo: 나만의 아이템 생성
 
