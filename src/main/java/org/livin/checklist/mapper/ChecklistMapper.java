@@ -4,11 +4,9 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
-import org.livin.checklist.dto.ChecklistItemStatusDTO;
-import org.livin.checklist.dto.ChecklistItemsResponseDTO;
+import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.entity.ChecklistVO;
 import org.mapstruct.Mapper;
-import org.springframework.security.core.parameters.P;
 
 @Mapper
 public interface ChecklistMapper {
@@ -18,11 +16,21 @@ public interface ChecklistMapper {
 	// 체크리스트 목록 상세 조회
 	List<ChecklistItemJoinDTO> getChecklistDetail(Long ChecklistId);
 
+	// 체크리스트 타입별 아이템 조회
+	List<ChecklistItemSimpleDTO> getItemListByType(@Param("checklistId") Long checklistId, @Param("type") String type);
+
 	// 체크리스트 생성
 	Long create(ChecklistVO checklist);
 
 	// 체크리스트 기본 아이템 생성
 	void createChecklistDefaultItem(Long checklistId);
+
+	// INFRA 타입의 아이템 생성
+	void createInfraItem(Long checklistId);
+	// OPTION 타입의 아이템 생성
+	void createOptionItem(Long checklistId);
+	// CIRCUMSTANCE 타입의 아이템 생성
+	void createCircumstanceItem(Long checklistId);
 
 	// 체크리스트 이름, 설명 수정
 	Long updateChecklist(@Param("title") String title, @Param("description") String description,

@@ -7,6 +7,7 @@ import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
+import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.dto.ChecklistItemStatusDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
 import org.livin.checklist.dto.RequestChecklistItemDTO;
@@ -82,6 +83,25 @@ public class ChecklistServiceImpl implements ChecklistService {
 		}
 	}
 
+	// 기본 항목 외 체크리스트 아이템 항목 생성
+	@Override
+	public List<ChecklistItemSimpleDTO> createOtherTypeItemList(Long checklistId, String type) {
+		switch (type) {
+			case "INFRA":
+				checklistMapper.createInfraItem(checklistId);
+				break;
+			case "OPTION":
+				checklistMapper.createOptionItem(checklistId);
+				break;
+			case "CIRCUMSTANCE":
+				checklistMapper.createCircumstanceItem(checklistId);
+				break;
+			default:
+				throw new IllegalArgumentException("지원하지 않는 type: " + type);
+		}
+
+		return checklistMapper.getItemListByType(checklistId, type);
+	}
 
 	// 체크리스트 이름, 설명 수정
 	@Override
