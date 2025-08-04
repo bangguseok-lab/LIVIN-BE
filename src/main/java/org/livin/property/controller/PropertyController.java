@@ -7,8 +7,10 @@ import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.service.PropertyServiceImpl;
 import org.livin.user.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,14 +65,27 @@ public class PropertyController {
 		return ResponseEntity.ok(result);
 	}
 
-	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
+	// ✅ 수정: 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@GetMapping("/favorite-properties")
-	public ResponseEntity<List<PropertyDTO>> getFavoritePropertiesWithFilter(@ModelAttribute FilteringDTO address) {
-		log.info("관심 매물 조회 요청 - address: {}", address);
+	public ResponseEntity<List<PropertyDTO>> getFavoritePropertiesWithFilter(
+		@AuthenticationPrincipal CustomUserDetails userDetails, // ✅ CustomUserDetails 추가
+		@ModelAttribute FilteringDTO filteringDTO // ✅ FilteringDTO 사용
+	) {
+		log.info("관심 매물 필터링 조회 요청 - filteringDTO: {}, userDetails: {}", filteringDTO, userDetails);
 
-		// getFavoritePropertiesWithFilter는 AddressDTO에 providerId가 이미 있으므로, 서비스에서 userId를 찾습니다.
-		// (PropertyService 내부에서 userMapper를 사용함)
-		List<PropertyDTO> favoriteProperties = propertyService.getFavoritePropertiesWithFilter(address);
+		// ✅ userId 추출 및 설정 (FavChecklistController 패턴과 동일)
+		if (userDetails == null || userDetails.getProviderId() == null) {
+			log.warn("관심 매물 필터링 조회를 위한 인증 정보가 없습니다.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		if (userId == null) {
+			log.warn("providerId에 해당하는 userId를 찾을 수 없습니다: {}", userDetails.getProviderId());
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		filteringDTO.setUserId(userId); // FilteringDTO에 userId 설정
+
+		List<PropertyDTO> favoriteProperties = propertyService.getFavoritePropertiesWithFilter(filteringDTO);
 
 		log.info("관심 매물 {}건 조회 완료", favoriteProperties.size());
 		log.info("{}", favoriteProperties);
@@ -78,34 +93,37 @@ public class PropertyController {
 		return ResponseEntity.ok(favoriteProperties);
 	}
 
-	// 관심 매물 삭제
+	// ✅ 수정: 관심 매물 삭제
+	// @RequestHeader 대신 @AuthenticationPrincipal 사용
 	@DeleteMapping("/properties/{id}/favorite")
 	public ResponseEntity<Void> removeFavoriteProperty(
 		@PathVariable("id") Long propertyId,
-		@RequestHeader("X-User-Provider-Id") String providerId // 사용자 식별을 위한 providerId (헤더에서 받음)
+		@AuthenticationPrincipal CustomUserDetails userDetails // ✅ CustomUserDetails 사용
 	) {
-		log.info("관심 매물 삭제 요청 - propertyId: {}, providerId: {}", propertyId, providerId);
+		log.info("관심 매물 삭제 요청 - propertyId: {}, userDetails: {}", propertyId, userDetails);
+
+		// ✅ userId 추출 및 설정 (FavChecklistController 패턴과 동일)
+		if (userDetails == null || userDetails.getProviderId() == null) {
+			log.warn("관심 매물 삭제를 위한 인증 정보가 없습니다.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		if (userId == null) {
+			log.warn("제공된 providerId에 해당하는 userId를 찾을 수 없습니다: {}", userDetails.getProviderId());
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
 
 		try {
-			// ✅ 기존 FavChecklistController 패턴과 동일하게 UserService를 통해 userId 변환
-			Long userId = userService.getUserIdByProviderId(providerId); // UserService를 사용하여 userId 변환
-
-			if (userId == null) {
-				log.warn("제공된 providerId에 해당하는 userId를 찾을 수 없습니다: {}", providerId);
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 Unauthorized
-			}
-
-			// 변환된 userId를 서비스로 전달
 			propertyService.removeFavoriteProperty(propertyId, userId);
 
-			return ResponseEntity.ok().build(); // 삭제 성공 시 200 OK 반환
-		} catch (IllegalArgumentException e) { // 서비스에서 던진 예외 (예: Invalid user)
+			return ResponseEntity.ok().build();
+		} catch (IllegalArgumentException e) {
 			log.warn("관심 매물 삭제 중 사용자 관련 에러: {}", e.getMessage());
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 400 Bad Request
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
-		catch (RuntimeException e) { // 서비스에서 던진 기타 RuntimeException 처리
+		catch (RuntimeException e) {
 			log.error("관심 매물 삭제 실패: {}", e.getMessage(), e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 }

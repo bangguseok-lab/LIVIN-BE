@@ -103,19 +103,35 @@
         <include refid="SelectPropertyListBase"/>,
         true AS is_favorite,
         f.saved_at
-        <include refid="CommonJoins"/>
-        LEFT JOIN Property_CheckList pcl ON p.property_id = pcl.property_id
+        FROM Property p
+        LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
+        LEFT JOIN Building b ON p.building_id = b.building_id
+        LEFT JOIN propertyimage pi ON p.property_id = pi.property_id AND pi.represent = true
+        INNER JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
+        <if test="checklistId != null">
+            INNER JOIN Property_CheckList pcl ON p.property_id = pcl.property_id
+        </if>
         <where>
-            <include refid="FavoriteCondition"/>
+            1 = 1
             <include refid="RegionFilterCondition"/>
+            <include refid="SafePropertyFilterCondition"/>
             <include refid="ChecklistFilterCondition"/>
+
+            <if test="lastId != null and lastCreatedAt != null">
+                AND (
+                f.saved_at &lt; #{lastCreatedAt}
+                OR (f.saved_at = #{lastCreatedAt} AND p.property_id &lt; #{lastId})
+                )
+            </if>
         </where>
-        GROUP BY p.property_id, p.name, p.detail_address, p.property_type, p.transaction_type, p.jeonse_deposit, p.monthly_deposit, p.monthly_rent,
-        p.main_direction, p.description, p.floor, p.supply_area_m2, p.exclusive_area_m2, p.created_at, p.sido, p.sigungu, p.eupmyendong,
-        r.is_safe, b.total_floors, b.road_address, pi.image_url, f.user_id, f.saved_at, pcl.checklist_id
-        ORDER BY f.saved_at DESC
-        LIMIT #{lastId}, #{limit}
+        ORDER BY f.saved_at DESC, p.property_id DESC
+        LIMIT #{limit}
     </select>
+
+    <delete id="deleteFavoriteProperty" parameterType="map">
+        DELETE FROM FavoriteProperty
+        WHERE property_id = #{propertyId} AND user_id = #{userId}
+    </delete>
 
     <select id="selectThumbnailImageByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
         SELECT

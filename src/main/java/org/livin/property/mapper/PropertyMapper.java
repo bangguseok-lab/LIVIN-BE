@@ -17,4 +17,6 @@ public interface PropertyMapper {
     List<PropertyImageVO> selectImagesByPropertyId(Long propertyId);
 
     LocalDateTime findCreatedAtByPropertyId(Long propertyId);
+
+    int deleteFavoriteProperty(Long propertyId, Long userId);
 }

@@ -9,4 +9,10 @@ public interface PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address);
 
 	public List<PropertyDTO> getPropertiesByRegion(FilteringDTO address);
+
+	// ✅ 필터링된 관심 매물 조회를 위한 메서드 추가
+	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO);
+
+	// ✅ 관심 매물 삭제를 위한 메서드 추가
+	public void removeFavoriteProperty(Long propertyId, Long userId);
 }
