@@ -101,13 +101,6 @@ public class PropertyServiceImpl implements PropertyService {
 		}
 
 		try {
-			// lastId가 있다면, 해당 매물의 createdAt 값을 구해서 lastCreatedAt에 세팅 (페이징을 위해)
-			if (filteringDTO.getLastId() != null && filteringDTO.getLastId() > 0) {
-				LocalDateTime cursorCreatedAt = propertyMapper.findCreatedAtByPropertyId(filteringDTO.getLastId());
-				filteringDTO.setLastCreatedAt(cursorCreatedAt);
-				log.info("getFavoritePropertiesWithFilter: lastId {} → createdAt: {}", filteringDTO.getLastId(), cursorCreatedAt);
-			}
-
 			// 매퍼 호출 (Mapping.xml에 selectFavoritePropertiesWithFilter 쿼리가 필요함)
 			List<PropertyVO> list = propertyMapper.selectFavoritePropertiesWithFilter(filteringDTO);
 
@@ -140,7 +133,7 @@ public class PropertyServiceImpl implements PropertyService {
 		try {
 			// FavoritePropertyMapper를 사용하여 관심 매물 삭제
 			// favorite_property 테이블에서 property_id와 user_id가 일치하는 레코드 삭제
-			int deletedRows = favoritePropertyMapper.deleteFavoriteProperty(propertyId, userId);
+			int deletedRows = propertyMapper.deleteFavoriteProperty(propertyId, userId);
 
 			if (deletedRows == 0) {
 				log.warn("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에 없거나 이미 삭제되었습니다.", propertyId, userId);
