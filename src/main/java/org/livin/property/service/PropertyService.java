@@ -3,7 +3,7 @@ package org.livin.property.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.livin.property.dto.AddressDTO;
+import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
@@ -57,7 +57,7 @@ public class PropertyService {
 	// }
 
 	// 현재 위치 매물 리스트
-	public List<PropertyDTO> getPropertiesByRegion(AddressDTO address) {
+	public List<PropertyDTO> getPropertiesByRegion(FilteringDTO address) {
 		log.info("getPropertiesByRegion({})", address);
 
 		Long userId = userMapper.findUserIdByProviderId(String.valueOf(address.getProviderId()));
@@ -88,7 +88,7 @@ public class PropertyService {
 	}
 
 	// ✅ 변경: 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
-	public List<PropertyDTO> getFavoritePropertiesWithFilter(AddressDTO address) {
+	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO address) {
 		log.info("getFavoritePropertiesWithFilter({})", address);
 
 		// providerId를 통해 userId를 얻어 AddressDTO에 설정합니다.

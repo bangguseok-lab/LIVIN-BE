@@ -60,7 +60,7 @@
     </sql>
 
     <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
-            parameterType="org.livin.property.dto.AddressDTO">
+            parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
         <include refid="SelectPropertyListBase"/>,
         CASE WHEN f.user_id IS NOT NULL THEN true ELSE false END AS is_favorite
@@ -73,7 +73,7 @@
     </select>
 
     <select id="selectFavoritePropertiesWithFilter" resultMap="PropertyMapWithSavedAt"
-            parameterType="org.livin.property.dto.AddressDTO">
+            parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
         <include refid="SelectPropertyListBase"/>,
         true AS is_favorite,

@@ -2,7 +2,7 @@ package org.livin.property.controller;
 
 import java.util.List;
 
-import org.livin.property.dto.AddressDTO;
+import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.service.PropertyService;
 import org.livin.user.mapper.UserMapper;
@@ -14,10 +14,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.livin.user.service.UserService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -50,7 +48,7 @@ public class PropertyController {
 	//properties?sido=서울특별시&sigungu=강남구&eupmyendong=역삼동
 
 	@GetMapping("/properties")
-	public ResponseEntity<List<PropertyDTO>> getPropertiesByRegion(@ModelAttribute AddressDTO address) {
+	public ResponseEntity<List<PropertyDTO>> getPropertiesByRegion(@ModelAttribute FilteringDTO address) {
 		log.info("address = {}로 매물 요청", address);
 		List<PropertyDTO> result = propertyService.getPropertiesByRegion(address);
 
@@ -62,7 +60,7 @@ public class PropertyController {
 
 	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@GetMapping("/favorite-properties")
-	public ResponseEntity<List<PropertyDTO>> getFavoritePropertiesWithFilter(@ModelAttribute AddressDTO address) {
+	public ResponseEntity<List<PropertyDTO>> getFavoritePropertiesWithFilter(@ModelAttribute FilteringDTO address) {
 		log.info("관심 매물 조회 요청 - address: {}", address);
 
 		// getFavoritePropertiesWithFilter는 AddressDTO에 providerId가 이미 있으므로, 서비스에서 userId를 찾습니다.

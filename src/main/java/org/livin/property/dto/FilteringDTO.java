@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddressDTO {
+public class FilteringDTO {
     private String sido;
     private String sigungu;
     private String eupmyendong;
