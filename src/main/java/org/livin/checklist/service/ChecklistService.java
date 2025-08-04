@@ -7,6 +7,7 @@ import org.livin.checklist.dto.ChecklistDetailDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
 import org.livin.checklist.dto.RequestChecklistItemDTO;
+import org.livin.checklist.dto.RequestCustomItemsDTO;
 
 public interface ChecklistService {
 	// 체크리스트 전체 목록 조회
@@ -17,6 +18,9 @@ public interface ChecklistService {
 
 	// 체크리스트 생성
 	ChecklistDetailDTO createChecklist(ChecklistCreateRequestDTO checklistDto, Long userId);
+
+	// 나만의 체크리스트 항목 생성
+	List<ChecklistItemSimpleDTO> createCustomItem(Long checklistId, RequestCustomItemsDTO requestCustomItemsDTO);
 
 	// 기본 항목 외 체크리스트 아이템 리스트 생성 후 생성된 타입별 아이템 리스트 조회
 	List<ChecklistItemSimpleDTO> createOtherTypeItemList(Long checklistId, String type);

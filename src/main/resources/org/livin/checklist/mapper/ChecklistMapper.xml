@@ -99,8 +99,8 @@
             ('전자렌지', false, 'OPTION', #{checklistId}),
             ('가스렌지', false, 'OPTION', #{checklistId}),
             ('인덕션', false, 'OPTION', #{checklistId}),
-            ('침대', false, 'OPTION', #{checklistId})
-            ('현관문 잠금장치', false, 'OPTION', #{checklistId}),
+            ('침대', false, 'OPTION', #{checklistId}),
+            ('현관문 잠금장치', false, 'OPTION', #{checklistId})
     </insert>
 
 
@@ -117,6 +117,14 @@
     </insert>
 
 
+    <!--  나만의 아이템 생성 -->
+    <insert id="createCustomItem">
+        INSERT INTO livin.ChecklistItem (keyword, is_active, type, checklist_id)
+        VALUES
+            (#{keyword}, false, 'CUSTOM', #{checklistId})
+    </insert>
+
+
     <!--  체크리스트의 이름, 설명 수정  -->
     <update id="updateChecklist">
         UPDATE livin.Checklist
@@ -124,12 +132,14 @@
         WHERE livin.Checklist.checklist_id = #{checklistId}
     </update>
 
+
     <!--  체크리스트 아이템 활성 상태 수정  -->
     <update id="updateItem">
         UPDATE livin.ChecklistItem
         SET livin.ChecklistItem.is_active = #{isActive}
         WHERE livin.ChecklistItem.checklistItem_id = #{checklistItemId};
     </update>
+
 
     <!--  체크리스트 삭제  -->
     <delete id="deleteChecklist">

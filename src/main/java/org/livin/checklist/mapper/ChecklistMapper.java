@@ -32,6 +32,9 @@ public interface ChecklistMapper {
 	// CIRCUMSTANCE 타입의 아이템 생성
 	void createCircumstanceItem(Long checklistId);
 
+	// 나만의 체크리스트 아이템 항목 생성
+	void createCustomItem(@Param("checklistId") Long checklistId, @Param("keyword") String keyword);
+
 	// 체크리스트 이름, 설명 수정
 	Long updateChecklist(@Param("title") String title, @Param("description") String description,
 		@Param("checklistId") Long checklistId);

@@ -10,7 +10,10 @@ import org.livin.checklist.dto.ChecklistItemJoinDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.dto.ChecklistItemStatusDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
+import org.livin.checklist.dto.CustomItemDTO;
 import org.livin.checklist.dto.RequestChecklistItemDTO;
+import org.livin.checklist.dto.RequestCustomItemsDTO;
+import org.livin.checklist.entity.ChecklistItemVO;
 import org.livin.checklist.entity.ChecklistVO;
 import org.livin.checklist.mapper.ChecklistMapper;
 import org.springframework.stereotype.Service;
@@ -101,6 +104,23 @@ public class ChecklistServiceImpl implements ChecklistService {
 		}
 
 		return checklistMapper.getItemListByType(checklistId, type);
+	}
+
+	// 나만의 아이템 항목 생성
+	@Override
+	public List<ChecklistItemSimpleDTO> createCustomItem(Long checklistId,
+		RequestCustomItemsDTO requestCustomItemsDTO) {
+
+		for(CustomItemDTO customItem : requestCustomItemsDTO.getCustomItems()) {
+			// DTO -> VO 변환
+			ChecklistItemVO customItemVO = customItem.toVo(checklistId);
+
+			// 나만의 아이템 항목 생성
+			checklistMapper.createCustomItem(checklistId, customItemVO.getKeyword());
+		}
+
+		// 생성된 나만의 아이템 리스트 반환
+		return checklistMapper.getItemListByType(checklistId, "CUSTOM");
 	}
 
 	// 체크리스트 이름, 설명 수정
