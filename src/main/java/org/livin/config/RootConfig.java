@@ -54,7 +54,7 @@ public class RootConfig {
         SqlSessionFactoryBean sqlSessionFactory = new SqlSessionFactoryBean();
         sqlSessionFactory.setConfigLocation(applicationContext.getResource("classpath:/mybatis-config.xml"));
 
-        // Mapper XML 파일 위치 설정 (src/main/resources/mapper 하위 구조 포함)
+        // // Mapper XML 파일 위치 설정 (src/main/resources/mapper 하위 구조 포함)
         // sqlSessionFactory.setMapperLocations(
         //     new PathMatchingResourcePatternResolver().getResources("classpath:/org/livin/mapper/**/*.xml")
         // );
@@ -63,8 +63,7 @@ public class RootConfig {
         sqlSessionFactory.setDataSource(dataSource());
 
         // 최종 SqlSessionFactory 객체 반환
-        return (SqlSessionFactory) sqlSessionFactory.getObject();
-        // return sqlSessionFactory.getObject();
+        return sqlSessionFactory.getObject();
     }
 
     @Bean

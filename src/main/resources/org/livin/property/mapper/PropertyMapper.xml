@@ -5,18 +5,203 @@
 
 <mapper namespace="org.livin.property.mapper.PropertyMapper">
 
-    <select id="selectPropertyNearLocationByUserId" resultMap="SelectPropertyNearLocationMap">
-        SELECT property_id, name
-        FROM Property
-        WHERE sido = #{sido}
-        AND sigungu = #{sigungu}
-        AND eupmyendong = #{eupmyendong}
+    <!-- ✅ 공통 SELECT 필드 -->
+    <sql id="SelectPropertyListBase">
+        p.property_id,
+        p.name AS property_name,
+        p.detail_address,
+        p.property_type,
+        p.transaction_type,
+        p.jeonse_deposit,
+        p.monthly_deposit,
+        p.monthly_rent,
+        p.main_direction,
+        p.description,
+        p.floor,
+        p.supply_area_m2,
+        p.exclusive_area_m2,
+        p.created_at AS property_created_at,
+        p.sido,
+        p.sigungu,
+        p.eupmyendong,
+        r.is_safe,
+        b.total_floors,
+        b.road_address,
+        pi.image_url
+    </sql>
+
+    <!-- ✅ 공통 JOIN 절 -->
+    <sql id="CommonJoins">
+        FROM Property p
+        LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
+        LEFT JOIN Building b ON p.building_id = b.building_id
+        LEFT JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
+        LEFT JOIN propertyimage pi ON p.property_id = pi.property_id AND pi.represent = true
+    </sql>
+
+    <!-- ✅ 공통 지역 필터 -->
+    <sql id="RegionFilterCondition">
+        <if test="sido != null and sido != '전체'">
+            AND p.sido = #{sido}
+        </if>
+        <if test="sigungu != null and sigungu != '전체'">
+            AND p.sigungu = #{sigungu}
+        </if>
+        <if test="eupmyendong != null and eupmyendong != '전체'">
+            AND p.eupmyendong = #{eupmyendong}
+        </if>
+    </sql>
+
+    <!-- ✅ 전세/월세 필터 -->
+    <sql id="TransactionTypeFilterCondition">
+        <if test="transactionType != null and transactionType != ''">
+            AND p.transaction_type = #{transactionType}
+        </if>
+    </sql>
+
+    <!-- ✅ 안심 매물 필터 -->
+    <sql id="SafePropertyFilterCondition">
+        <if test="onlySecure != null and onlySecure == true">
+            AND r.is_safe = true
+        </if>
+    </sql>
+
+    <!-- ✅ 가격대 필터 -->
+    <sql id="PriceFilterCondition">
+        AND (
+        (p.transaction_type = 'JEONSE'
+        <if test="jeonseDepositMin != null">
+            AND p.jeonse_deposit &gt;= #{jeonseDepositMin}
+        </if>
+        <if test="jeonseDepositMax != null">
+            AND p.jeonse_deposit &lt;= #{jeonseDepositMax}
+        </if>
+        )
+        OR
+        (p.transaction_type = 'MONTHLY_RENT'
+        <if test="monthlyDepositMin != null">
+            AND p.monthly_deposit &gt;= #{monthlyDepositMin}
+        </if>
+        <if test="monthlyDepositMax != null">
+            AND p.monthly_deposit &lt;= #{monthlyDepositMax}
+        </if>
+        <if test="monthlyMin != null">
+            AND p.monthly_rent &gt;= #{monthlyMin}
+        </if>
+        <if test="monthlyMax != null">
+            AND p.monthly_rent &lt;= #{monthlyMax}
+        </if>
+        )
+        )
+
+    </sql>
+
+    <!-- ✅ 관심 매물 조건 -->
+    <sql id="FavoriteCondition">
+        f.user_id = #{userId}
+    </sql>
+
+    <!-- ✅ 전체 매물 조회 + 관심 여부 포함 + 지역 필터 -->
+    <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
+            parameterType="org.livin.property.dto.FilteringDTO">
+        SELECT
+        <include refid="SelectPropertyListBase"/>,
+        CASE WHEN f.user_id IS NOT NULL THEN true ELSE false END AS is_favorite
+        <include refid="CommonJoins"/>
+        <where>
+            1 = 1
+
+            <include refid="TransactionTypeFilterCondition"/>
+
+            <include refid="RegionFilterCondition"/>
+
+            <include refid="PriceFilterCondition"/>
+
+            <include refid="SafePropertyFilterCondition"/>
+
+            <if test="lastCreatedAt != null">
+                AND property_created_at &lt; #{lastCreatedAt}
+            </if>
+        </where>
+        ORDER BY property_created_at DESC
         LIMIT #{limit}
     </select>
 
-    <resultMap id="SelectPropertyNearLocationMap" type="PropertyVO">
-        <result column="property_id" property="propertyId"/>
-        <result column="name" property="name"/>
+    <!-- ✅ 관심 매물만 조회 + 지역 필터 + 저장일 기준 정렬 -->
+    <select id="selectFavoritePropertiesWithFilter" resultMap="PropertyMapWithSavedAt"
+            parameterType="org.livin.property.dto.FilteringDTO">
+        SELECT
+        <include refid="SelectPropertyListBase"/>,
+        true AS is_favorite,
+        f.saved_at
+        <include refid="CommonJoins"/>
+        <where>
+            <include refid="FavoriteCondition"/>
+            <include refid="RegionFilterCondition"/>
+        </where>
+        ORDER BY f.saved_at DESC
+    </select>
+
+    <!-- ✅ 썸네일 이미지 조회 -->
+    <select id="selectThumbnailImageByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
+        SELECT
+            property_image_id,
+            image_url,
+            property_id,
+            represent
+        FROM
+            propertyimage
+        WHERE
+            property_id = #{propertyId}
+          AND represent = true
+    </select>
+
+    <!-- ✅ 전체 이미지 조회 -->
+    <select id="selectImagesByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
+        SELECT
+            property_image_id,
+            image_url,
+            property_id,
+            represent
+        FROM
+            propertyimage
+        WHERE
+            property_id = #{propertyId}
+    </select>
+
+    <select id="findCreatedAtByPropertyId" resultType="java.time.LocalDateTime">
+        SELECT property_created_at
+        FROM Property
+        WHERE property_id = #{propertyId}
+    </select>
+
+    <!-- ✅ 공통 resultMap -->
+    <resultMap id="BasePropertyMap" type="org.livin.property.entity.PropertyVO">
+        <id property="propertyId" column="property_id"/>
+        <result property="name" column="property_name"/>
+        <result property="detailAddress" column="detail_address"/>
+        <result property="propertyType" column="property_type"/>
+        <result property="transactionType" column="transaction_type"/>
+        <result property="jeonseDeposit" column="jeonse_deposit"/>
+        <result property="monthlyDeposit" column="monthly_deposit"/>
+        <result property="monthlyRent" column="monthly_rent"/>
+        <result property="mainDirection" column="main_direction"/>
+        <result property="supplyAreaM2" column="supply_area_m2"/>
+        <result property="exclusiveAreaM2" column="exclusive_area_m2"/>
+        <result property="createdAt" column="property_created_at"/>
+        <result property="sido" column="sido"/>
+        <result property="sigungu" column="sigungu"/>
+        <result property="eupmyendong" column="eupmyendong"/>
+        <result property="isSafe" column="is_safe"/>
+        <result property="totalFloors" column="total_floors"/>
+        <result property="roadAddress" column="road_address"/>
+        <result property="thumbnailImageUrl" column="image_url"/>
+        <result property="isFavorite" column="is_favorite"/>
+    </resultMap>
+
+<!--    &lt;!&ndash; ✅ 관심 매물용 확장 resultMap &ndash;&gt;-->
+    <resultMap id="PropertyMapWithSavedAt" type="org.livin.property.entity.PropertyVO" extends="BasePropertyMap">
+        <result property="savedAt" column="saved_at"/>
     </resultMap>
 
 </mapper>
