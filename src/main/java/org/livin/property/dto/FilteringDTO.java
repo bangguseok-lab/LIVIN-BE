@@ -16,13 +16,19 @@ public class FilteringDTO {
     private String sigungu;
     private String eupmyendong;
 
+    private Long jeonseDepositMin;
+    private Long jeonseDepositMax;
+    private Long monthlyDepositMin;
+    private Long monthlyDepositMax;
+    private Integer monthlyMin;
+    private Integer monthlyMax;
+
     private Long userId;
 
     private Long lastId;
     private LocalDateTime lastCreatedAt;
 
     private String transactionType;
-    // private Boolean safeListingsOnly;
     private Boolean onlySecure; //안심매물 필터 추가 (true일 경우에만 is_safe = true)
 
     @Builder.Default
