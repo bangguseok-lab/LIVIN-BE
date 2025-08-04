@@ -37,13 +37,17 @@ public class UserController {
 	private final UserService userService;
 
 	@PostMapping("/logout")
-	public ResponseEntity<?> logout(@RequestParam("providerId") String providerId) {
+	public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
+
 		tokenService.deleteRefreshToken(providerId);
 		return ResponseEntity.ok("로그아웃 성공");
 	}
 
 	@PostMapping("/refresh")
-	public ResponseEntity<?> refresh(@RequestParam("providerId") String providerId) {
+	public ResponseEntity<?> refresh(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
+
 		String refreshToken = tokenService.getRefreshToken(providerId);
 
 		if (refreshToken == null) {
@@ -64,7 +68,10 @@ public class UserController {
 	}
 
 	@DeleteMapping("/withdraw")
-	public ResponseEntity<String> deleteUser(@RequestParam("providerId") String providerId) {
+	public ResponseEntity<String> deleteUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		String providerId = userDetails.getProviderId();
+
 		userService.deleteUser(providerId);
 		return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
 	}
@@ -82,7 +89,7 @@ public class UserController {
 	}
 
 	// 회원 정보 조회
-	@GetMapping("")
+	@GetMapping("/myInfo")
 	public ResponseEntity<UserResponseDTO> getUserInfo(@RequestParam Long userId) {
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 		return ResponseEntity.ok(userInfo);

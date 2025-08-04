@@ -114,7 +114,7 @@ public class KakaoAuthService {
 
 		UserVO user = (existingUser != null) ? existingUser :
 			userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
-		String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId());
+		String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId(), user.getRole());
 		tokenService.saveRefreshToken(user.getProviderId(), refreshToken);
 		return jwtUtil.generateAccessToken(user.getProvider(), user.getProviderId(), user.getRole());
 	}

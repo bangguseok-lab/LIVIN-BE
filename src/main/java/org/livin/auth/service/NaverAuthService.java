@@ -120,7 +120,7 @@ public class NaverAuthService {
 
 		UserVO user = existingUser;
 
-		String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId());
+		String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId(), user.getRole());
 		tokenService.saveRefreshToken(user.getProviderId(), refreshToken);
 		return jwtUtil.generateAccessToken(user.getProvider(), user.getProviderId(), user.getRole());
 	}
