@@ -39,7 +39,7 @@
         LEFT JOIN propertyimage pi ON p.property_id = pi.property_id AND pi.represent = true
     </sql>
 
-    <!-- ✅ 공통 지역 필터 (WHERE 포함) -->
+    <!-- ✅ 공통 지역 필터 -->
     <sql id="RegionFilterCondition">
         <if test="sido != null and sido != '전체'">
             AND p.sido = #{sido}
@@ -50,9 +50,20 @@
         <if test="eupmyendong != null and eupmyendong != '전체'">
             AND p.eupmyendong = #{eupmyendong}
         </if>
-<!--        <if test="property_type != null and property_type != '전체'">-->
-<!--            AND p.property_type = #{property_type}-->
-<!--        </if>-->
+    </sql>
+
+    <!-- ✅ 전세/월세 필터 -->
+    <sql id="TransactionTypeFilterCondition">
+        <if test="transactionType != null and transactionType != ''">
+            AND p.transaction_type = #{transactionType}
+        </if>
+    </sql>
+
+    <!-- ✅ 안심 매물 필터 -->
+    <sql id="SafePropertyFilterCondition">
+        <if test="onlySecure != null and onlySecure == true">
+            AND r.is_safe = true
+        </if>
     </sql>
 
     <!-- ✅ 관심 매물 조건 -->
@@ -62,22 +73,31 @@
 
     <!-- ✅ 전체 매물 조회 + 관심 여부 포함 + 지역 필터 -->
     <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
-            parameterType="org.livin.property.dto.AddressDTO">
+            parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
         <include refid="SelectPropertyListBase"/>,
         CASE WHEN f.user_id IS NOT NULL THEN true ELSE false END AS is_favorite
         <include refid="CommonJoins"/>
         <where>
             1 = 1
+
+            <include refid="TransactionTypeFilterCondition"/>
+
             <include refid="RegionFilterCondition"/>
+
+            <include refid="SafePropertyFilterCondition"/>
+
+            <if test="lastCreatedAt != null">
+                AND property_created_at &lt; #{lastCreatedAt}
+            </if>
         </where>
         ORDER BY property_created_at DESC
-        LIMIT #{lastId}, #{limit}
+        LIMIT #{limit}
     </select>
 
     <!-- ✅ 관심 매물만 조회 + 지역 필터 + 저장일 기준 정렬 -->
     <select id="selectFavoritePropertiesWithFilter" resultMap="PropertyMapWithSavedAt"
-            parameterType="org.livin.property.dto.AddressDTO">
+            parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
         <include refid="SelectPropertyListBase"/>,
         true AS is_favorite,
@@ -115,6 +135,12 @@
             propertyimage
         WHERE
             property_id = #{propertyId}
+    </select>
+
+    <select id="findCreatedAtByPropertyId" resultType="java.time.LocalDateTime">
+        SELECT property_created_at
+        FROM Property
+        WHERE property_id = #{propertyId}
     </select>
 
     <!-- ✅ 공통 resultMap -->
