@@ -66,6 +66,36 @@
         </if>
     </sql>
 
+    <!-- ✅ 가격대 필터 -->
+    <sql id="PriceFilterCondition">
+        AND (
+        (p.transaction_type = 'JEONSE'
+        <if test="jeonseDepositMin != null">
+            AND p.jeonse_deposit &gt;= #{jeonseDepositMin}
+        </if>
+        <if test="jeonseDepositMax != null">
+            AND p.jeonse_deposit &lt;= #{jeonseDepositMax}
+        </if>
+        )
+        OR
+        (p.transaction_type = 'MONTHLY_RENT'
+        <if test="monthlyDepositMin != null">
+            AND p.monthly_deposit &gt;= #{monthlyDepositMin}
+        </if>
+        <if test="monthlyDepositMax != null">
+            AND p.monthly_deposit &lt;= #{monthlyDepositMax}
+        </if>
+        <if test="monthlyMin != null">
+            AND p.monthly_rent &gt;= #{monthlyMin}
+        </if>
+        <if test="monthlyMax != null">
+            AND p.monthly_rent &lt;= #{monthlyMax}
+        </if>
+        )
+        )
+
+    </sql>
+
     <!-- ✅ 관심 매물 조건 -->
     <sql id="FavoriteCondition">
         f.user_id = #{userId}
@@ -84,6 +114,8 @@
             <include refid="TransactionTypeFilterCondition"/>
 
             <include refid="RegionFilterCondition"/>
+
+            <include refid="PriceFilterCondition"/>
 
             <include refid="SafePropertyFilterCondition"/>
 
