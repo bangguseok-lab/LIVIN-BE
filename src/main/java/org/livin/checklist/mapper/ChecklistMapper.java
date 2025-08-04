@@ -44,4 +44,7 @@ public interface ChecklistMapper {
 
 	// 체크리스트 삭제
 	void deleteChecklist(Long checklistId);
+
+	// 나만의 아이템 삭제
+	void deleteCustomItem(@Param("checklistId") Long checklistId, @Param("checklistItemId") Long checklistItemId);
 }

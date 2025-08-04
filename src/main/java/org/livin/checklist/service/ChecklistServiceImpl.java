@@ -185,4 +185,17 @@ public class ChecklistServiceImpl implements ChecklistService {
 			throw new RuntimeException("체크리스트 삭제 실패", e);
 		}
 	}
+
+	// 나만의 아이템 삭제
+	@Override
+	public void deleteCustomItem(Long checklistId, Long checklistItemId) {
+		try {
+			// 나만의 아이템 삭제
+			checklistMapper.deleteCustomItem(checklistId, checklistItemId);
+
+		} catch (Exception e) {
+			log.error("============> 나만의 아이템 삭제 중 에러 발생", e);
+			throw new RuntimeException("나만의 아이템 삭제 실패", e);
+		}
+	}
 }

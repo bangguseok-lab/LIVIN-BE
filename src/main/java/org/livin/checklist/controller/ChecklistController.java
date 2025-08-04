@@ -171,7 +171,20 @@ public class ChecklistController {
 	}
 
 
-	// todo: 나만의 아이템 삭제
+	// 나만의 아이템 삭제
+	@DeleteMapping("/{checklistId}/custom/items/{checklistItemId}")
+	public ResponseEntity<SuccessResponse<String>> deleteCustomItem(
+		@PathVariable Long checklistId,
+		@PathVariable Long checklistItemId
+	) {
+		log.info("🍀 나만의 아이템 항목 삭제 실행");
+
+		// 나만의 아이템 삭제
+		checklistService.deleteCustomItem(checklistId, checklistItemId);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "나만의 아이템을 성공적으로 삭제했습니다.", "{}"));
+	}
 
 	// todo: 특정 체크리스트가 적용된 매물 조회
 

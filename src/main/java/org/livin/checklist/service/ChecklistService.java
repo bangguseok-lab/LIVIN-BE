@@ -33,4 +33,7 @@ public interface ChecklistService {
 
 	// 체크리스트 삭제
 	void deleteChecklist(Long checklistId);
+
+	// 나만의 항목 삭제
+	void deleteCustomItem(Long checklistId, Long checklistItemId);
 }
