@@ -1,41 +1,20 @@
 package org.livin.user.service;
 
-import org.livin.global.exception.CustomException;
-import org.livin.global.exception.ErrorCode;
-import org.livin.global.jwt.service.TokenService;
 import org.livin.user.dto.UserNicknameDTO;
 import org.livin.user.dto.UserResponseDTO;
-import org.livin.user.entity.UserVO;
-import org.livin.user.mapper.UserMapper;
-import org.springframework.stereotype.Service;
+import org.livin.user.dto.UserRoleUpdateDTO;
+import org.livin.user.dto.UserUpdateDTO;
 
-import lombok.RequiredArgsConstructor;
+public interface UserService {
+	UserResponseDTO getUserInfo(Long userId);
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
+	void updateUserInfo(UserUpdateDTO dto);
 
-	private final TokenService tokenService;
-	private final UserMapper userMapper;
+	void changeUserRole(UserRoleUpdateDTO dto);
 
-	public void deleteUser(String providerId) {
-		userMapper.deleteByProviderAndProviderId(providerId);
-		tokenService.deleteRefreshToken(providerId);
-	}
+	void deleteUser(String providerId);
 
-	//    1) 닉네임
-	public UserNicknameDTO getUserNickname(String providerId) {
-		UserVO user = userMapper.findNicknameByUserId(providerId)
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-		return UserNicknameDTO.builder()
-			.nickname(user.getNickname())
-			.build();
-	}
+	UserNicknameDTO getUserNickname(String providerId);
 
-	// 회원 정보 조회
-	public UserResponseDTO getUserInfo(Long userId) {
-		UserVO user = userMapper.findById(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-		return new UserResponseDTO(user);
-	}
+	Long getUserIdByProviderId(String providerId);
 }
