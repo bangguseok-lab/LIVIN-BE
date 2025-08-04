@@ -11,12 +11,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.livin.property.dto.AddressDTO;
+import org.livin.property.dto.PropertyNearLocationDTO;
+import org.livin.property.dto.PropertyWithImageDTO;
+import org.livin.property.service.PropertyService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.livin.user.service.UserService;
 
@@ -34,13 +39,15 @@ public class PropertyController {
 
 	// 관심 매물 조회
 	@GetMapping("/properties/favorite")
-	public ResponseEntity<?> getFavoriteProperties(@ModelAttribute FilteringDTO address
+	public ResponseEntity<?> getFavoriteProperties(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@RequestParam(defaultValue = "3") int limit
 	) {
-		log.info("address = {}로 매물 요청", address);
-		List<PropertyDTO> result = propertyService.getFavoritePropertiesForMain(address);
-		log.info("매물 {}건 조회 완료", result.size());
-		log.info("{}", result);
+		String providerId = customUserDetails.getProviderId();
+		log.info("providerId = {}로 관심 매물 요청, limit = {}만큼 매물 정보 전달", providerId, limit);
 
+		List<PropertyWithImageDTO> result = propertyService.getFavoritePropertiesForMain(providerId, limit);
+		log.info("회원 {}의 관심 매물 {}건 조회 완료", providerId, result.size());
 		return ResponseEntity.ok(result);
 	}
 
