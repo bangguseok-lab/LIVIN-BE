@@ -19,4 +19,6 @@ public class AddressDTO {
 
     private int lastId;
     private int limit;
+
+    private Long checklistId;
 }

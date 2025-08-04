@@ -5,7 +5,6 @@
 
 <mapper namespace="org.livin.property.mapper.PropertyMapper">
 
-    <!-- ✅ 공통 SELECT 필드 -->
     <sql id="SelectPropertyListBase">
         p.property_id,
         p.name AS property_name,
@@ -30,7 +29,6 @@
         pi.image_url
     </sql>
 
-    <!-- ✅ 공통 JOIN 절 -->
     <sql id="CommonJoins">
         FROM Property p
         LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
@@ -39,7 +37,6 @@
         LEFT JOIN propertyimage pi ON p.property_id = pi.property_id AND pi.represent = true
     </sql>
 
-    <!-- ✅ 공통 지역 필터 (WHERE 포함) -->
     <sql id="RegionFilterCondition">
         <if test="sido != null and sido != '전체'">
             AND p.sido = #{sido}
@@ -50,17 +47,18 @@
         <if test="eupmyendong != null and eupmyendong != '전체'">
             AND p.eupmyendong = #{eupmyendong}
         </if>
-<!--        <if test="property_type != null and property_type != '전체'">-->
-<!--            AND p.property_type = #{property_type}-->
-<!--        </if>-->
     </sql>
 
-    <!-- ✅ 관심 매물 조건 -->
+    <sql id="ChecklistFilterCondition">
+        <if test="checklistId != null">
+            AND pcl.checklist_id = #{checklistId}
+        </if>
+    </sql>
+
     <sql id="FavoriteCondition">
         f.user_id = #{userId}
     </sql>
 
-    <!-- ✅ 전체 매물 조회 + 관심 여부 포함 + 지역 필터 -->
     <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
             parameterType="org.livin.property.dto.AddressDTO">
         SELECT
@@ -72,10 +70,8 @@
             <include refid="RegionFilterCondition"/>
         </where>
         ORDER BY property_created_at DESC
-        LIMIT #{lastId}, #{limit}
     </select>
 
-    <!-- ✅ 관심 매물만 조회 + 지역 필터 + 저장일 기준 정렬 -->
     <select id="selectFavoritePropertiesWithFilter" resultMap="PropertyMapWithSavedAt"
             parameterType="org.livin.property.dto.AddressDTO">
         SELECT
@@ -83,14 +79,19 @@
         true AS is_favorite,
         f.saved_at
         <include refid="CommonJoins"/>
+        LEFT JOIN Property_CheckList pcl ON p.property_id = pcl.property_id
         <where>
             <include refid="FavoriteCondition"/>
             <include refid="RegionFilterCondition"/>
+            <include refid="ChecklistFilterCondition"/>
         </where>
+        GROUP BY p.property_id, p.name, p.detail_address, p.property_type, p.transaction_type, p.jeonse_deposit, p.monthly_deposit, p.monthly_rent,
+        p.main_direction, p.description, p.floor, p.supply_area_m2, p.exclusive_area_m2, p.created_at, p.sido, p.sigungu, p.eupmyendong,
+        r.is_safe, b.total_floors, b.road_address, pi.image_url, f.user_id, f.saved_at, pcl.checklist_id
         ORDER BY f.saved_at DESC
+        LIMIT #{lastId}, #{limit}
     </select>
 
-    <!-- ✅ 썸네일 이미지 조회 -->
     <select id="selectThumbnailImageByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
         SELECT
             property_image_id,
@@ -104,7 +105,6 @@
           AND represent = true
     </select>
 
-    <!-- ✅ 전체 이미지 조회 -->
     <select id="selectImagesByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
         SELECT
             property_image_id,
@@ -117,7 +117,6 @@
             property_id = #{propertyId}
     </select>
 
-    <!-- ✅ 공통 resultMap -->
     <resultMap id="BasePropertyMap" type="org.livin.property.entity.PropertyVO">
         <id property="propertyId" column="property_id"/>
         <result property="name" column="property_name"/>
@@ -141,7 +140,6 @@
         <result property="isFavorite" column="is_favorite"/>
     </resultMap>
 
-<!--    &lt;!&ndash; ✅ 관심 매물용 확장 resultMap &ndash;&gt;-->
     <resultMap id="PropertyMapWithSavedAt" type="org.livin.property.entity.PropertyVO" extends="BasePropertyMap">
         <result property="savedAt" column="saved_at"/>
     </resultMap>
