@@ -1,5 +1,6 @@
 package org.livin.user.controller;
 
+import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
 import org.livin.user.dto.UserNicknameDTO;
@@ -10,6 +11,7 @@ import org.livin.user.entity.UserRole;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,8 +70,10 @@ public class UserController {
 	}
 
 	// 회원 닉네임 조회
-	@GetMapping("/nickname")
-	public ResponseEntity<UserNicknameDTO> getUserNickname(@RequestParam("providerId") String providerId) {
+	@GetMapping("")
+	public ResponseEntity<UserNicknameDTO> getUserNickname(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+		String providerId = customUserDetails.getProviderId();
+    
 		log.info("getUserNickname: " + providerId);
 
 		UserNicknameDTO userNicknameDTO = userService.getUserNickname(providerId);
