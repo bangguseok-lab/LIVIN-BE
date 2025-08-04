@@ -12,6 +12,7 @@ import org.livin.property.mapper.FavoritePropertyMapper;
 import org.livin.property.mapper.PropertyMapper;
 import org.livin.user.mapper.UserMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -146,6 +147,29 @@ public class PropertyServiceImpl implements PropertyService {
 		} catch (Exception e) {
 			log.error("removeFavoriteProperty 서비스 에러: {}", e.getMessage(), e);
 			throw new RuntimeException("관심 매물 삭제 실패", e);
+		}
+	}
+
+	@Override
+	@Transactional // 데이터 변경이므로 @Transactional 어노테이션 추가
+	public void addFavoriteProperty(Long userId, Long propertyId) {
+		log.info("관심 매물 추가 요청 - userId: {}, propertyId: {}", userId, propertyId);
+
+		Integer count = propertyMapper.checkIfFavoriteExists(userId, propertyId);
+		if (count != null && count > 0) {
+		    log.warn("이미 등록된 관심 매물 - userId: {}, propertyId: {}", userId, propertyId);
+		    // throw new IllegalArgumentException("이미 관심 매물로 등록되어 있습니다.");
+		    return; // 또는 특정 예외를 발생시켜 클라이언트에 알림
+		}
+
+		// saved_at 필드는 현재 시간으로 설정
+		int insertedRows = propertyMapper.addFavoriteProperty(userId, propertyId, LocalDateTime.now());
+
+		if (insertedRows == 0) {
+			log.error("관심 매물 추가 실패 - userId: {}, propertyId: {}", userId, propertyId);
+			// throw new RuntimeException("관심 매물 추가에 실패했습니다.");
+		} else {
+			log.info("관심 매물 추가 성공 - userId: {}, propertyId: {}", userId, propertyId);
 		}
 	}
 }

@@ -20,4 +20,8 @@ public interface PropertyMapper {
     LocalDateTime findCreatedAtByPropertyId(Long propertyId);
 
     int deleteFavoriteProperty(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
+
+    int addFavoriteProperty(@Param("userId") Long userId, @Param("propertyId") Long propertyId, @Param("savedAt") LocalDateTime savedAt);
+
+    Integer checkIfFavoriteExists(@Param("userId") Long userId, @Param("propertyId") Long propertyId);
 }

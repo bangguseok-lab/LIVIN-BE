@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -123,6 +124,36 @@ public class PropertyController {
 		}
 		catch (RuntimeException e) {
 			log.error("관심 매물 삭제 실패: {}", e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	// 관심 매물 추가 API
+	@PostMapping("/properties/{id}/favorite")
+	public ResponseEntity<Void> addFavoriteProperty(
+		@PathVariable("id") Long propertyId,
+		@AuthenticationPrincipal CustomUserDetails userDetails
+	) {
+		log.info("관심 매물 추가 요청 - propertyId: {}, userDetails: {}", propertyId, userDetails);
+
+		if (userDetails == null || userDetails.getProviderId() == null) {
+			log.warn("관심 매물 추가를 위한 인증 정보가 없습니다.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		if (userId == null) {
+			log.warn("제공된 providerId에 해당하는 userId를 찾을 수 없습니다: {}", userDetails.getProviderId());
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		try {
+			propertyService.addFavoriteProperty(userId, propertyId);
+			return ResponseEntity.status(HttpStatus.CREATED).build();
+		} catch (IllegalArgumentException e) { // 예를 들어 이미 찜한 매물인 경우
+			log.warn("관심 매물 추가 중 사용자 관련 에러: {}", e.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		} catch (RuntimeException e) { // 기타 런타임 에러
+			log.error("관심 매물 추가 실패: {}", e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}

@@ -166,6 +166,24 @@
         WHERE property_id = #{propertyId} AND user_id = #{userId}
     </delete>
 
+    <insert id="addFavoriteProperty">
+        INSERT INTO FavoriteProperty (
+            user_id,
+            property_id,
+            saved_at
+        ) VALUES (
+                     #{userId},
+                     #{propertyId},
+                     #{savedAt}
+                 )
+    </insert>
+
+    <select id="checkIfFavoriteExists" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM FavoriteProperty
+        WHERE user_id = #{userId} AND property_id = #{propertyId}
+    </select>
+
     <select id="selectThumbnailImageByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
         SELECT
             property_image_id,
