@@ -1,5 +1,7 @@
 package org.livin.property.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,11 +16,22 @@ public class FilteringDTO {
     private String sigungu;
     private String eupmyendong;
 
-    private Long providerId;
     private Long userId;
 
-    private int lastId;
-    private int limit;
+    private Long lastId;
+    private LocalDateTime lastCreatedAt;
+
+    private String transactionType;
+    // private Boolean safeListingsOnly;
+    private Boolean onlySecure; //안심매물 필터 추가 (true일 경우에만 is_safe = true)
+
+    @Builder.Default
+    private int limit = 20;
+
+    // Setter에서 0 이하일 경우 자동 보정
+    public void setLimit(int limit) {
+        this.limit = (limit <= 0) ? 20 : limit;
+    }
 
     private Long checklistId;
 }
