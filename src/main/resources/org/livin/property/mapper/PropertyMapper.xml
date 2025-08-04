@@ -5,7 +5,6 @@
 
 <mapper namespace="org.livin.property.mapper.PropertyMapper">
 
-    <!-- ✅ 공통 SELECT 필드 -->
     <sql id="SelectPropertyListBase">
         p.property_id,
         p.name AS property_name,
@@ -30,7 +29,6 @@
         pi.image_url
     </sql>
 
-    <!-- ✅ 공통 JOIN 절 -->
     <sql id="CommonJoins">
         FROM Property p
         LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
@@ -66,12 +64,47 @@
         </if>
     </sql>
 
+    <sql id="ChecklistFilterCondition">
+        <if test="checklistId != null">
+            AND pcl.checklist_id = #{checklistId}
+        </if>
+    </sql>
+
+    <!-- ✅ 가격대 필터 -->
+    <sql id="PriceFilterCondition">
+        AND (
+        (p.transaction_type = 'JEONSE'
+        <if test="jeonseDepositMin != null">
+            AND p.jeonse_deposit &gt;= #{jeonseDepositMin}
+        </if>
+        <if test="jeonseDepositMax != null">
+            AND p.jeonse_deposit &lt;= #{jeonseDepositMax}
+        </if>
+        )
+        OR
+        (p.transaction_type = 'MONTHLY_RENT'
+        <if test="monthlyDepositMin != null">
+            AND p.monthly_deposit &gt;= #{monthlyDepositMin}
+        </if>
+        <if test="monthlyDepositMax != null">
+            AND p.monthly_deposit &lt;= #{monthlyDepositMax}
+        </if>
+        <if test="monthlyMin != null">
+            AND p.monthly_rent &gt;= #{monthlyMin}
+        </if>
+        <if test="monthlyMax != null">
+            AND p.monthly_rent &lt;= #{monthlyMax}
+        </if>
+        )
+        )
+
+    </sql>
+
     <!-- ✅ 관심 매물 조건 -->
     <sql id="FavoriteCondition">
         f.user_id = #{userId}
     </sql>
 
-    <!-- ✅ 전체 매물 조회 + 관심 여부 포함 + 지역 필터 -->
     <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
             parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
@@ -85,6 +118,8 @@
 
             <include refid="RegionFilterCondition"/>
 
+            <include refid="PriceFilterCondition"/>
+
             <include refid="SafePropertyFilterCondition"/>
 
             <if test="lastCreatedAt != null">
@@ -95,22 +130,42 @@
         LIMIT #{limit}
     </select>
 
-    <!-- ✅ 관심 매물만 조회 + 지역 필터 + 저장일 기준 정렬 -->
     <select id="selectFavoritePropertiesWithFilter" resultMap="PropertyMapWithSavedAt"
             parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
         <include refid="SelectPropertyListBase"/>,
         true AS is_favorite,
         f.saved_at
-        <include refid="CommonJoins"/>
+        FROM Property p
+        LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
+        LEFT JOIN Building b ON p.building_id = b.building_id
+        LEFT JOIN propertyimage pi ON p.property_id = pi.property_id AND pi.represent = true
+        INNER JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
+        <if test="checklistId != null">
+            INNER JOIN Property_CheckList pcl ON p.property_id = pcl.property_id
+        </if>
         <where>
-            <include refid="FavoriteCondition"/>
+            1 = 1
             <include refid="RegionFilterCondition"/>
+            <include refid="SafePropertyFilterCondition"/>
+            <include refid="ChecklistFilterCondition"/>
+
+            <if test="lastId != null and lastCreatedAt != null">
+                AND (
+                f.saved_at &lt; #{lastCreatedAt}
+                OR (f.saved_at = #{lastCreatedAt} AND p.property_id &lt; #{lastId})
+                )
+            </if>
         </where>
-        ORDER BY f.saved_at DESC
+        ORDER BY f.saved_at DESC, p.property_id DESC
+        LIMIT #{limit}
     </select>
 
-    <!-- ✅ 썸네일 이미지 조회 -->
+    <delete id="deleteFavoriteProperty" parameterType="map">
+        DELETE FROM FavoriteProperty
+        WHERE property_id = #{propertyId} AND user_id = #{userId}
+    </delete>
+
     <select id="selectThumbnailImageByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
         SELECT
             property_image_id,
@@ -124,7 +179,6 @@
           AND represent = true
     </select>
 
-    <!-- ✅ 전체 이미지 조회 -->
     <select id="selectImagesByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
         SELECT
             property_image_id,
@@ -167,7 +221,6 @@
         <result property="isFavorite" column="is_favorite"/>
     </resultMap>
 
-<!--    &lt;!&ndash; ✅ 관심 매물용 확장 resultMap &ndash;&gt;-->
     <resultMap id="PropertyMapWithSavedAt" type="org.livin.property.entity.PropertyVO" extends="BasePropertyMap">
         <result property="savedAt" column="saved_at"/>
     </resultMap>
