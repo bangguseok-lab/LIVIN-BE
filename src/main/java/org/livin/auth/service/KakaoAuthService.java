@@ -2,6 +2,9 @@ package org.livin.auth.service;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.livin.auth.dto.AdditionalUserInfo;
 import org.livin.auth.dto.KakaoTokenResponse;
 import org.livin.auth.dto.KakaoUserInfo;

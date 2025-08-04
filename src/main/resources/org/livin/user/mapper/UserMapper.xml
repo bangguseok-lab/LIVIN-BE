@@ -20,24 +20,22 @@
     </resultMap>
 
     <delete id="deleteByProviderAndProviderId">
-        DELETE FROM user
+        DELETE
+        FROM user
         WHERE provider_id = #{providerId}
     </delete>
 
     <select id="findByProviderAndProviderId" resultMap="userResultMap">
-        SELECT * FROM User
+        SELECT *
+        FROM User
         WHERE provider = #{provider}
           AND provider_id = #{providerId}
     </select>
 
-    <insert id="insertUser" parameterType="UserVO" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO User (
-            provider, provider_id, name, role, created_at, birth_date, phone, nickname, profile_image
-        )
-        VALUES (
-                   #{provider}, #{providerId}, #{name}, #{role}, now(), #{birthDate},
-                   #{phone}, #{nickname}, #{profileImage}
-               )
+    <insert id="insertUser" parameterType="org.livin.user.entity.UserVO" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO User (provider, provider_id, name, role, created_at, birth_date, phone, nickname, profile_image)
+        VALUES (#{provider}, #{providerId}, #{name}, #{role}, now(), #{birthDate},
+                #{phone}, #{nickname}, #{profileImage})
     </insert>
 
 
@@ -54,9 +52,32 @@
         WHERE provider_id = #{providerId}
     </select>
 
-    <select id="findByProviderId" resultType="UserVO">
+    <select id="findByProviderId" resultType="org.livin.user.entity.UserVO">
         SELECT *
         FROM user
         WHERE user_id = #{userId}
     </select>
+
+    <select id="findUserById" resultType="org.livin.user.entity.UserVO">
+        SELECT user_id, name, nickname, phone, birth_date, role, profile_image
+        FROM user
+        WHERE user_id = #{userId}
+    </select>
+
+    <update id="updateUser" parameterType="org.livin.user.dto.UserUpdateDTO">
+        UPDATE user
+        SET nickname      = #{nickname},
+            phone         = #{phone},
+            profile_image = #{profileImage},
+            update_at     = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateUserRole">
+        UPDATE user
+        SET role      = #{role},
+            update_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
 </mapper>
