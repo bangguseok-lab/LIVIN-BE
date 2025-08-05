@@ -6,14 +6,14 @@ import javax.swing.event.ChangeEvent;
 
 import org.livin.checklist.entity.ChecklistVO;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -23,8 +23,10 @@ public class ChecklistDTO {
 	private String title;
 	private String description;
 	private String type;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt;
-	private LocalDateTime updateAt;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime updatedAt;
 
 	// VO -> DTO 변환 (of())
 	public static ChecklistDTO of(ChecklistVO vo) {
@@ -35,7 +37,7 @@ public class ChecklistDTO {
 			.description(vo.getDescription())
 			.type(vo.getType())
 			.createdAt(vo.getCreatedAt())
-			.updateAt(vo.getUpdateAt())
+			.updatedAt(vo.getUpdatedAt())
 			.build();
 	}
 
@@ -48,7 +50,7 @@ public class ChecklistDTO {
 			.description(description)
 			.type(type)
 			.createdAt(createdAt)
-			.updateAt(updateAt)
+			.updatedAt(updatedAt)
 			.build();
 	}
 

@@ -1,6 +1,7 @@
 package org.livin.global.jwt.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -29,25 +30,21 @@ public class JwtUtil {
 
 	// 토큰 검증
 	public Claims validateToken(String token) {
-		try {
-			// "Bearer " 접두사 제거
-			if (token != null && token.startsWith("Bearer ")) {
-				token = token.substring(7).trim(); // 앞 7글자("Bearer ") 제거 + 공백 제거
-			} else if (token != null) {
-				token = token.trim(); // 그냥 공백만 제거
-			}
-			log.info("🔍 토큰 유효성 검사 시작 (정제 후): '{}'", token);
 
-			return Jwts.parser()
-				.setSigningKey(secret)
-				.parseClaimsJws(token)
-				.getBody();
-		} catch (JwtException e) {
-			log.info(e);
-			log.error("❌ JWT 토큰 유효성 검증 실패", e);
-			throw new RuntimeException("JWT 토큰 유효성 검증 실패", e);
-		}
-	}
+  // "Bearer " 접두사 제거
+  if (token != null && token.startsWith("Bearer ")) {
+    token = token.substring(7).trim(); // 앞 7글자("Bearer ") 제거 + 공백 제거
+  } else if (token != null) {
+    token = token.trim(); // 그냥 공백만 제거
+
+  }
+  log.info("🔍 토큰 유효성 검사 시작 (정제 후): '{}'", token);
+
+  return Jwts.parser()
+    .setSigningKey(secret)
+    .parseClaimsJws(token)
+    .getBody();
+}
 
 	// 소셜로그인용 Access Token 발급
 	public String generateAccessToken(String provider, String providerId, UserRole role) {
@@ -63,11 +60,12 @@ public class JwtUtil {
 	}
 
 	// 소셜로그인용 Refresh Token 발급
-	public String generateRefreshToken(String provider, String providerId) {
+	public String generateRefreshToken(String provider, String providerId, UserRole role) {
 		return Jwts.builder()
 			.setSubject(provider + ":" + providerId)
 			.claim("provider", provider)
 			.claim("providerId", providerId)
+			.claim("role", role.name())
 			.setIssuedAt(new Date())
 			.setExpiration(new Date(System.currentTimeMillis() + refreshExpiration))
 			.signWith(SignatureAlgorithm.HS256, secret)
