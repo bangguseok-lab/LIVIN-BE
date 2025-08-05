@@ -33,7 +33,8 @@
     </select>
 
     <insert id="insertUser" parameterType="org.livin.user.entity.UserVO" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO livin.User (provider, provider_id, name, role, created_at, birth_date, phone, nickname, profile_image)
+        INSERT INTO livin.User (provider, provider_id, name, role, created_at, birth_date, phone, nickname,
+                                profile_image)
         VALUES (#{provider}, #{providerId}, #{name}, #{role}, now(), #{birthDate},
                 #{phone}, #{nickname}, #{profileImage})
     </insert>
@@ -74,8 +75,20 @@
 
     <update id="updateUserRole">
         UPDATE livin.User
-        SET role      = #{role}
+        SET role = #{role}
         WHERE user_id = #{userId}
     </update>
 
+    <update id="updateProfileImage">
+        UPDATE livin.User
+        SET profile_image = #{imageUrl}
+        WHERE provider_id = #{providerId}
+    </update>
+
+    <select id="findProfileImageByProviderId" resultType="string">
+        SELECT profile_image
+        FROM livin.User
+        WHERE provider_id = #{providerId}
+    </select>
+    
 </mapper>

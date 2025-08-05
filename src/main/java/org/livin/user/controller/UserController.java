@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -120,4 +121,20 @@ public class UserController {
 		return ResponseEntity.ok("전환되었습니다.");
 	}
 
+	@PostMapping("/profile-image")
+	public ResponseEntity<String> uploadProfileImage(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam("image") MultipartFile imageFile
+	) {
+		String providerId = userDetails.getProviderId();
+		String imageUrl = userService.uploadProfileImage(providerId, imageFile); // 서비스에 위임
+		return ResponseEntity.ok(imageUrl); // 프론트는 이 URL을 활용해 프로필 이미지 갱신
+	}
+
+	@GetMapping("/profile-image")
+	public ResponseEntity<String> getProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
+		String imageUrl = userService.getProfileImageUrl(providerId); // DB에서 URL 조회
+		return ResponseEntity.ok(imageUrl);
+	}
 }
