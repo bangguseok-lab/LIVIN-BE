@@ -65,7 +65,7 @@ public class PropertyController {
 		return ResponseEntity.ok(result);
 	}
 
-	@GetMapping("/property/details/{id}")
+	@GetMapping("/properties/details/{id}")
 	public ResponseEntity<PropertyDetailsDTO> getPropertyDetails(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable(name = "id") Long propertyId) {
 		String providerId = customUserDetails.getProviderId();
