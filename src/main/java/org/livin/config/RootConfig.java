@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @PropertySource({"classpath:/application.properties"})
-@ComponentScan(basePackages = {"org.livin.property.service", "org.livin.user.service", "org.livin.auth.service", "org.livin.checklist.service"})
+@ComponentScan(basePackages = {"org.livin.property.service", "org.livin.user.service", "org.livin.auth.service", "org.livin.checklist.service", "org.livin.global.exception"})
 @MapperScan(basePackages = {"org.livin.property.mapper", "org.livin.user.mapper", "org.livin.checklist.mapper"})
 public class RootConfig {
     @Value("${jdbc.driver}")
@@ -54,7 +54,7 @@ public class RootConfig {
         SqlSessionFactoryBean sqlSessionFactory = new SqlSessionFactoryBean();
         sqlSessionFactory.setConfigLocation(applicationContext.getResource("classpath:/mybatis-config.xml"));
 
-        // // Mapper XML 파일 위치 설정 (src/main/resources/mapper 하위 구조 포함)
+        // Mapper XML 파일 위치 설정 (src/main/resources/mapper 하위 구조 포함)
         // sqlSessionFactory.setMapperLocations(
         //     new PathMatchingResourcePatternResolver().getResources("classpath:/org/livin/mapper/**/*.xml")
         // );
@@ -63,7 +63,8 @@ public class RootConfig {
         sqlSessionFactory.setDataSource(dataSource());
 
         // 최종 SqlSessionFactory 객체 반환
-        return sqlSessionFactory.getObject();
+        return (SqlSessionFactory) sqlSessionFactory.getObject();
+        // return sqlSessionFactory.getObject();
     }
 
     @Bean

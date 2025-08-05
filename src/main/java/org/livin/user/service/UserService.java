@@ -1,42 +1,20 @@
 package org.livin.user.service;
 
-import org.livin.global.exception.CustomException;
-import org.livin.global.exception.ErrorCode;
-import org.livin.global.jwt.service.TokenService;
 import org.livin.user.dto.UserNicknameDTO;
-import org.livin.user.entity.UserVO;
-import org.livin.user.mapper.UserMapper;
-import org.springframework.stereotype.Service;
+import org.livin.user.dto.UserResponseDTO;
+import org.livin.user.dto.UserRoleUpdateDTO;
+import org.livin.user.dto.UserUpdateDTO;
 
-import lombok.RequiredArgsConstructor;
+public interface UserService {
+	UserResponseDTO getUserInfo(Long userId);
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
+	void updateUserInfo(UserUpdateDTO dto);
 
-	private final TokenService tokenService;
-	private final UserMapper userMapper;
+	void changeUserRole(UserRoleUpdateDTO dto);
 
-	public void deleteUser(String providerId) {
-		userMapper.deleteByProviderAndProviderId(providerId);
-		tokenService.deleteRefreshToken(providerId);
-	}
+	void deleteUser(String providerId);
 
-	//    1) 닉네임
-	public UserNicknameDTO getUserNickname(String providerId) {
-		UserVO user = userMapper.findNicknameByUserId(providerId)
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-		return UserNicknameDTO.builder()
-			.nickname(user.getNickname())
-			.build();
-	}
+	UserNicknameDTO getUserNickname(String providerId);
 
-	// providerId를 통해서 UserId를 조회해서 가져오는 메서드
-	public Long getUserIdByProviderId(String providerId) {
-		Long userId = userMapper.findUserIdByProviderId(providerId);
-		if (userId == null) {
-			throw new CustomException(ErrorCode.BAD_REQUEST);
-		}
-		return userId;
-	}
+	Long getUserIdByProviderId(String providerId);
 }
