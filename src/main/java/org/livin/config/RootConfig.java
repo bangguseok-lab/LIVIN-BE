@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @PropertySource({"classpath:/application.properties"})
-@ComponentScan(basePackages = {"org.livin.property.service", "org.livin.user.service", "org.livin.auth.service", "org.livin.checklist.service"})
+@ComponentScan(basePackages = {"org.livin.property.service", "org.livin.user.service", "org.livin.auth.service", "org.livin.checklist.service", "org.livin.global.exception"})
 @MapperScan(basePackages = {"org.livin.property.mapper", "org.livin.user.mapper", "org.livin.checklist.mapper"})
 public class RootConfig {
     @Value("${jdbc.driver}")
