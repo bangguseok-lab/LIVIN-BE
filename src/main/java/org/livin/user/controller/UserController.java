@@ -38,7 +38,8 @@ public class UserController {
 	private final UserService userService;
 
 	@PostMapping("/logout")
-	public ResponseEntity<?> logout(@RequestParam("providerId") String providerId) {
+	public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
 		tokenService.deleteRefreshToken(providerId);
 		return ResponseEntity.ok("로그아웃 성공");
 	}
