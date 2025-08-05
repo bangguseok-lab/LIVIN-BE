@@ -45,47 +45,42 @@ public class PropertyDetailsDTO {
 	private List<String> options;
 
 	public static PropertyDetailsDTO fromPropertyDetailsVO(PropertyDetailsVO propertyDetailsVO) {
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			return PropertyDetailsDTO.builder()
-				.propertyId(propertyDetailsVO.getPropertyId())
-				.isFavorite(propertyDetailsVO.getFavoritePropertyVO() == null)
-				.isSafe(propertyDetailsVO.getRiskAnalysisVO().getIsSafe())
-				.name(propertyDetailsVO.getName())
-				.transactionType(propertyDetailsVO.getTransactionType().getLabel())
-				.detailAddress(propertyDetailsVO.getDetailAddress())
-				.price(
-					propertyDetailsVO.getTransactionType() == TransactionType.JEONSE ?
-						String.valueOf(propertyDetailsVO.getJeonseDeposit()) :
-						propertyDetailsVO.getMonthlyDeposit() + "/" +
-							propertyDetailsVO.getMonthlyRent()
-				)
-				.supplyAreaM2(propertyDetailsVO.getSupplyAreaM2())
-				.exclusiveAreaM2(propertyDetailsVO.getExclusiveAreaM2())
-				.floor(propertyDetailsVO.getFloor())
-				.direction(propertyDetailsVO.getMainDirection())
-				.duplexStructure(propertyDetailsVO.getDuplexStructure())
-				.moveInDate(propertyDetailsVO.getMoveInDate().format(formatter))
-				.description(propertyDetailsVO.getDescription())
-				.pet(propertyDetailsVO.getPet().getLabel())
-				.loan(propertyDetailsVO.getLoan().getLabel())
-				.building(BuildingDTO.fromBuildingVO(propertyDetailsVO.getBuildingVO()))
-				.imgUrls(propertyDetailsVO.getPropertyImageVOList().stream()
-					.map(PropertyImageDTO::fromPropertyImageVO)
-					.collect(Collectors.toList()))
-				.management(Optional.ofNullable(propertyDetailsVO.getManagementVOList())
-					.orElseGet(Collections::emptyList)
-					.stream()
-					.filter(ManagementVO::getExcludeInclude)
-					.map(ManagementDTO::fromManagementVO)
-					.collect(Collectors.toList()))
-				.options(propertyDetailsVO.getOptionVOList().stream()
-					.map(OptionVO::getOptionType)
-					.collect(Collectors.toList()))
-				.build();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
-		}
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		return PropertyDetailsDTO.builder()
+			.propertyId(propertyDetailsVO.getPropertyId())
+			.isFavorite(propertyDetailsVO.getFavoritePropertyVO() == null)
+			.isSafe(propertyDetailsVO.getRiskAnalysisVO().getIsSafe())
+			.name(propertyDetailsVO.getName())
+			.transactionType(propertyDetailsVO.getTransactionType().getLabel())
+			.detailAddress(propertyDetailsVO.getDetailAddress())
+			.price(
+				propertyDetailsVO.getTransactionType() == TransactionType.JEONSE ?
+					String.valueOf(propertyDetailsVO.getJeonseDeposit()) :
+					propertyDetailsVO.getMonthlyDeposit() + "/" +
+						propertyDetailsVO.getMonthlyRent()
+			)
+			.supplyAreaM2(propertyDetailsVO.getSupplyAreaM2())
+			.exclusiveAreaM2(propertyDetailsVO.getExclusiveAreaM2())
+			.floor(propertyDetailsVO.getFloor())
+			.direction(propertyDetailsVO.getMainDirection())
+			.duplexStructure(propertyDetailsVO.getDuplexStructure())
+			.moveInDate(propertyDetailsVO.getMoveInDate().format(formatter))
+			.description(propertyDetailsVO.getDescription())
+			.pet(propertyDetailsVO.getPet().getLabel())
+			.loan(propertyDetailsVO.getLoan().getLabel())
+			.building(BuildingDTO.fromBuildingVO(propertyDetailsVO.getBuildingVO()))
+			.imgUrls(propertyDetailsVO.getPropertyImageVOList().stream()
+				.map(PropertyImageDTO::fromPropertyImageVO)
+				.collect(Collectors.toList()))
+			.management(Optional.ofNullable(propertyDetailsVO.getManagementVOList())
+				.orElseGet(Collections::emptyList)
+				.stream()
+				.filter(ManagementVO::getExcludeInclude)
+				.map(ManagementDTO::fromManagementVO)
+				.collect(Collectors.toList()))
+			.options(propertyDetailsVO.getOptionVOList().stream()
+				.map(OptionVO::getOptionType)
+				.collect(Collectors.toList()))
+			.build();
 	}
 }

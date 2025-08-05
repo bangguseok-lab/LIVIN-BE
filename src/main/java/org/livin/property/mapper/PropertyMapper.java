@@ -9,7 +9,6 @@ import org.livin.property.dto.FilteringDTO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
-import org.apache.ibatis.annotations.Param;
 
 public interface PropertyMapper {
 	List<PropertyVO> selectPropertyListByRegion(FilteringDTO address);
@@ -24,12 +23,11 @@ public interface PropertyMapper {
 
 	Optional<PropertyDetailsVO> getPropertyDetailsById(@Param("propertyId") Long propertyId,
 		@Param("userId") Long userId);
-  
-    LocalDateTime findCreatedAtByPropertyId(Long propertyId);
 
-    int deleteFavoriteProperty(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
+	int deleteFavoriteProperty(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
 
-    int addFavoriteProperty(@Param("userId") Long userId, @Param("propertyId") Long propertyId, @Param("savedAt") LocalDateTime savedAt);
+	int addFavoriteProperty(@Param("userId") Long userId, @Param("propertyId") Long propertyId,
+		@Param("savedAt") LocalDateTime savedAt);
 
-    Integer checkIfFavoriteExists(@Param("userId") Long userId, @Param("propertyId") Long propertyId);
+	Integer checkIfFavoriteExists(@Param("userId") Long userId, @Param("propertyId") Long propertyId);
 }

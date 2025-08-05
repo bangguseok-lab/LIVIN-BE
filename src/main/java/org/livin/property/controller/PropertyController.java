@@ -13,14 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.livin.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -74,6 +71,7 @@ public class PropertyController {
 		String providerId = customUserDetails.getProviderId();
 		PropertyDetailsDTO propertyDetailsDTO = propertyService.getPropertyDetails(propertyId, providerId);
 		return ResponseEntity.ok(propertyDetailsDTO);
+	}
 
 	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@GetMapping("/favorite-properties")
@@ -127,8 +125,7 @@ public class PropertyController {
 		} catch (IllegalArgumentException e) {
 			log.warn("관심 매물 삭제 중 사용자 관련 에러: {}", e.getMessage());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			log.error("관심 매물 삭제 실패: {}", e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}

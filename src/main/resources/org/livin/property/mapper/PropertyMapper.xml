@@ -6,10 +6,7 @@
 <mapper namespace="org.livin.property.mapper.PropertyMapper">
 
     <sql id="SelectPropertyListBase">
-        p
-        .
-        property_id
-        ,
+        p.property_id,
         p.name AS property_name,
         p.detail_address,
         p.property_type,
@@ -105,11 +102,7 @@
 
     <!-- ✅ 관심 매물 조건 -->
     <sql id="FavoriteCondition">
-        f
-        .
-        user_id
-        =
-        #{userId}
+        f.user_id=#{userId}
     </sql>
 
     <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
