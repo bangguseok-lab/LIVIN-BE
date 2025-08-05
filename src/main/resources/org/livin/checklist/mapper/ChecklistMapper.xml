@@ -54,7 +54,7 @@
 
     <!--  체크리스트 생성  -->
     <insert id="create" useGeneratedKeys="true" keyProperty="checklistId">
-        INSERT INTO checklist (user_id, title, description, type, created_at, updated_at)
+        INSERT INTO livin.Checklist (user_id, title, description, type, created_at, updated_at)
         VALUES (#{userId}, #{title}, #{description}, #{type}, NOW(), #{updatedAt})
     </insert>
 

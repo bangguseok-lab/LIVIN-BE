@@ -46,6 +46,7 @@ public class ChecklistController {
 
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		log.info("🍀 체크리스트 전체 목록 조회 요청: userId={}, lastId={}, size={}", userId, lastId, size);
+
 		ChecklistListResponseDTO allList = checklistService.getAllList(userId, lastId, size);
 
 		return ResponseEntity.ok(

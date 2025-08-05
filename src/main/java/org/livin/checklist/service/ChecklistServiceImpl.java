@@ -65,6 +65,7 @@ public class ChecklistServiceImpl implements ChecklistService {
 		// DTO -> VO 변환
 		ChecklistVO checklistVO = checklistDto.toVo(userId);
 
+		log.info("체크리스트 생성~");
 		try {
 			// Checklist 생성
 			checklistMapper.create(checklistVO);
