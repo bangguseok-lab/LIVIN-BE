@@ -76,7 +76,8 @@ public class UserController {
 
 	// 회원 닉네임 조회
 	@GetMapping("")
-	public ResponseEntity<UserNicknameDTO> getUserNickname(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+	public ResponseEntity<UserNicknameDTO> getUserNickname(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 		String providerId = customUserDetails.getProviderId();
 
 		log.info("getUserNickname: " + providerId);
@@ -88,19 +89,33 @@ public class UserController {
 
 	// 회원 정보 조회
 	@GetMapping("")
-	public ResponseEntity<UserResponseDTO> getUserInfo(@RequestParam Long userId) {
+	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
+		Long userId = userService.getUserIdByProviderId(providerId);
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 		return ResponseEntity.ok(userInfo);
 	}
 
 	@PostMapping("")
-	public ResponseEntity<String> updateUser(@RequestBody UserUpdateDTO dto) {
+	public ResponseEntity<String> updateUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody UserUpdateDTO dto
+	) {
+		String providerId = userDetails.getProviderId();
+		Long userId = userService.getUserIdByProviderId(providerId);
+		dto.setUserId(userId);
 		userService.updateUserInfo(dto);
 		return ResponseEntity.ok("회원 정보가 수정되었습니다.");
 	}
 
 	@PostMapping("/role")
-	public ResponseEntity<String> changeUserRole(@RequestBody UserRoleUpdateDTO dto) {
+	public ResponseEntity<String> changeUserRole(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody UserRoleUpdateDTO dto
+	) {
+		String providerId = userDetails.getProviderId();
+		Long userId = userService.getUserIdByProviderId(providerId);
+		dto.setUserId(userId);
 		userService.changeUserRole(dto);
 		return ResponseEntity.ok("전환되었습니다.");
 	}
