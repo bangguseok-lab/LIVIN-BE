@@ -7,7 +7,10 @@
 
     <!-- ✅ 공통 SELECT 필드 -->
     <sql id="SelectPropertyListBase">
-        p.property_id,
+        p
+        .
+        property_id
+        ,
         p.name AS property_name,
         p.detail_address,
         p.property_type,
@@ -35,8 +38,26 @@
         FROM Property p
         LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
         LEFT JOIN Building b ON p.building_id = b.building_id
-        LEFT JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
-        LEFT JOIN propertyimage pi ON p.property_id = pi.property_id AND pi.represent = true
+        LEFT JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id =
+        #{userId}
+        LEFT
+        JOIN
+        propertyimage
+        pi
+        ON
+        p
+        .
+        property_id
+        =
+        pi
+        .
+        property_id
+        AND
+        pi
+        .
+        represent
+        =
+        true
     </sql>
 
     <!-- ✅ 공통 지역 필터 -->
@@ -98,7 +119,11 @@
 
     <!-- ✅ 관심 매물 조건 -->
     <sql id="FavoriteCondition">
-        f.user_id = #{userId}
+        f
+        .
+        user_id
+        =
+        #{userId}
     </sql>
 
     <!-- ✅ 전체 매물 조회 + 관심 여부 포함 + 지역 필터 -->
@@ -144,29 +169,23 @@
 
     <!-- ✅ 썸네일 이미지 조회 -->
     <select id="selectThumbnailImageByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
-        SELECT
-            property_image_id,
-            image_url,
-            property_id,
-            represent
-        FROM
-            propertyimage
-        WHERE
-            property_id = #{propertyId}
+        SELECT property_image_id,
+               image_url,
+               property_id,
+               represent
+        FROM propertyimage
+        WHERE property_id = #{propertyId}
           AND represent = true
     </select>
 
     <!-- ✅ 전체 이미지 조회 -->
     <select id="selectImagesByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
-        SELECT
-            property_image_id,
-            image_url,
-            property_id,
-            represent
-        FROM
-            propertyimage
-        WHERE
-            property_id = #{propertyId}
+        SELECT property_image_id,
+               image_url,
+               property_id,
+               represent
+        FROM propertyimage
+        WHERE property_id = #{propertyId}
     </select>
 
     <select id="findCreatedAtByPropertyId" resultType="java.time.LocalDateTime">
@@ -199,9 +218,154 @@
         <result property="isFavorite" column="is_favorite"/>
     </resultMap>
 
-<!--    &lt;!&ndash; ✅ 관심 매물용 확장 resultMap &ndash;&gt;-->
+    <!--    &lt;!&ndash; ✅ 관심 매물용 확장 resultMap &ndash;&gt;-->
     <resultMap id="PropertyMapWithSavedAt" type="org.livin.property.entity.PropertyVO" extends="BasePropertyMap">
         <result property="savedAt" column="saved_at"/>
     </resultMap>
 
+    <resultMap id="propertyResultMap" type="org.livin.property.entity.PropertyDetailsVO">
+        <id column="p_id" property="propertyId"/>
+        <result column="name" property="name"/>
+        <result column="detail_address" property="detailAddress"/>
+        <result column="jeonse_deposit" property="jeonseDeposit"/>
+        <result column="monthly_deposit" property="monthlyDeposit"/>
+        <result column="monthly_rent" property="monthlyRent"/>
+        <result column="property_type" property="propertyType"/>
+        <result column="transaction_type" property="transactionType"/>
+        <result column="supply_area_m2" property="supplyAreaM2"/>
+        <result column="exclusive_area_m2" property="exclusiveAreaM2"/>
+        <result column="floor" property="floor"/>
+        <result column="num_room" property="numRoom"/>
+        <result column="num_bathrooms" property="numBathrooms"/>
+        <result column="main_direction" property="mainDirection"/>
+        <result column="duplex_structure" property="duplexStructure"/>
+        <result column="move_in_date" property="moveInDate"/>
+        <result column="description" property="description"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="sido" property="sido"/>
+        <result column="sigungu" property="sigungu"/>
+        <result column="eupmyendong" property="eupmyendong"/>
+        <result column="property_num" property="propertyNum"/>
+        <result column="pet" property="pet"/>
+        <result column="loan" property="loan"/>
+        <association property="favoritePropertyVO" javaType="org.livin.property.entity.FavoritePropertyVO">
+            <result column="property_id" property="propertyId"/>
+            <result column="user_id" property="userId"/>
+        </association>
+        <association property="buildingVO" javaType="org.livin.property.entity.BuildingVO">
+            <result column="building_id" property="buildingId"/>
+            <result column="total_floors" property="totalFloors"/>
+            <result column="num_parking" property="numParking"/>
+            <result column="parking" property="parking"/>
+            <result column="elevator" property="elevator"/>
+            <result column="entrance_structure" property="entranceStructure"/>
+            <result column="heating_type" property="heatingType"/>
+            <result column="heating_fuel" property="heatingFuel"/>
+            <result column="total_unit" property="totalUnit"/>
+            <result column="completion_year" property="completionYear"/>
+            <result column="post_code" property="postcode"/>
+            <result column="road_address" property="roadAddress"/>
+        </association>
+        <association property="riskAnalysisVO" javaType="org.livin.risk.entity.RiskAnalysisVO">
+            <result column="riskanalysis_id" property="riskAnalysisId"/>
+            <result column="is_safe" property="isSafe"/>
+            <result column="floating_charge" property="floatingCharge"/>
+            <result column="check_landlord" property="checkLandlord"/>
+            <result column="injustice_building" property="injusticeBuilding"/>
+            <result column="jeonse_ratio" property="jeonseRatio"/>
+        </association>
+        <collection property="managementVOList" ofType="org.livin.property.entity.ManagementVO">
+            <result column="management_type" property="managementType"/>
+            <result column="management_fee" property="managementFee"/>
+            <result column="exclude_include" property="excludeInclude"/>
+        </collection>
+
+        <collection property="propertyImageVOList" ofType="org.livin.property.entity.PropertyImageVO">
+            <result column="image_url" property="imageUrl"/>
+            <result column="represent" property="represent"/>
+        </collection>
+
+        <collection property="optionVOList" ofType="org.livin.property.entity.OptionVO">
+            <result column="option_id" property="optionId"/>
+            <result column="option_type" property="optionType"/>
+        </collection>
+    </resultMap>
+
+    <select id="getPropertyDetailsById" resultMap="propertyResultMap">
+        SELECT p.property_id      AS p_id,
+               p.name,
+               p.detail_address,
+               p.jeonse_deposit,
+               p.monthly_deposit,
+               p.monthly_rent,
+               p.property_type,
+               p.transaction_type,
+               p.supply_area_m2,
+               p.exclusive_area_m2,
+               p.floor,
+               p.num_room,
+               p.num_bathrooms,
+               p.main_direction,
+               p.duplex_structure,
+               p.move_in_date,
+               p.description,
+               p.created_at,
+               p.updated_at,
+               p.sido,
+               p.sigungu,
+               p.eupmyendong,
+               p.property_num,
+               p.pet,
+               p.loan,
+
+               -- FavoriteProperty 테이블 컬럼
+               fp.property_id     AS favorite_property_id, -- resultMap에 property_id로 매핑될 컬럼
+               fp.user_id,
+
+               -- Building 테이블 컬럼
+               b.building_id,
+               b.total_floors,
+               b.num_parking,
+               b.parking,
+               b.elevator,
+               b.entrance_structure,
+               b.heating_type,
+               b.heating_fuel,
+               b.total_unit,
+               b.completion_year,
+               b.postcode         AS post_code,
+               b.road_address,
+
+               -- riskAnalysis 테이블 컬럼
+               ra.riskAnalysis_id AS riskanalysis_id,
+               ra.is_safe,
+               ra.floating_charge,
+               ra.check_landlord,
+               ra.injustice_building,
+               ra.jeonse_ratio,
+
+               -- Management 테이블 컬럼
+               m.management_type,
+               m.management_fee,
+               m.exclude_include,
+
+               -- PropertyImage 테이블 컬럼
+               pi.image_url,
+               pi.represent,
+
+               -- Option 테이블 컬럼
+               opt.option_id,
+               opt.option_type
+
+        FROM Property p
+                 LEFT JOIN Building b ON p.building_id = b.building_id
+                 LEFT JOIN riskAnalysis ra ON p.property_id = ra.property_id
+                 LEFT JOIN Management m ON p.property_id = m.property_id
+                 LEFT JOIN PropertyImage pi ON p.property_id = pi.property_id
+                 LEFT JOIN Option_Property op ON p.property_id = op.property_id
+                 LEFT JOIN `Option` opt ON op.option_id = opt.option_id
+                 LEFT JOIN FavoriteProperty fp ON p.property_id = fp.property_id AND fp.user_id = #{userId}
+        WHERE p.property_id = #{propertyId}
+    </select>
 </mapper>
