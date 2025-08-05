@@ -10,5 +10,5 @@ public class UserUpdateDTO {
 	private Long userId;
 	private String nickname;
 	private String phone;
-	private int profilImage;
+	private int profileImage;
 }
