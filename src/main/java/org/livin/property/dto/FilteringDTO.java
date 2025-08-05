@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Data
 @Builder
@@ -26,6 +27,8 @@ public class FilteringDTO {
     private Long userId;
 
     private Long lastId;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime lastCreatedAt;
 
     private String transactionType;
@@ -38,4 +41,6 @@ public class FilteringDTO {
     public void setLimit(int limit) {
         this.limit = (limit <= 0) ? 20 : limit;
     }
+
+    private Long checklistId;
 }

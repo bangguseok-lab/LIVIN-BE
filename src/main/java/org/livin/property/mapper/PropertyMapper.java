@@ -3,6 +3,7 @@ package org.livin.property.mapper;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
+import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,4 +18,10 @@ public interface PropertyMapper {
     List<PropertyImageVO> selectImagesByPropertyId(Long propertyId);
 
     LocalDateTime findCreatedAtByPropertyId(Long propertyId);
+
+    int deleteFavoriteProperty(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
+
+    int addFavoriteProperty(@Param("userId") Long userId, @Param("propertyId") Long propertyId, @Param("savedAt") LocalDateTime savedAt);
+
+    Integer checkIfFavoriteExists(@Param("userId") Long userId, @Param("propertyId") Long propertyId);
 }
