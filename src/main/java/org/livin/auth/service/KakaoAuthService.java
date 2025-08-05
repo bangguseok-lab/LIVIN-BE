@@ -2,6 +2,9 @@ package org.livin.auth.service;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.livin.auth.dto.AdditionalUserInfo;
 import org.livin.auth.dto.KakaoTokenResponse;
 import org.livin.auth.dto.KakaoUserInfo;
@@ -52,13 +55,13 @@ public class KakaoAuthService {
 		params.add("redirect_uri", redirectUri);
 		params.add("code", code);
 
-		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-		ResponseEntity<KakaoTokenResponse> response = restTemplate.postForEntity(
-			"https://kauth.kakao.com/oauth/token", request, KakaoTokenResponse.class);
-		System.out.println(response.getBody());
-		return response.getBody();
-	}
+        ResponseEntity<KakaoTokenResponse> response = restTemplate.postForEntity(
+            "https://kauth.kakao.com/oauth/token", request, KakaoTokenResponse.class);
+        System.out.println(response.getBody());
+        return response.getBody();
+    }
 
 	public KakaoUserInfo getUserInfo(String kakaoAccessToken) {
 		RestTemplate restTemplate = new RestTemplate();
@@ -69,12 +72,12 @@ public class KakaoAuthService {
 
 		HttpEntity<Void> request = new HttpEntity<>(headers);
 
-		ResponseEntity<String> response = restTemplate.exchange(
-			"https://kapi.kakao.com/v2/user/me",
-			HttpMethod.GET,
-			request,
-			String.class
-		);
+        ResponseEntity<String> response = restTemplate.exchange(
+            "https://kapi.kakao.com/v2/user/me",
+            HttpMethod.GET,
+            request,
+            String.class
+        );
 
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -91,30 +94,30 @@ public class KakaoAuthService {
 		}
 	}
 
-	public String loginOrRegisterUser(KakaoUserInfo userInfo, AdditionalUserInfo additional) {
-		UserVO existingUser = userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
-		if (existingUser == null) {
-			UserVO newUser = UserVO.builder()
-				.provider("kakao")
-				.providerId(userInfo.getProviderId())
-				.name(additional.getName())
-				.phone(additional.getPhone())
-				.nickname(additional.getNickname())
-				.birthDate(additional.getBirthDate())
-				.role(additional.getRole())
-				.profileImage(additional.getProfileImage())
-				.createdAt(LocalDateTime.now())
-				.build();
+    public String loginOrRegisterUser(KakaoUserInfo userInfo, AdditionalUserInfo additional) {
+        UserVO existingUser = userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
+        if (existingUser == null) {
+            UserVO newUser = UserVO.builder()
+                .provider("kakao")
+                .providerId(userInfo.getProviderId())
+                .name(additional.getName())
+                .phone(additional.getPhone())
+                .nickname(additional.getNickname())
+                .birthDate(additional.getBirthDate())
+                .role(additional.getRole())
+                .profileImage(additional.getProfileImage())
+                .createdAt(LocalDateTime.now())
+                .build();
 
 			userMapper.insertUser(newUser);
 		}
 
-		UserVO user = (existingUser != null) ? existingUser :
-			userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
-		String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId());
-		tokenService.saveRefreshToken(user.getProviderId(), refreshToken);
-		return jwtUtil.generateAccessToken(user.getProvider(), user.getProviderId(), user.getRole());
-	}
+        UserVO user = (existingUser != null) ? existingUser :
+            userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId(), user.getRole());
+        tokenService.saveRefreshToken(user.getProviderId(), refreshToken);
+        return jwtUtil.generateAccessToken(user.getProvider(), user.getProviderId(), user.getRole());
+    }
 
 	public boolean existsUserByProviderId(String provider, String providerId) {
 		return userMapper.findByProviderAndProviderId(provider, providerId) != null;

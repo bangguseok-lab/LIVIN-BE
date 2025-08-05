@@ -15,7 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -58,8 +57,8 @@ public class NaverAuthService {
 
 		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-		ResponseEntity<NaverTokenResponse> response = restTemplate.postForEntity(
-			"https://nid.naver.com/oauth2.0/token", request, NaverTokenResponse.class);
+        ResponseEntity<NaverTokenResponse> response = restTemplate.postForEntity(
+            "https://nid.naver.com/oauth2.0/token", request, NaverTokenResponse.class);
 
 		return response.getBody();
 	}
@@ -73,58 +72,58 @@ public class NaverAuthService {
 
 		HttpEntity<Void> request = new HttpEntity<>(headers);
 
-		ResponseEntity<String> response = restTemplate.exchange(
-			"https://openapi.naver.com/v1/nid/me",
-			HttpMethod.GET,
-			request,
-			String.class
-		);
+        ResponseEntity<String> response = restTemplate.exchange(
+            "https://openapi.naver.com/v1/nid/me",
+            HttpMethod.GET,
+            request,
+            String.class
+        );
 
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode root = objectMapper.readTree(response.getBody());
 			JsonNode userNode = root.get("response");
 
-			NaverUserInfo userInfo = new NaverUserInfo();
-			userInfo.setProvider("naver");
-			userInfo.setProviderId(userNode.get("id").asText());
-			//            userInfo.setProviderId(String.valueOf(userNode.get("id").asLong()));
+            NaverUserInfo userInfo = new NaverUserInfo();
+            userInfo.setProvider("naver");
+            userInfo.setProviderId(userNode.get("id").asText());
+            //            userInfo.setProviderId(String.valueOf(userNode.get("id").asLong()));
 
 			return userInfo;
 
-		} catch (Exception e) {
-			throw new RuntimeException("네이버 사용자 정보 파싱 실패", e);
-		}
-	}
+        } catch (Exception e) {
+            throw new RuntimeException("네이버 사용자 정보 파싱 실패", e);
+        }
+    }
 
-	public String loginOrRegisterUser(NaverUserInfo userInfo, AdditionalUserInfo additional) {
-		// 기존 회원 조회
-		UserVO existingUser = userMapper.findByProviderAndProviderId("naver", userInfo.getProviderId());
+    public String loginOrRegisterUser(NaverUserInfo userInfo, AdditionalUserInfo additional) {
+        // 기존 회원 조회
+        UserVO existingUser = userMapper.findByProviderAndProviderId("naver", userInfo.getProviderId());
 
-		// 신규 회원일 경우 DB에 저장
-		if (existingUser == null) {
-			UserVO newUser = UserVO.builder()
-				.provider("naver")
-				.providerId(userInfo.getProviderId())
-				.name(additional.getName())
-				.phone(additional.getPhone())
-				.nickname(additional.getNickname())
-				.birthDate(additional.getBirthDate())
-				.role(additional.getRole())
-				.profileImage(additional.getProfileImage())
-				.createdAt(LocalDateTime.now())
-				.build();
+        // 신규 회원일 경우 DB에 저장
+        if (existingUser == null) {
+            UserVO newUser = UserVO.builder()
+                .provider("naver")
+                .providerId(userInfo.getProviderId())
+                .name(additional.getName())
+                .phone(additional.getPhone())
+                .nickname(additional.getNickname())
+                .birthDate(additional.getBirthDate())
+                .role(additional.getRole())
+                .profileImage(additional.getProfileImage())
+                .createdAt(LocalDateTime.now())
+                .build();
 
 			userMapper.insertUser(newUser);
 			existingUser = newUser;
 		}
 
-		UserVO user = existingUser;
+        UserVO user = existingUser;
 
-		String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId());
-		tokenService.saveRefreshToken(user.getProviderId(), refreshToken);
-		return jwtUtil.generateAccessToken(user.getProvider(), user.getProviderId(), user.getRole());
-	}
+        String refreshToken = jwtUtil.generateRefreshToken(user.getProvider(), user.getProviderId(), user.getRole());
+        tokenService.saveRefreshToken(user.getProviderId(), refreshToken);
+        return jwtUtil.generateAccessToken(user.getProvider(), user.getProviderId(), user.getRole());
+    }
 
 	public boolean existsUserByProviderId(String provider, String providerId) {
 		return userMapper.findByProviderAndProviderId(provider, providerId) != null;

@@ -1,18 +1,25 @@
 package org.livin.user.controller;
 
+import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
 import org.livin.user.dto.UserNicknameDTO;
+import org.livin.user.dto.UserResponseDTO;
+import org.livin.user.dto.UserRoleUpdateDTO;
+import org.livin.user.dto.UserUpdateDTO;
 import org.livin.user.entity.UserRole;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +38,16 @@ public class UserController {
 	private final UserService userService;
 
 	@PostMapping("/logout")
-	public ResponseEntity<?> logout(@RequestParam("providerId") String providerId) {
+	public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
 		tokenService.deleteRefreshToken(providerId);
 		return ResponseEntity.ok("로그아웃 성공");
 	}
 
 	@PostMapping("/refresh")
-	public ResponseEntity<?> refresh(@RequestParam("providerId") String providerId) {
+	public ResponseEntity<?> refresh(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
+
 		String refreshToken = tokenService.getRefreshToken(providerId);
 
 		if (refreshToken == null) {
@@ -58,14 +68,20 @@ public class UserController {
 	}
 
 	@DeleteMapping("/withdraw")
-	public ResponseEntity<String> deleteUser(@RequestParam("providerId") String providerId) {
+	public ResponseEntity<String> deleteUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		String providerId = userDetails.getProviderId();
+
 		userService.deleteUser(providerId);
 		return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
 	}
 
 	// 회원 닉네임 조회
-	@GetMapping("")
-	public ResponseEntity<UserNicknameDTO> getUserNickname(@RequestParam("providerId") String providerId) {
+	@GetMapping("/nickname")
+	public ResponseEntity<UserNicknameDTO> getUserNickname(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+		String providerId = customUserDetails.getProviderId();
+
 		log.info("getUserNickname: " + providerId);
 
 		UserNicknameDTO userNicknameDTO = userService.getUserNickname(providerId);
@@ -73,4 +89,53 @@ public class UserController {
 		return ResponseEntity.ok(userNicknameDTO);
 	}
 
+	// 회원 정보 조회
+	@GetMapping("")
+	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
+		Long userId = userService.getUserIdByProviderId(providerId);
+		UserResponseDTO userInfo = userService.getUserInfo(userId);
+		return ResponseEntity.ok(userInfo);
+	}
+
+	@PostMapping("")
+	public ResponseEntity<String> updateUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody UserUpdateDTO dto
+	) {
+		String providerId = userDetails.getProviderId();
+		Long userId = userService.getUserIdByProviderId(providerId);
+		dto.setUserId(userId);
+		userService.updateUserInfo(dto);
+		return ResponseEntity.ok("회원 정보가 수정되었습니다.");
+	}
+
+	@PostMapping("/role")
+	public ResponseEntity<String> changeUserRole(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody UserRoleUpdateDTO dto
+	) {
+		String providerId = userDetails.getProviderId();
+		Long userId = userService.getUserIdByProviderId(providerId);
+		dto.setUserId(userId);
+		userService.changeUserRole(dto);
+		return ResponseEntity.ok("전환되었습니다.");
+	}
+
+	@PostMapping("/profile-image")
+	public ResponseEntity<String> uploadProfileImage(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam("image") MultipartFile imageFile
+	) {
+		String providerId = userDetails.getProviderId();
+		String imageUrl = userService.uploadProfileImage(providerId, imageFile); // 서비스에 위임
+		return ResponseEntity.ok(imageUrl); // 프론트는 이 URL을 활용해 프로필 이미지 갱신
+	}
+
+	@GetMapping("/profile-image")
+	public ResponseEntity<String> getProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		String providerId = userDetails.getProviderId();
+		String imageUrl = userService.getProfileImageUrl(providerId); // DB에서 URL 조회
+		return ResponseEntity.ok(imageUrl);
+	}
 }

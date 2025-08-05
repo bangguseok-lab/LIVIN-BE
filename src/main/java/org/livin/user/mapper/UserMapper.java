@@ -3,6 +3,7 @@ package org.livin.user.mapper;
 import java.util.Optional;
 
 import org.apache.ibatis.annotations.Param;
+import org.livin.user.dto.UserUpdateDTO;
 import org.livin.user.entity.UserVO;
 
 public interface UserMapper {
@@ -21,4 +22,14 @@ public interface UserMapper {
 	Long findUserIdByProviderId(String providerId);
 
 	UserVO findByProviderId(String userId);
+
+	Optional<UserVO> findUserById(@Param("id") Long id);
+
+	void updateUser(UserUpdateDTO dto);
+
+	void updateUserRole(@Param("userId") Long userId, @Param("roleId") String role);
+
+	void updateProfileImage(@Param("providerId") String providerId, @Param("imageUrl") String imageUrl);
+
+	String findProfileImageByProviderId(@Param("providerId") String providerId);
 }

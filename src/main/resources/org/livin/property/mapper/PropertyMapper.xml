@@ -5,7 +5,6 @@
 
 <mapper namespace="org.livin.property.mapper.PropertyMapper">
 
-    <!-- ✅ 공통 SELECT 필드 -->
     <sql id="SelectPropertyListBase">
         p
         .
@@ -33,31 +32,12 @@
         pi.image_url
     </sql>
 
-    <!-- ✅ 공통 JOIN 절 -->
     <sql id="CommonJoins">
         FROM Property p
         LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
         LEFT JOIN Building b ON p.building_id = b.building_id
-        LEFT JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id =
-        #{userId}
-        LEFT
-        JOIN
-        propertyimage
-        pi
-        ON
-        p
-        .
-        property_id
-        =
-        pi
-        .
-        property_id
-        AND
-        pi
-        .
-        represent
-        =
-        true
+        LEFT JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
+        LEFT JOIN PropertyImage pi ON p.property_id = pi.property_id AND pi.represent = true
     </sql>
 
     <!-- ✅ 공통 지역 필터 -->
@@ -84,6 +64,12 @@
     <sql id="SafePropertyFilterCondition">
         <if test="onlySecure != null and onlySecure == true">
             AND r.is_safe = true
+        </if>
+    </sql>
+
+    <sql id="ChecklistFilterCondition">
+        <if test="checklistId != null">
+            AND pcl.checklist_id = #{checklistId}
         </if>
     </sql>
 
@@ -126,7 +112,6 @@
         #{userId}
     </sql>
 
-    <!-- ✅ 전체 매물 조회 + 관심 여부 포함 + 지역 필터 -->
     <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
             parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
@@ -152,40 +137,83 @@
         LIMIT #{limit}
     </select>
 
-    <!-- ✅ 관심 매물만 조회 + 지역 필터 + 저장일 기준 정렬 -->
     <select id="selectFavoritePropertiesWithFilter" resultMap="PropertyMapWithSavedAt"
             parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
         <include refid="SelectPropertyListBase"/>,
         true AS is_favorite,
         f.saved_at
-        <include refid="CommonJoins"/>
+        FROM Property p
+        LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
+        LEFT JOIN Building b ON p.building_id = b.building_id
+        LEFT JOIN propertyimage pi ON p.property_id = pi.property_id AND pi.represent = true
+        INNER JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
+        <if test="checklistId != null">
+            INNER JOIN Property_CheckList pcl ON p.property_id = pcl.property_id
+        </if>
         <where>
-            <include refid="FavoriteCondition"/>
+            1 = 1
             <include refid="RegionFilterCondition"/>
+            <include refid="SafePropertyFilterCondition"/>
+            <include refid="ChecklistFilterCondition"/>
+
+            <if test="lastId != null and lastCreatedAt != null">
+                AND (
+                f.saved_at &lt; #{lastCreatedAt}
+                OR (f.saved_at = #{lastCreatedAt} AND p.property_id &lt; #{lastId})
+                )
+            </if>
         </where>
-        ORDER BY f.saved_at DESC
+        ORDER BY f.saved_at DESC, p.property_id DESC
+        LIMIT #{limit}
     </select>
 
-    <!-- ✅ 썸네일 이미지 조회 -->
+    <delete id="deleteFavoriteProperty" parameterType="map">
+        DELETE FROM FavoriteProperty
+        WHERE property_id = #{propertyId} AND user_id = #{userId}
+    </delete>
+
+    <insert id="addFavoriteProperty">
+        INSERT INTO FavoriteProperty (
+            user_id,
+            property_id,
+            saved_at
+        ) VALUES (
+                     #{userId},
+                     #{propertyId},
+                     #{savedAt}
+                 )
+    </insert>
+
+    <select id="checkIfFavoriteExists" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM FavoriteProperty
+        WHERE user_id = #{userId} AND property_id = #{propertyId}
+    </select>
+
     <select id="selectThumbnailImageByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
-        SELECT property_image_id,
-               image_url,
-               property_id,
-               represent
-        FROM propertyimage
-        WHERE property_id = #{propertyId}
+        SELECT
+            property_image_id,
+            image_url,
+            property_id,
+            represent
+        FROM
+            PropertyImage
+        WHERE
+            property_id = #{propertyId}
           AND represent = true
     </select>
 
-    <!-- ✅ 전체 이미지 조회 -->
     <select id="selectImagesByPropertyId" resultType="org.livin.property.entity.PropertyImageVO">
-        SELECT property_image_id,
-               image_url,
-               property_id,
-               represent
-        FROM propertyimage
-        WHERE property_id = #{propertyId}
+        SELECT
+            property_image_id,
+            image_url,
+            property_id,
+            represent
+        FROM
+            PropertyImage
+        WHERE
+            property_id = #{propertyId}
     </select>
 
     <select id="findCreatedAtByPropertyId" resultType="java.time.LocalDateTime">
@@ -218,7 +246,6 @@
         <result property="isFavorite" column="is_favorite"/>
     </resultMap>
 
-    <!--    &lt;!&ndash; ✅ 관심 매물용 확장 resultMap &ndash;&gt;-->
     <resultMap id="PropertyMapWithSavedAt" type="org.livin.property.entity.PropertyVO" extends="BasePropertyMap">
         <result property="savedAt" column="saved_at"/>
     </resultMap>
