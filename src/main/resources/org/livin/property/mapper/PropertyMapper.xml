@@ -34,7 +34,7 @@
         LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
         LEFT JOIN Building b ON p.building_id = b.building_id
         LEFT JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
-        LEFT JOIN propertyimage pi ON p.property_id = pi.property_id AND pi.represent = true
+        LEFT JOIN PropertyImage pi ON p.property_id = pi.property_id AND pi.represent = true
     </sql>
 
     <!-- ✅ 공통 지역 필터 -->
@@ -191,7 +191,7 @@
             property_id,
             represent
         FROM
-            propertyimage
+            PropertyImage
         WHERE
             property_id = #{propertyId}
           AND represent = true
@@ -204,7 +204,7 @@
             property_id,
             represent
         FROM
-            propertyimage
+            PropertyImage
         WHERE
             property_id = #{propertyId}
     </select>
