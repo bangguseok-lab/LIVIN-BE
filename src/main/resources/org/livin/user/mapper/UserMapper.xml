@@ -52,7 +52,7 @@
         WHERE provider_id = #{providerId}
     </select>
 
-    <select id="findByProviderId" resultType="org.livin.user.entity.UserVO">
+    <select id="findByProviderId" resultType="UserVO">
         SELECT *
         FROM livin.User
         WHERE user_id = #{userId}

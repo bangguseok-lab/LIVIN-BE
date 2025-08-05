@@ -19,11 +19,12 @@
             LIMIT #{limit}
     </select>
 
+    <!--    반환 type은 DTO로 -->
     <resultMap id="PropertyWithImageMap" type="PropertyVO">
         <result column="property_id" property="propertyId"/>
         <result column="name" property="name"/>
         <result column="detail_address" property="detailAddress"/>
-        <result column="description" property="description" />
+        <result column="description" property="description"/>
         <result column="image_url" property="imageUrl"/>
     </resultMap>
 
