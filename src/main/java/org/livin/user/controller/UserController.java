@@ -10,6 +10,7 @@ import org.livin.user.entity.UserRole;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +27,7 @@ import lombok.extern.log4j.Log4j2;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+
 public class UserController {
 
 	private final TokenService tokenService;
@@ -77,23 +79,51 @@ public class UserController {
 		return ResponseEntity.ok(userNicknameDTO);
 	}
 
-	// 회원 정보 조회
 	@GetMapping("")
-	public ResponseEntity<UserResponseDTO> getUserInfo(@RequestParam Long userId) {
+	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		Long userId = extractUserIdFrom(userDetails);
+		if (userId == null)
+			return unauthorized();
+
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 		return ResponseEntity.ok(userInfo);
 	}
 
 	@PostMapping("")
-	public ResponseEntity<String> updateUser(@RequestBody UserUpdateDTO dto) {
+	public ResponseEntity<String> updateUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody UserUpdateDTO dto) {
+		Long userId = extractUserIdFrom(userDetails);
+		if (userId == null)
+			return unauthorized();
+
+		dto.setUserId(userId);
 		userService.updateUserInfo(dto);
 		return ResponseEntity.ok("회원 정보가 수정되었습니다.");
 	}
 
 	@PostMapping("/role")
-	public ResponseEntity<String> changeUserRole(@RequestBody UserRoleUpdateDTO dto) {
+	public ResponseEntity<String> changeUserRole(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody UserRoleUpdateDTO dto) {
+		Long userId = extractUserIdFrom(userDetails);
+		if (userId == null)
+			return unauthorized();
+
+		dto.setUserId(userId);
 		userService.changeUserRole(dto);
 		return ResponseEntity.ok("전환되었습니다.");
+	}
+
+	private Long extractUserIdFrom(CustomUserDetails userDetails) {
+		if (userDetails == null || userDetails.getProviderId() == null) {
+			return null;
+		}
+		return userService.getUserIdByProviderId(userDetails.getProviderId());
+	}
+
+	private ResponseEntity<String> unauthorized() {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 없습니다.");
 	}
 
 }
