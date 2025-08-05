@@ -37,9 +37,7 @@ public class UserController {
 	private final UserService userService;
 
 	@PostMapping("/logout")
-	public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		String providerId = userDetails.getProviderId();
-
+	public ResponseEntity<?> logout(@RequestParam("providerId") String providerId) {
 		tokenService.deleteRefreshToken(providerId);
 		return ResponseEntity.ok("로그아웃 성공");
 	}
@@ -89,7 +87,7 @@ public class UserController {
 	}
 
 	// 회원 정보 조회
-	@GetMapping("/myInfo")
+	@GetMapping("")
 	public ResponseEntity<UserResponseDTO> getUserInfo(@RequestParam Long userId) {
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 		return ResponseEntity.ok(userInfo);
