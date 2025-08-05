@@ -76,7 +76,7 @@ public class UserController {
 	}
 
 	// 회원 닉네임 조회
-	@GetMapping("")
+	@GetMapping("/nickname")
 	public ResponseEntity<UserNicknameDTO> getUserNickname(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 		String providerId = customUserDetails.getProviderId();
