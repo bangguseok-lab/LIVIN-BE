@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.livin.checklist.mapper.ChecklistMapper">
+    <!--  체크리스트 전체 목록 조회  -->
+    <select id="getAllList" resultType="org.livin.checklist.entity.ChecklistVO">
+        SELECT *
+        FROM livin.Checklist
+        WHERE user_id = #{userId}
+        <if test="lastId != null">
+            AND checklist_id &lt; #{lastId}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{size}
+    </select>
+
+    <!--  체크리스트 상세 조회  -->
+    <select id="getChecklistDetail" parameterType="long" resultType="org.livin.checklist.dto.ChecklistItemJoinDTO">
+        SELECT c.checklist_id,
+               c.title,
+               c.description,
+               c.type AS checklist_type,
+               c.created_at,
+               c.updated_at,
+               i.checklistItem_id,
+               i.keyword,
+               i.is_active,
+               i.type AS item_type
+        FROM livin.Checklist c
+                 JOIN livin.ChecklistItem i ON c.checklist_id = i.checklist_id
+        WHERE c.checklist_id = #{checklistId}
+    </select>
+
+    <!--  체크리스트 타입별 아이템 조회  -->
+    <resultMap id="ChecklistItemSimpleMap" type="org.livin.checklist.dto.ChecklistItemSimpleDTO">
+        <id property="checklistItemId" column="checklistItem_id"/>
+        <result property="keyword" column="keyword"/>
+        <result property="isActive" column="is_active"/>
+        <result property="type" column="type"/>
+    </resultMap>
+
+    <select id="getItemListByType" resultMap="ChecklistItemSimpleMap">
+        SELECT i.checklistItem_id,
+               i.keyword,
+               i.is_active,
+               i.type
+        FROM ChecklistItem i
+        WHERE i.checklist_id = #{checklistId}
+          AND type = #{type};
+    </select>
+
+
+    <!--  체크리스트 생성  -->
+    <insert id="create" useGeneratedKeys="true" keyProperty="checklistId">
+        INSERT INTO checklist (user_id, title, description, type, created_at, updated_at)
+        VALUES (#{userId}, #{title}, #{description}, #{type}, NOW(), #{updatedAt})
+    </insert>
+
+    <!--  체크리스트의 기본 항목 생성  -->
+    <insert id="createChecklistDefaultItem">
+        INSERT INTO livin.ChecklistItem (keyword, is_active, type, checklist_id)
+        VALUES ('강한 수압', false, 'ROOM', #{checklistId}),
+               ('방의 기울기', false, 'ROOM', #{checklistId}),
+               ('채광', false, 'ROOM', #{checklistId}),
+               ('누수', false, 'ROOM', #{checklistId}),
+               ('결로 흔적', false, 'ROOM', #{checklistId}),
+               ('곰팡이', false, 'ROOM', #{checklistId}),
+               ('벌레', false, 'ROOM', #{checklistId}),
+               ('난방 컨디션', false, 'ROOM', #{checklistId}),
+               ('전기 컨디션', false, 'ROOM', #{checklistId}),
+               ('창문 컨디션', false, 'ROOM', #{checklistId}),
+               ('CCTV', false, 'BUILDING', #{checklistId}),
+               ('엘레베이터 여부', false, 'BUILDING', #{checklistId})
+    </insert>
+
+    <!--  INFRA 타입의 아이템 생성  -->
+    <insert id="createInfraItem">
+        INSERT INTO livin.ChecklistItem (keyword, is_active, type, checklist_id)
+        VALUES ('지하철역', false, 'INFRA', #{checklistId}),
+               ('버스정류장', false, 'INFRA', #{checklistId}),
+               ('편의점', false, 'INFRA', #{checklistId}),
+               ('대로변 근처', false, 'INFRA', #{checklistId}),
+               ('문화생활', false, 'INFRA', #{checklistId}),
+               ('공원', false, 'INFRA', #{checklistId})
+    </insert>
+
+    <!--  OPTION 타입의 아이템 생성  -->
+    <insert id="createOptionItem">
+        INSERT INTO livin.ChecklistItem (keyword, is_active, type, checklist_id)
+        VALUES ('세탁기', false, 'OPTION', #{checklistId}),
+               ('냉장고', false, 'OPTION', #{checklistId}),
+               ('에어컨', false, 'OPTION', #{checklistId}),
+               ('건조기', false, 'OPTION', #{checklistId}),
+               ('전자렌지', false, 'OPTION', #{checklistId}),
+               ('가스렌지', false, 'OPTION', #{checklistId}),
+               ('인덕션', false, 'OPTION', #{checklistId}),
+               ('침대', false, 'OPTION', #{checklistId}),
+               ('현관문 잠금장치', false, 'OPTION', #{checklistId})
+    </insert>
+
+
+    <!--  CIRCUMSTANCE 타입의 아이템 생성 -->
+    <insert id="createCircumstanceItem">
+        INSERT INTO livin.ChecklistItem (keyword, is_active, type, checklist_id)
+        VALUES ('층간 소음', false, 'CIRCUMSTANCE', #{checklistId}),
+               ('방음', false, 'CIRCUMSTANCE', #{checklistId}),
+               ('반려동물 가능 유무', false, 'CIRCUMSTANCE', #{checklistId}),
+               ('치안', false, 'CIRCUMSTANCE', #{checklistId}),
+               ('골목길 가로등 유무', false, 'CIRCUMSTANCE', #{checklistId}),
+               ('주위 소음 시설 유무', false, 'CIRCUMSTANCE', #{checklistId})
+    </insert>
+
+
+    <!--  나만의 아이템 생성 -->
+    <insert id="createCustomItem">
+        INSERT INTO livin.ChecklistItem (keyword, is_active, type, checklist_id)
+        VALUES (#{keyword}, false, 'CUSTOM', #{checklistId})
+    </insert>
+
+
+    <!--  체크리스트의 이름, 설명 수정  -->
+    <update id="updateChecklist">
+        UPDATE livin.Checklist
+        SET livin.Checklist.title       = #{title},
+            livin.Checklist.description = #{description}
+        WHERE livin.Checklist.checklist_id = #{checklistId}
+    </update>
+
+
+    <!--  체크리스트 아이템 활성 상태 수정  -->
+    <update id="updateItem">
+        UPDATE livin.ChecklistItem
+        SET livin.ChecklistItem.is_active = #{isActive}
+        WHERE livin.ChecklistItem.checklistItem_id = #{checklistItemId};
+    </update>
+
+
+    <!--  체크리스트 삭제  -->
+    <delete id="deleteChecklist">
+        DELETE
+        FROM livin.Checklist
+        WHERE livin.Checklist.checklist_id = #{checklistId}
+    </delete>
+
+    <!--  나만의 아이템 삭제  -->
+    <delete id="deleteCustomItem">
+        DELETE
+        FROM livin.ChecklistItem
+        WHERE livin.ChecklistItem.checklist_id = #{checklistId}
+          AND livin.ChecklistItem.checklistItem_id = #{checklistItemId}
+          AND livin.ChecklistItem.type = 'CUSTOM'
+    </delete>
+</mapper>

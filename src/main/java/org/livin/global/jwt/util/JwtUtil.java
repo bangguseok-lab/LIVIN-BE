@@ -30,19 +30,21 @@ public class JwtUtil {
 
 	// 토큰 검증
 	public Claims validateToken(String token) {
-		// "Bearer " 접두사 제거
-		if (token != null && token.startsWith("Bearer ")) {
-			token = token.substring(7).trim(); // 앞 7글자("Bearer ") 제거 + 공백 제거
-		} else if (token != null) {
-			token = token.trim(); // 그냥 공백만 제거
-		}
-		log.info("🔍 토큰 유효성 검사 시작 (정제 후): '{}'", token);
 
-		return Jwts.parser()
-			.setSigningKey(secret)
-			.parseClaimsJws(token)
-			.getBody();
-	}
+  // "Bearer " 접두사 제거
+  if (token != null && token.startsWith("Bearer ")) {
+    token = token.substring(7).trim(); // 앞 7글자("Bearer ") 제거 + 공백 제거
+  } else if (token != null) {
+    token = token.trim(); // 그냥 공백만 제거
+
+  }
+  log.info("🔍 토큰 유효성 검사 시작 (정제 후): '{}'", token);
+
+  return Jwts.parser()
+    .setSigningKey(secret)
+    .parseClaimsJws(token)
+    .getBody();
+}
 
 	// 소셜로그인용 Access Token 발급
 	public String generateAccessToken(String provider, String providerId, UserRole role) {
