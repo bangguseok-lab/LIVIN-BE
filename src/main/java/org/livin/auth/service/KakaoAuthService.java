@@ -33,29 +33,29 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class KakaoAuthService {
 
-    private final JwtUtil jwtUtil;
-    private final UserMapper userMapper;
-    private final TokenService tokenService;
+	private final JwtUtil jwtUtil;
+	private final UserMapper userMapper;
+	private final TokenService tokenService;
 
-    @Value("${kakao.client-id}")
-    private String clientId;
+	@Value("${kakao.client-id}")
+	private String clientId;
 
-    @Value("${kakao.redirect-uri}")
-    private String redirectUri;
+	@Value("${kakao.redirect-uri}")
+	private String redirectUri;
 
-    public KakaoTokenResponse getKakaoAccessToken(String code) {
-        RestTemplate restTemplate = new RestTemplate();
+	public KakaoTokenResponse getKakaoAccessToken(String code) {
+		RestTemplate restTemplate = new RestTemplate();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", clientId);
-        params.add("redirect_uri", redirectUri);
-        params.add("code", code);
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add("grant_type", "authorization_code");
+		params.add("client_id", clientId);
+		params.add("redirect_uri", redirectUri);
+		params.add("code", code);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         ResponseEntity<KakaoTokenResponse> response = restTemplate.postForEntity(
             "https://kauth.kakao.com/oauth/token", request, KakaoTokenResponse.class);
@@ -63,14 +63,14 @@ public class KakaoAuthService {
         return response.getBody();
     }
 
-    public KakaoUserInfo getUserInfo(String kakaoAccessToken) {
-        RestTemplate restTemplate = new RestTemplate();
+	public KakaoUserInfo getUserInfo(String kakaoAccessToken) {
+		RestTemplate restTemplate = new RestTemplate();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(kakaoAccessToken);
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(kakaoAccessToken);
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<Void> request = new HttpEntity<>(headers);
+		HttpEntity<Void> request = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange(
             "https://kapi.kakao.com/v2/user/me",
@@ -79,20 +79,20 @@ public class KakaoAuthService {
             String.class
         );
 
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode root = objectMapper.readTree(response.getBody());
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode root = objectMapper.readTree(response.getBody());
 
-            KakaoUserInfo userInfo = new KakaoUserInfo();
-            userInfo.setProvider("kakao");
-            userInfo.setProviderId(String.valueOf(root.get("id").asLong()));
+			KakaoUserInfo userInfo = new KakaoUserInfo();
+			userInfo.setProvider("kakao");
+			userInfo.setProviderId(String.valueOf(root.get("id").asLong()));
 
-            return userInfo;
+			return userInfo;
 
-        } catch (Exception e) {
-            throw new RuntimeException("카카오 사용자 정보 파싱 실패", e);
-        }
-    }
+		} catch (Exception e) {
+			throw new RuntimeException("카카오 사용자 정보 파싱 실패", e);
+		}
+	}
 
     public String loginOrRegisterUser(KakaoUserInfo userInfo, AdditionalUserInfo additional) {
         UserVO existingUser = userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
@@ -109,8 +109,8 @@ public class KakaoAuthService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-            userMapper.insertUser(newUser);
-        }
+			userMapper.insertUser(newUser);
+		}
 
         UserVO user = (existingUser != null) ? existingUser :
             userMapper.findByProviderAndProviderId("kakao", userInfo.getProviderId());
@@ -119,7 +119,7 @@ public class KakaoAuthService {
         return jwtUtil.generateAccessToken(user.getProvider(), user.getProviderId(), user.getRole());
     }
 
-    public boolean existsUserByProviderId(String provider, String providerId) {
-        return userMapper.findByProviderAndProviderId(provider, providerId) != null;
-    }
+	public boolean existsUserByProviderId(String provider, String providerId) {
+		return userMapper.findByProviderAndProviderId(provider, providerId) != null;
+	}
 }
