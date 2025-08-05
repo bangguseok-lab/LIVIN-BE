@@ -46,6 +46,7 @@ public class PropertyDTO {
 	private Boolean isFavorite;                // 관심 매물 여부
 
 	private List<PropertyImageVO> imageUrls;   // 이미지 리스트
+	private LocalDateTime savedAt;
 
 	public static PropertyDTO of(PropertyVO propertyVO) {
 		return (propertyVO == null) ? null : PropertyDTO.builder()
@@ -75,6 +76,7 @@ public class PropertyDTO {
 
 			.isSafe(propertyVO.getIsSafe())
 			.isFavorite(propertyVO.getIsFavorite())
+			.savedAt(propertyVO.getSavedAt())
 			.imageUrls(propertyVO.getImages())
 			.build();
 	}
