@@ -5,12 +5,14 @@ import java.util.List;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
+import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.service.PropertyServiceImpl;
 import org.livin.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,7 +46,8 @@ public class PropertyController {
 	//properties?sido=서울특별시&sigungu=강남구&eupmyendong=역삼동
 
 	@GetMapping("/properties")
-	public ResponseEntity<List<PropertyDTO>> getPropertiesByRegion(@AuthenticationPrincipal CustomUserDetails userDetails,
+	public ResponseEntity<List<PropertyDTO>> getPropertiesByRegion(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute FilteringDTO address) {
 
 		log.info("address = {}로 매물 요청", address);
@@ -60,4 +63,11 @@ public class PropertyController {
 		return ResponseEntity.ok(result);
 	}
 
+	@GetMapping("/property/details/{id}")
+	public ResponseEntity<PropertyDetailsDTO> getPropertyDetails(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable(name = "id") Long propertyId) {
+		String providerId = customUserDetails.getProviderId();
+		PropertyDetailsDTO propertyDetailsDTO = propertyService.getPropertyDetails(propertyId, providerId);
+		return ResponseEntity.ok(propertyDetailsDTO);
+	}
 }
