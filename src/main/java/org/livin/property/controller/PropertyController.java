@@ -35,7 +35,7 @@ public class PropertyController {
 
 	// 관심 매물 조회 - 메인페이지 전용
 	@GetMapping("/properties/favorite")
-	public ResponseEntity<?> getFavoriteProperties(
+	public ResponseEntity<List<PropertyDTO>> getFavoriteProperties(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute FilteringDTO address
 	) {
