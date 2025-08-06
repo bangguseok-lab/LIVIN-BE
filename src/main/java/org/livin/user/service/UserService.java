@@ -1,6 +1,7 @@
 package org.livin.user.service;
 
 import org.livin.user.dto.UserNicknameDTO;
+import org.livin.user.dto.UserProfileImageDTO;
 import org.livin.user.dto.UserResponseDTO;
 import org.livin.user.dto.UserRoleUpdateDTO;
 import org.livin.user.dto.UserUpdateDTO;
@@ -21,5 +22,5 @@ public interface UserService {
 
 	UserUpdateDTO updateProfileImage(UserUpdateDTO dto);
 
-	String getProfileImageUrl(Long userId);
+	UserProfileImageDTO getProfileImage(Long userId);
 }

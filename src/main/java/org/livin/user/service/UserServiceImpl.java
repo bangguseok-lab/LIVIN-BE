@@ -4,6 +4,7 @@ import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.user.dto.UserNicknameDTO;
+import org.livin.user.dto.UserProfileImageDTO;
 import org.livin.user.dto.UserResponseDTO;
 import org.livin.user.dto.UserRoleUpdateDTO;
 import org.livin.user.dto.UserUpdateDTO;
@@ -71,11 +72,9 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public String getProfileImageUrl(Long userId) {
-		String providerId = userMapper.findProviderIdByUserId(userId);
-		if (providerId == null) {
-			throw new CustomException(ErrorCode.NOT_FOUND);
-		}
-		return getProfileImageUrl(userId);
+	public UserProfileImageDTO getProfileImage(Long userId) {
+		UserVO profileImage = userMapper.findUserById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+		return UserProfileImageDTO.of(profileImage);
 	}
 }

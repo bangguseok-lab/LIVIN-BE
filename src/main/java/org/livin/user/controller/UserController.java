@@ -5,6 +5,7 @@ import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
 import org.livin.global.response.SuccessResponse;
 import org.livin.user.dto.UserNicknameDTO;
+import org.livin.user.dto.UserProfileImageDTO;
 import org.livin.user.dto.UserResponseDTO;
 import org.livin.user.dto.UserRoleUpdateDTO;
 import org.livin.user.dto.UserUpdateDTO;
@@ -95,7 +96,7 @@ public class UserController {
 
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
-		
+
 		return ResponseEntity.ok(userInfo);
 	}
 
@@ -139,9 +140,10 @@ public class UserController {
 	}
 
 	@GetMapping("/profile-image")
-	public ResponseEntity<String> getProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ResponseEntity<UserProfileImageDTO> getProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
-		String imageUrl = userService.getProfileImageUrl(userId);
-		return ResponseEntity.ok(imageUrl);
+		UserProfileImageDTO profileImage = userService.getProfileImage(userId);
+		return ResponseEntity.ok(profileImage);
 	}
 }
