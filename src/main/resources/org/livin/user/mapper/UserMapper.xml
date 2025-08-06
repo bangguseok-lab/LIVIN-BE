@@ -93,7 +93,7 @@
 
     <select id="findProviderIdByUserId" resultType="string" parameterType="long">
         SELECT provider_id
-        FROM users
+        FROM livin.User
         WHERE id = #{userId}
     </select>
 
