@@ -5,8 +5,9 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
+
 public enum UserRole {
-    LANDLORD("임대인"),
-    TENANT("임차인");
-    private final String label;
+	LANDLORD("임대인"),
+	TENANT("임차인");
+	private final String label;
 }

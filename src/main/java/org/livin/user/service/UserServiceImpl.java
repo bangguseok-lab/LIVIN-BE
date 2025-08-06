@@ -30,20 +30,15 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void updateUserInfo(UserUpdateDTO dto) {
-		log.info("update user info: {}", dto);
-		userMapper.updateUser(dto);
+	public UserUpdateDTO updateUserInfo(UserUpdateDTO dto) {
+		userMapper.updateUser(dto.toVO());
+		return UserUpdateDTO.of(userMapper.findByUserId(dto.getUserId()));
 	}
 
 	@Override
-	public void changeUserRole(UserRoleUpdateDTO dto) {
-		log.info("service userid: {}", dto.getUserId());
-		// TODO: 정범, try catch문 리팩토링 필요.
-		try {
-			userMapper.updateUserRole(dto.getUserId(), dto.getRole().name());
-		} catch (Exception e) {
-			log.error(e);
-		}
+	public UserRoleUpdateDTO updateUserRole(UserRoleUpdateDTO dto) {
+		userMapper.updateUserRole(dto.toVO());
+		return UserRoleUpdateDTO.of(userMapper.findByUserId(dto.getUserId()));
 	}
 
 	@Override

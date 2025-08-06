@@ -92,31 +92,37 @@ public class UserController {
 	// 회원 정보 조회
 	@GetMapping("")
 	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
+		
 		return ResponseEntity.ok(userInfo);
 	}
 
 	@PutMapping("")
-	public ResponseEntity<String> updateUser(
+	public ResponseEntity<SuccessResponse<UserUpdateDTO>> updateUserinfo(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserUpdateDTO dto
 	) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
-		userService.updateUserInfo(dto);
-		return ResponseEntity.ok("");
+		UserUpdateDTO updateDTO = userService.updateUserInfo(dto);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "수정 되었습니다.", updateDTO));
 	}
 
 	@PutMapping("/role")
-	public ResponseEntity<String> changeUserRole(
+	public ResponseEntity<SuccessResponse<UserRoleUpdateDTO>> updateUserRole(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserRoleUpdateDTO dto
 	) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
-		userService.changeUserRole(dto);
-		return ResponseEntity.ok("");
+		UserRoleUpdateDTO roleUpdateDTO = userService.updateUserRole(dto);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "전환 되었습니다.", roleUpdateDTO));
 	}
 
 	@PutMapping("/profile-image")

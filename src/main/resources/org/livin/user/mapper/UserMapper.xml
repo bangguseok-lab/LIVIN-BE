@@ -65,7 +65,7 @@
         WHERE user_id = #{userId}
     </select>
 
-    <update id="updateUser" parameterType="org.livin.user.dto.UserUpdateDTO">
+    <update id="updateUser" parameterType="org.livin.user.entity.UserVO">
         UPDATE livin.User
         SET nickname      = #{nickname},
             phone         = #{phone},

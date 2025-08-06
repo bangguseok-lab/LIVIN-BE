@@ -9,9 +9,9 @@ public interface UserService {
 
 	UserResponseDTO getUserInfo(Long userId);
 
-	void updateUserInfo(UserUpdateDTO dto);
+	UserUpdateDTO updateUserInfo(UserUpdateDTO dto);
 
-	void changeUserRole(UserRoleUpdateDTO dto);
+	UserRoleUpdateDTO updateUserRole(UserRoleUpdateDTO dto);
 
 	void deleteUser(String providerId);
 
