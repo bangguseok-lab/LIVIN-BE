@@ -49,7 +49,7 @@ public class PropertyDetailsDTO {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		return PropertyDetailsDTO.builder()
 			.propertyId(propertyDetailsVO.getPropertyId())
-			.isFavorite(propertyDetailsVO.getFavoritePropertyVO() == null)
+			.isFavorite(propertyDetailsVO.getFavoritePropertyVO() != null)
 			.isSafe(propertyDetailsVO.getRiskAnalysisVO().getIsSafe())
 			.name(propertyDetailsVO.getName())
 			.transactionType(propertyDetailsVO.getTransactionType().getLabel())
