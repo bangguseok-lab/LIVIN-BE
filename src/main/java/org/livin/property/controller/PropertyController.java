@@ -5,6 +5,7 @@ import java.util.List;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
+import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.service.PropertyServiceImpl;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -12,14 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.livin.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -52,7 +50,8 @@ public class PropertyController {
 
 	// 위치 정보(읍, 명, 동) 기반 전체 매물 조회 - 매물 조회 페이지
 	@GetMapping("/properties")
-	public ResponseEntity<List<PropertyDTO>> getPropertiesByRegion(@AuthenticationPrincipal CustomUserDetails userDetails,
+	public ResponseEntity<List<PropertyDTO>> getPropertiesByRegion(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute FilteringDTO address) {
 
 		log.info("address = {}로 매물 요청", address);
@@ -66,6 +65,14 @@ public class PropertyController {
 		log.info("{}", result);
 
 		return ResponseEntity.ok(result);
+	}
+
+	@GetMapping("/properties/details/{id}")
+	public ResponseEntity<PropertyDetailsDTO> getPropertyDetails(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable(name = "id") Long propertyId) {
+		String providerId = customUserDetails.getProviderId();
+		PropertyDetailsDTO propertyDetailsDTO = propertyService.getPropertyDetails(propertyId, providerId);
+		return ResponseEntity.ok(propertyDetailsDTO);
 	}
 
 	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
@@ -120,8 +127,7 @@ public class PropertyController {
 		} catch (IllegalArgumentException e) {
 			log.warn("관심 매물 삭제 중 사용자 관련 에러: {}", e.getMessage());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			log.error("관심 매물 삭제 실패: {}", e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}

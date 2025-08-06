@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
+import org.livin.property.dto.PropertyDetailsDTO;
 
 public interface PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address);
 
 	public List<PropertyDTO> getPropertiesByRegion(FilteringDTO address);
 
+	PropertyDetailsDTO getPropertyDetails(Long propertyId, String providerId);
 	// ✅ 필터링된 관심 매물 조회를 위한 메서드 추가
 	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO);
 
