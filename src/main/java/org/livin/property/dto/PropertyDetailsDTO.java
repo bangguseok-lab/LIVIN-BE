@@ -29,6 +29,7 @@ public class PropertyDetailsDTO {
 	private String transactionType;
 	private String detailAddress;
 	private String price;
+	private String propertyType;
 	private BigDecimal supplyAreaM2;
 	private BigDecimal exclusiveAreaM2;
 	private int floor;
@@ -59,6 +60,7 @@ public class PropertyDetailsDTO {
 					propertyDetailsVO.getMonthlyDeposit() + "/" +
 						propertyDetailsVO.getMonthlyRent()
 			)
+			.propertyType(propertyDetailsVO.getPropertyType())
 			.supplyAreaM2(propertyDetailsVO.getSupplyAreaM2())
 			.exclusiveAreaM2(propertyDetailsVO.getExclusiveAreaM2())
 			.floor(propertyDetailsVO.getFloor())
