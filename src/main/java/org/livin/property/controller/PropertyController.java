@@ -33,20 +33,22 @@ public class PropertyController {
 	private final UserService userService;
 	private final PropertyServiceImpl propertyService;
 
-	// // 관심 매물 조회 - 메인페이지 전용
-	// @GetMapping("/properties/favorite")
-	// public ResponseEntity<?> getFavoriteProperties(
-	// 	@AuthenticationPrincipal CustomUserDetails customUserDetails,
-	// 	@RequestParam(defaultValue = "3") int limit
-	// ) {
-	// 	String providerId = customUserDetails.getProviderId();
-	// 	log.info("providerId = {}로 관심 매물 요청, limit = {}만큼 매물 정보 전달", providerId, limit);
-	//
-	// 	List<PropertyWithImageDTO> result = propertyService.getFavoritePropertiesForMain(providerId, limit);
-	// 	log.info("회원 {}의 관심 매물 {}건 조회 완료", providerId, result.size());
-	//
-	// 	return ResponseEntity.ok(result);
-	// }
+	// 관심 매물 조회 - 메인페이지 전용
+	@GetMapping("/properties/favorite")
+	public ResponseEntity<List<PropertyDTO>> getFavoriteProperties(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@ModelAttribute FilteringDTO address
+	) {
+		// 인증 정보로 userId 추출
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		address.setUserId(userId);
+		// log.info("인증정보 {}, 읍면동limit {} 호출이 잘 되는지", userDetails.getUsername(), address);
+
+		List<PropertyDTO> result = propertyService.getFavoritePropertiesForMain(address);
+		// log.info("회원의 관심 매물 {}건 조회 완료", result.size());
+
+		return ResponseEntity.ok(result);
+	}
 
 	// 위치 정보(읍, 명, 동) 기반 전체 매물 조회 - 매물 조회 페이지
 	@GetMapping("/properties")
