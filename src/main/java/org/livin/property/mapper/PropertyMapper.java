@@ -29,5 +29,8 @@ public interface PropertyMapper {
 	int addFavoriteProperty(@Param("userId") Long userId, @Param("propertyId") Long propertyId,
 		@Param("savedAt") LocalDateTime savedAt);
 
-	Integer checkIfFavoriteExists(@Param("userId") Long userId, @Param("propertyId") Long propertyId);
+	int checkIfFavoriteExists(@Param("userId") Long userId, @Param("propertyId") Long propertyId);
+
+	Optional<PropertyVO> selectPropertyById(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
 }
+
