@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -92,12 +93,13 @@ public class UserController {
 	// 회원 정보 조회
 	@GetMapping("")
 	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		log.info("getUserInfo: " + userDetails.getProviderId());
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 		return ResponseEntity.ok(userInfo);
 	}
 
-	@PostMapping("")
+	@PutMapping("")
 	public ResponseEntity<String> updateUser(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserUpdateDTO dto
@@ -105,21 +107,22 @@ public class UserController {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
 		userService.updateUserInfo(dto);
-		return ResponseEntity.ok("회원 정보가 수정되었습니다.");
+		return ResponseEntity.ok("");
 	}
 
-	@PostMapping("/role")
+	@PutMapping("/role")
 	public ResponseEntity<String> changeUserRole(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserRoleUpdateDTO dto
 	) {
+		log.info("changeUserRole: " + dto);
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
 		userService.changeUserRole(dto);
-		return ResponseEntity.ok("전환되었습니다.");
+		return ResponseEntity.ok("");
 	}
 
-	@PostMapping("/profile-image")
+	@PutMapping("/profile-image")
 	public ResponseEntity<String> uploadProfileImage(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam("image") MultipartFile imageFile

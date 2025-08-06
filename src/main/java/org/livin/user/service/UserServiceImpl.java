@@ -37,7 +37,12 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void changeUserRole(UserRoleUpdateDTO dto) {
-		userMapper.updateUserRole(dto.getUserId(), dto.getRole().name());
+		log.info("service userid: {}", dto.getUserId());
+		try {
+			userMapper.updateUserRole(dto.getUserId(), dto.getRole().name());
+		} catch (Exception e) {
+			log.error(e);
+		}
 	}
 
 	@Override

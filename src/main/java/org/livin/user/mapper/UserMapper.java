@@ -27,7 +27,7 @@ public interface UserMapper {
 
 	void updateUser(UserUpdateDTO dto);
 
-	void updateUserRole(@Param("userId") Long userId, @Param("roleId") String role);
+	void updateUserRole(@Param("userId") Long userId, @Param("role") String role);
 
 	void updateProfileImage(@Param("providerId") String providerId, @Param("imageUrl") String imageUrl);
 
