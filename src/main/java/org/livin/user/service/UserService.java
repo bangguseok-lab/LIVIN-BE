@@ -4,9 +4,9 @@ import org.livin.user.dto.UserNicknameDTO;
 import org.livin.user.dto.UserResponseDTO;
 import org.livin.user.dto.UserRoleUpdateDTO;
 import org.livin.user.dto.UserUpdateDTO;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
+
 	UserResponseDTO getUserInfo(Long userId);
 
 	void updateUserInfo(UserUpdateDTO dto);
@@ -19,7 +19,7 @@ public interface UserService {
 
 	Long getUserIdByProviderId(String providerId);
 
-	String uploadProfileImage(Long userId, MultipartFile imageFile);
+	UserUpdateDTO updateProfileImage(UserUpdateDTO dto);
 
 	String getProfileImageUrl(Long userId);
 }

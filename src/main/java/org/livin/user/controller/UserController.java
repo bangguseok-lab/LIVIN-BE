@@ -3,6 +3,7 @@ package org.livin.user.controller;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
+import org.livin.global.response.SuccessResponse;
 import org.livin.user.dto.UserNicknameDTO;
 import org.livin.user.dto.UserResponseDTO;
 import org.livin.user.dto.UserRoleUpdateDTO;
@@ -18,9 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +92,6 @@ public class UserController {
 	// 회원 정보 조회
 	@GetMapping("")
 	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		log.info("getUserInfo: " + userDetails.getProviderId());
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 		return ResponseEntity.ok(userInfo);
@@ -115,7 +113,6 @@ public class UserController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserRoleUpdateDTO dto
 	) {
-		log.info("changeUserRole: " + dto);
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
 		userService.changeUserRole(dto);
@@ -123,13 +120,16 @@ public class UserController {
 	}
 
 	@PutMapping("/profile-image")
-	public ResponseEntity<String> uploadProfileImage(
+	public ResponseEntity<SuccessResponse<UserUpdateDTO>> updateProfileImage(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestParam("image") MultipartFile imageFile
+		@RequestBody UserUpdateDTO dto
 	) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
-		String imageUrl = userService.uploadProfileImage(userId, imageFile);
-		return ResponseEntity.ok(imageUrl);
+		dto.setUserId(userId);
+		UserUpdateDTO updateDTO = userService.updateProfileImage(dto);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "프로필 이미지가 수정되었습니다.", updateDTO));
 	}
 
 	@GetMapping("/profile-image")

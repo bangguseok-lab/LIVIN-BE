@@ -10,7 +10,6 @@ import org.livin.user.dto.UserUpdateDTO;
 import org.livin.user.entity.UserVO;
 import org.livin.user.mapper.UserMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -32,12 +31,14 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void updateUserInfo(UserUpdateDTO dto) {
+		log.info("update user info: {}", dto);
 		userMapper.updateUser(dto);
 	}
 
 	@Override
 	public void changeUserRole(UserRoleUpdateDTO dto) {
 		log.info("service userid: {}", dto.getUserId());
+		// TODO: 정범, try catch문 리팩토링 필요.
 		try {
 			userMapper.updateUserRole(dto.getUserId(), dto.getRole().name());
 		} catch (Exception e) {
@@ -68,12 +69,10 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public String uploadProfileImage(Long userId, MultipartFile imageFile) {
-		String providerId = userMapper.findProviderIdByUserId(userId);
-		if (providerId == null) {
-			throw new CustomException(ErrorCode.NOT_FOUND);
-		}
-		return uploadProfileImage(userId, imageFile);
+	public UserUpdateDTO updateProfileImage(UserUpdateDTO dto) {
+		userMapper.updateProfileImage(dto.toVO());
+		return UserUpdateDTO.of(userMapper.findByUserId(dto.getUserId()));
+		// return updateProfileImage(dto.toVO());
 	}
 
 	@Override

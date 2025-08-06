@@ -53,7 +53,7 @@
         WHERE provider_id = #{providerId}
     </select>
 
-    <select id="findByProviderId" resultType="UserVO">
+    <select id="findByUserId" resultType="UserVO">
         SELECT *
         FROM livin.User
         WHERE user_id = #{userId}
@@ -81,8 +81,8 @@
 
     <update id="updateProfileImage">
         UPDATE livin.User
-        SET profile_image = #{imageUrl}
-        WHERE provider_id = #{providerId}
+        SET profile_image = #{profileImage}
+        WHERE user_id = #{userId}
     </update>
 
     <select id="findProfileImageByProviderId" resultType="string">
