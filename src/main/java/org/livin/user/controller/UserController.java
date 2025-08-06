@@ -92,8 +92,8 @@ public class UserController {
 	// 회원 정보 조회
 	@GetMapping("")
 	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		String providerId = userDetails.getProviderId();
-		Long userId = userService.getUserIdByProviderId(providerId);
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 		return ResponseEntity.ok(userInfo);
 	}
