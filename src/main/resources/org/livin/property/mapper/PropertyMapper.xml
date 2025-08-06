@@ -142,7 +142,7 @@
         LEFT JOIN PropertyImage pi ON p.property_id = pi.property_id AND pi.represent = true
         INNER JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
         <if test="checklistId != null">
-            INNER JOIN Property_CheckList pcl ON p.property_id = pcl.property_id
+            INNER JOIN Property_Checklist pcl ON p.property_id = pcl.property_id
         </if>
         <where>
             1 = 1
