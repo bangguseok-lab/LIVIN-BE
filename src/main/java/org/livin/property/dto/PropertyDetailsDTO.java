@@ -34,6 +34,7 @@ public class PropertyDetailsDTO {
 	private BigDecimal exclusiveAreaM2;
 	private int floor;
 	private int room;
+	private int bathrooms;
 	private String direction;
 	private boolean duplexStructure;
 	private String moveInDate;
@@ -64,6 +65,8 @@ public class PropertyDetailsDTO {
 			.supplyAreaM2(propertyDetailsVO.getSupplyAreaM2())
 			.exclusiveAreaM2(propertyDetailsVO.getExclusiveAreaM2())
 			.floor(propertyDetailsVO.getFloor())
+			.room(propertyDetailsVO.getNumRoom())
+			.bathrooms(propertyDetailsVO.getNumBathrooms())
 			.direction(propertyDetailsVO.getMainDirection())
 			.duplexStructure(propertyDetailsVO.getDuplexStructure())
 			.moveInDate(propertyDetailsVO.getMoveInDate().format(formatter))
