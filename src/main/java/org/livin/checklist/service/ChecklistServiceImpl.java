@@ -72,8 +72,11 @@ public class ChecklistServiceImpl implements ChecklistService {
 			Long checklistId = checklistVO.getChecklistId();    // 생성된 checklistId 추출
 			log.info("✅ 생성된 checklistId: {}", checklistId);
 
-			// ChecklistItem 기본 아이템 생성
+			// ChecklistItem 기본 아이템 생성 + 주변 인프라 + 주변 환경 + 옵션 항목 함께 생성
 			checklistMapper.createChecklistDefaultItem(checklistId);
+			checklistMapper.createInfraItem(checklistId);
+			checklistMapper.createCircumstanceItem(checklistId);
+			checklistMapper.createOptionItem(checklistId);
 
 			// Checklist + ChecklistItem 테이블 조인해서 상세정보 함께 반환
 			List<ChecklistItemJoinDTO> joinList = checklistMapper.getChecklistDetail(checklistId);
