@@ -19,7 +19,7 @@ public interface UserService {
 
 	Long getUserIdByProviderId(String providerId);
 
-	String uploadProfileImage(String providerId, MultipartFile imageFile);
+	String uploadProfileImage(Long userId, MultipartFile imageFile);
 
-	String getProfileImageUrl(String providerId);
+	String getProfileImageUrl(Long userId);
 }

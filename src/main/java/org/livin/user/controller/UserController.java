@@ -93,7 +93,6 @@ public class UserController {
 	@GetMapping("")
 	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
-		
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 		return ResponseEntity.ok(userInfo);
 	}
@@ -103,8 +102,7 @@ public class UserController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserUpdateDTO dto
 	) {
-		String providerId = userDetails.getProviderId();
-		Long userId = userService.getUserIdByProviderId(providerId);
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
 		userService.updateUserInfo(dto);
 		return ResponseEntity.ok("회원 정보가 수정되었습니다.");
@@ -115,8 +113,7 @@ public class UserController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserRoleUpdateDTO dto
 	) {
-		String providerId = userDetails.getProviderId();
-		Long userId = userService.getUserIdByProviderId(providerId);
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
 		userService.changeUserRole(dto);
 		return ResponseEntity.ok("전환되었습니다.");
@@ -127,15 +124,15 @@ public class UserController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestParam("image") MultipartFile imageFile
 	) {
-		String providerId = userDetails.getProviderId();
-		String imageUrl = userService.uploadProfileImage(providerId, imageFile); // 서비스에 위임
-		return ResponseEntity.ok(imageUrl); // 프론트는 이 URL을 활용해 프로필 이미지 갱신
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		String imageUrl = userService.uploadProfileImage(userId, imageFile);
+		return ResponseEntity.ok(imageUrl);
 	}
 
 	@GetMapping("/profile-image")
 	public ResponseEntity<String> getProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		String providerId = userDetails.getProviderId();
-		String imageUrl = userService.getProfileImageUrl(providerId); // DB에서 URL 조회
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		String imageUrl = userService.getProfileImageUrl(userId);
 		return ResponseEntity.ok(imageUrl);
 	}
 }

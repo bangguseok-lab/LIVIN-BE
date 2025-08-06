@@ -1,9 +1,5 @@
 package org.livin.user.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
-
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
 import org.livin.global.jwt.service.TokenService;
@@ -67,33 +63,20 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public String uploadProfileImage(String providerId, MultipartFile imageFile) {
-		String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
-		String filePath = "profile-images/" + fileName;
-
-		try {
-			File uploadDir = new File("src/main/resources/static/profile-images");
-			if (!uploadDir.exists())
-				uploadDir.mkdirs();
-
-			File dest = new File(uploadDir, fileName);
-			imageFile.transferTo(dest);
-
-			userMapper.updateProfileImage(providerId, filePath);
-
-		} catch (IOException e) {
-			throw new RuntimeException("프로필 이미지 저장 실패", e);
+	public String uploadProfileImage(Long userId, MultipartFile imageFile) {
+		String providerId = userMapper.findProviderIdByUserId(userId);
+		if (providerId == null) {
+			throw new CustomException(ErrorCode.NOT_FOUND);
 		}
-
-		return "/static/" + filePath;
+		return uploadProfileImage(userId, imageFile);
 	}
 
 	@Override
-	public String getProfileImageUrl(String providerId) {
-		String imageUrl = userMapper.findProfileImageByProviderId(providerId);
-		if (imageUrl == null || imageUrl.isBlank()) {
-			return "/static/profile-images/default.png";
+	public String getProfileImageUrl(Long userId) {
+		String providerId = userMapper.findProviderIdByUserId(userId);
+		if (providerId == null) {
+			throw new CustomException(ErrorCode.NOT_FOUND);
 		}
-		return "/static/" + imageUrl;
+		return getProfileImageUrl(userId);
 	}
 }

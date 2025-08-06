@@ -32,4 +32,6 @@ public interface UserMapper {
 	void updateProfileImage(@Param("providerId") String providerId, @Param("imageUrl") String imageUrl);
 
 	String findProfileImageByProviderId(@Param("providerId") String providerId);
+
+	String findProviderIdByUserId(Long userId);
 }
