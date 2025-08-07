@@ -64,12 +64,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {     // OnceP
             // "Bearer " 문자열을 잘라내고 실제 토큰 추출
             String token = authHeader.substring(7);
 
-            log.info("70, token: {}", token);
-
             try {
                 // JWT 토큰 유효성 검증
                 Claims claims = jwtUtil.validateToken(token);  // 토큰 검증, 안에 있는 claims(JWT Claims) 꺼냄
-                log.info("RefreshToken claims: {}", claims);
 
                 String username = claims.getSubject(); // 사용자 식별 값, provider:providerId 형태
                 String roleName = (String)claims.get("role"); // LANDLORD 또는 TENANT
