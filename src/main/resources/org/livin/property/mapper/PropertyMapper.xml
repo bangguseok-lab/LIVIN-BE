@@ -123,10 +123,10 @@
             <include refid="SafePropertyFilterCondition"/>
 
             <if test="lastCreatedAt != null">
-                AND property_created_at &lt; #{lastCreatedAt}
+                AND p.created_at &lt; #{lastCreatedAt}
             </if>
         </where>
-        ORDER BY property_created_at DESC
+        ORDER BY p.created_at DESC
         LIMIT #{limit}
     </select>
 
@@ -210,7 +210,7 @@
     </select>
 
     <select id="findCreatedAtByPropertyId" resultType="java.time.LocalDateTime">
-        SELECT property_created_at
+        SELECT created_at
         FROM Property
         WHERE property_id = #{propertyId}
     </select>
