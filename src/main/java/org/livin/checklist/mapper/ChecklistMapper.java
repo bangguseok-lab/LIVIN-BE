@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.entity.ChecklistVO;
-import org.mapstruct.Mapper;
+import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface ChecklistMapper {
