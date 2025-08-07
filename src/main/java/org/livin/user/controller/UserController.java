@@ -92,12 +92,14 @@ public class UserController {
 
 	// 회원 정보 조회
 	@GetMapping("")
-	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ResponseEntity<SuccessResponse<UserResponseDTO>> getUserInfo(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
 
-		return ResponseEntity.ok(userInfo);
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "회원 정보 조회되었습니다.", userInfo));
 	}
 
 	@PutMapping("")
@@ -110,7 +112,7 @@ public class UserController {
 		UserUpdateDTO updateDTO = userService.updateUserInfo(dto);
 
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(new SuccessResponse<>(true, "수정 되었습니다.", updateDTO));
+			.body(new SuccessResponse<>(true, "회원 정보 수정되었습니다.", updateDTO));
 	}
 
 	@PutMapping("/role")
@@ -140,10 +142,13 @@ public class UserController {
 	}
 
 	@GetMapping("/profile-image")
-	public ResponseEntity<UserProfileImageDTO> getProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ResponseEntity<SuccessResponse<UserProfileImageDTO>> getProfileImage(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		UserProfileImageDTO profileImage = userService.getProfileImage(userId);
-		return ResponseEntity.ok(profileImage);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "프로필 이미지를 불러왔습니다.", profileImage));
 	}
 }
