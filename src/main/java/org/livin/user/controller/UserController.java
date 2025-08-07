@@ -149,6 +149,6 @@ public class UserController {
 		UserProfileImageDTO profileImage = userService.getProfileImage(userId);
 
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(new SuccessResponse<>(true, "프로필 이미지를 불러왔습니다.", profileImage));
+			.body(new SuccessResponse<>(true, "프로필 이미지가 조회되었습니다.", profileImage));
 	}
 }
