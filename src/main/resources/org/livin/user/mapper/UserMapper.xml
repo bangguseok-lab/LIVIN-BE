@@ -53,7 +53,7 @@
         WHERE provider_id = #{providerId}
     </select>
 
-    <select id="findByProviderId" resultType="UserVO">
+    <select id="findByUserId" resultType="UserVO">
         SELECT *
         FROM livin.User
         WHERE user_id = #{userId}
@@ -65,7 +65,7 @@
         WHERE user_id = #{userId}
     </select>
 
-    <update id="updateUser" parameterType="org.livin.user.dto.UserUpdateDTO">
+    <update id="updateUser" parameterType="org.livin.user.entity.UserVO">
         UPDATE livin.User
         SET nickname      = #{nickname},
             phone         = #{phone},
@@ -81,8 +81,8 @@
 
     <update id="updateProfileImage">
         UPDATE livin.User
-        SET profile_image = #{imageUrl}
-        WHERE provider_id = #{providerId}
+        SET profile_image = #{profileImage}
+        WHERE user_id = #{userId}
     </update>
 
     <select id="findProfileImageByProviderId" resultType="string">
@@ -90,5 +90,11 @@
         FROM livin.User
         WHERE provider_id = #{providerId}
     </select>
-    
+
+    <select id="findProviderIdByUserId" resultType="string" parameterType="long">
+        SELECT provider_id
+        FROM livin.User
+        WHERE id = #{userId}
+    </select>
+
 </mapper>

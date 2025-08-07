@@ -1,17 +1,18 @@
 package org.livin.user.service;
 
 import org.livin.user.dto.UserNicknameDTO;
+import org.livin.user.dto.UserProfileImageDTO;
 import org.livin.user.dto.UserResponseDTO;
 import org.livin.user.dto.UserRoleUpdateDTO;
 import org.livin.user.dto.UserUpdateDTO;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
+
 	UserResponseDTO getUserInfo(Long userId);
 
-	void updateUserInfo(UserUpdateDTO dto);
+	UserUpdateDTO updateUserInfo(UserUpdateDTO dto);
 
-	void changeUserRole(UserRoleUpdateDTO dto);
+	UserRoleUpdateDTO updateUserRole(UserRoleUpdateDTO dto);
 
 	void deleteUser(String providerId);
 
@@ -19,7 +20,7 @@ public interface UserService {
 
 	Long getUserIdByProviderId(String providerId);
 
-	String uploadProfileImage(String providerId, MultipartFile imageFile);
+	UserUpdateDTO updateProfileImage(UserUpdateDTO dto);
 
-	String getProfileImageUrl(String providerId);
+	UserProfileImageDTO getProfileImage(Long userId);
 }
