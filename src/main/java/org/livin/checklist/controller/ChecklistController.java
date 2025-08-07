@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
+import org.livin.checklist.dto.ChecklistFilteringDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
 import org.livin.checklist.dto.RequestChecklistItemDTO;
@@ -11,12 +12,14 @@ import org.livin.checklist.dto.RequestCustomItemsDTO;
 import org.livin.checklist.service.ChecklistService;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
+import org.livin.property.dto.PropertyDTO;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -188,5 +191,18 @@ public class ChecklistController {
 	}
 
 	// todo: 특정 체크리스트가 적용된 매물 조회
+	@GetMapping("/{checklistId}/properties")
+	public ResponseEntity<List<PropertyDTO>> getPropertiesByChecklist(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@ModelAttribute ChecklistFilteringDTO checklistFilteringDTO
+	) {
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		checklistFilteringDTO.setUserId(userId);
+
+		List<PropertyDTO> result = checklistService.getPropertiesByChecklist(checklistFilteringDTO);
+
+		return ResponseEntity.ok(result);
+	}
 
 }

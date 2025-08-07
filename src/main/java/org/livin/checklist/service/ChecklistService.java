@@ -4,10 +4,12 @@ import java.util.List;
 
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
+import org.livin.checklist.dto.ChecklistFilteringDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
 import org.livin.checklist.dto.RequestChecklistItemDTO;
 import org.livin.checklist.dto.RequestCustomItemsDTO;
+import org.livin.property.dto.PropertyDTO;
 
 public interface ChecklistService {
 	// 체크리스트 전체 목록 조회
@@ -36,4 +38,7 @@ public interface ChecklistService {
 
 	// 나만의 항목 삭제
 	void deleteCustomItem(Long checklistId, Long checklistItemId);
+
+	// 특정 체크리스트 적용된 매물 조회
+	List<PropertyDTO> getPropertiesByChecklist(ChecklistFilteringDTO checklistFilteringDTO);
 }

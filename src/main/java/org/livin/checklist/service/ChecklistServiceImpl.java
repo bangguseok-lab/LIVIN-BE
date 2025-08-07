@@ -1,11 +1,13 @@
 package org.livin.checklist.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
+import org.livin.checklist.dto.ChecklistFilteringDTO;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.dto.ChecklistItemStatusDTO;
@@ -16,6 +18,10 @@ import org.livin.checklist.dto.RequestCustomItemsDTO;
 import org.livin.checklist.entity.ChecklistItemVO;
 import org.livin.checklist.entity.ChecklistVO;
 import org.livin.checklist.mapper.ChecklistMapper;
+import org.livin.property.dto.PropertyDTO;
+import org.livin.property.entity.PropertyImageVO;
+import org.livin.property.entity.PropertyVO;
+import org.livin.property.mapper.PropertyMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +34,7 @@ import lombok.extern.log4j.Log4j2;
 public class ChecklistServiceImpl implements ChecklistService {
 
 	final ChecklistMapper checklistMapper;
+	private final PropertyMapper propertyMapper;
 
 	// 체크리스트 전체 목록 조회
 	@Override
@@ -197,6 +204,49 @@ public class ChecklistServiceImpl implements ChecklistService {
 		} catch (Exception e) {
 			log.error("============> 나만의 아이템 삭제 중 에러 발생", e);
 			throw new RuntimeException("나만의 아이템 삭제 실패", e);
+		}
+	}
+
+	// 특정 체크리스트 적용된 매물 조회
+	@Override
+	public List<PropertyDTO> getPropertiesByChecklist(ChecklistFilteringDTO checklistFilteringDTO) {
+
+		log.info("쿼리 실행 전 address = {}", checklistFilteringDTO);
+
+		try {
+			// lastId → lastCreatedAt 세팅
+			// lastId가 있다면, 해당 매물의 createdAt 값을 구해서 lastCreatedAt에 세팅
+			if (checklistFilteringDTO.getLastId() != null && checklistFilteringDTO.getLastId() > 0) {
+				LocalDateTime cursorCreatedAt = checklistMapper.findChecklistCreatedAtByPropertyId(checklistFilteringDTO.getLastId());
+				checklistFilteringDTO.setLastCreatedAt(cursorCreatedAt);
+				log.info("lastId {} → createdAt: {}", checklistFilteringDTO.getLastId(), cursorCreatedAt);
+			}
+
+			// 메인 쿼리 실행
+			List<PropertyVO> list = List.of();
+			if (Boolean.TRUE.equals(checklistFilteringDTO.getFavorite())) {
+				log.info("Favorite = {} => 관심 매물만 필터링", checklistFilteringDTO.getFavorite());
+				list = checklistMapper.selectChecklistFavoritePropertiesWithFilter(checklistFilteringDTO);
+			} else {
+				log.info("Favorite = {} => false OR null => 전체 매물 조회", checklistFilteringDTO.getFavorite());
+				list = checklistMapper.selectChecklistPropertyListByRegion(checklistFilteringDTO);
+			}
+
+			log.info("_list: {}", list);
+
+			// 각 매물의 썸네일 이미지 주입
+			for (PropertyVO property : list) {
+				List<PropertyImageVO> images = checklistMapper.selectChecklistThumbnailImageByPropertyId(property.getPropertyId()); // 썸네일 이미지만
+				property.setImages(images);
+			}
+
+			return list.stream()
+				.map(PropertyDTO::of)
+				.collect(Collectors.toList());
+
+		} catch (Exception e) {
+			log.error("getPropertiesByRegion 에러:", e);
+			return null;
 		}
 	}
 }
