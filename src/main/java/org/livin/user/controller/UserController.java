@@ -3,7 +3,9 @@ package org.livin.user.controller;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
+import org.livin.global.response.SuccessResponse;
 import org.livin.user.dto.UserNicknameDTO;
+import org.livin.user.dto.UserProfileImageDTO;
 import org.livin.user.dto.UserResponseDTO;
 import org.livin.user.dto.UserRoleUpdateDTO;
 import org.livin.user.dto.UserUpdateDTO;
@@ -15,11 +17,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -91,51 +92,63 @@ public class UserController {
 
 	// 회원 정보 조회
 	@GetMapping("")
-	public ResponseEntity<UserResponseDTO> getUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		String providerId = userDetails.getProviderId();
-		Long userId = userService.getUserIdByProviderId(providerId);
+	public ResponseEntity<SuccessResponse<UserResponseDTO>> getUserInfo(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		UserResponseDTO userInfo = userService.getUserInfo(userId);
-		return ResponseEntity.ok(userInfo);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "회원 정보 조회되었습니다.", userInfo));
 	}
 
-	@PostMapping("")
-	public ResponseEntity<String> updateUser(
+	@PutMapping("")
+	public ResponseEntity<SuccessResponse<UserUpdateDTO>> updateUserinfo(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserUpdateDTO dto
 	) {
-		String providerId = userDetails.getProviderId();
-		Long userId = userService.getUserIdByProviderId(providerId);
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
-		userService.updateUserInfo(dto);
-		return ResponseEntity.ok("회원 정보가 수정되었습니다.");
+		UserUpdateDTO updateDTO = userService.updateUserInfo(dto);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "회원 정보 수정되었습니다.", updateDTO));
 	}
 
-	@PostMapping("/role")
-	public ResponseEntity<String> changeUserRole(
+	@PutMapping("/role")
+	public ResponseEntity<SuccessResponse<UserRoleUpdateDTO>> updateUserRole(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UserRoleUpdateDTO dto
 	) {
-		String providerId = userDetails.getProviderId();
-		Long userId = userService.getUserIdByProviderId(providerId);
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 		dto.setUserId(userId);
-		userService.changeUserRole(dto);
-		return ResponseEntity.ok("전환되었습니다.");
+		UserRoleUpdateDTO roleUpdateDTO = userService.updateUserRole(dto);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "전환 되었습니다.", roleUpdateDTO));
 	}
 
-	@PostMapping("/profile-image")
-	public ResponseEntity<String> uploadProfileImage(
+	@PutMapping("/profile-image")
+	public ResponseEntity<SuccessResponse<UserUpdateDTO>> updateProfileImage(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestParam("image") MultipartFile imageFile
+		@RequestBody UserUpdateDTO dto
 	) {
-		String providerId = userDetails.getProviderId();
-		String imageUrl = userService.uploadProfileImage(providerId, imageFile); // 서비스에 위임
-		return ResponseEntity.ok(imageUrl); // 프론트는 이 URL을 활용해 프로필 이미지 갱신
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		dto.setUserId(userId);
+		UserUpdateDTO updateDTO = userService.updateProfileImage(dto);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "프로필 이미지가 수정되었습니다.", updateDTO));
 	}
 
 	@GetMapping("/profile-image")
-	public ResponseEntity<String> getProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		String providerId = userDetails.getProviderId();
-		String imageUrl = userService.getProfileImageUrl(providerId); // DB에서 URL 조회
-		return ResponseEntity.ok(imageUrl);
+	public ResponseEntity<SuccessResponse<UserProfileImageDTO>> getProfileImage(
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		UserProfileImageDTO profileImage = userService.getProfileImage(userId);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "프로필 이미지가 조회되었습니다.", profileImage));
 	}
 }
