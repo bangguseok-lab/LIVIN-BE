@@ -75,6 +75,13 @@ public class PropertyController {
 		return ResponseEntity.ok(propertyDetailsDTO);
 	}
 
+	// 매물 개수 카운트
+	@GetMapping("/properties/count")
+	public ResponseEntity<Long> countProperties(FilteringDTO filter) {
+		long total = propertyService.countProperties(filter); // 커서 무시 쿼리
+		return ResponseEntity.ok(total);
+	}
+
 	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@GetMapping("/favorite-properties")
 	public ResponseEntity<List<PropertyDTO>> getFavoritePropertiesWithFilter(
