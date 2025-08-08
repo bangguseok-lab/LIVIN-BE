@@ -116,7 +116,7 @@
     <!--  나만의 아이템 생성 -->
     <insert id="createCustomItem">
         INSERT INTO livin.ChecklistItem (keyword, is_active, type, checklist_id)
-        VALUES (#{keyword}, false, 'CUSTOM', #{checklistId})
+        VALUES (#{keyword}, true, 'CUSTOM', #{checklistId})
     </insert>
 
 
