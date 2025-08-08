@@ -104,6 +104,17 @@ public class PropertyServiceImpl implements PropertyService {
 	}
 
 	@Override
+	public long countProperties(FilteringDTO filter) {
+		log.info("countProperties - filter: {}", filter);
+		try {
+			return propertyMapper.countProperties(filter);
+		} catch (Exception e) {
+			log.error("countProperties 에러:", e);
+			return 0L;
+		}
+	}
+
+	@Override
 	public PropertyDetailsDTO getPropertyDetails(Long propertyId, String providerId) {
 		Long userId = userService.getUserIdByProviderId(providerId);
 		PropertyDetailsVO propertyDetailsVO = propertyMapper.getPropertyDetailsById(propertyId, userId)

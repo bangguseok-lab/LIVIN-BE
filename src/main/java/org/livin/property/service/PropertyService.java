@@ -13,6 +13,8 @@ public interface PropertyService {
 
 	public List<PropertyDTO> getPropertiesByRegion(FilteringDTO address);
 
+	public long  countProperties(FilteringDTO address);
+
 	PropertyDetailsDTO getPropertyDetails(Long propertyId, String providerId);
 
 	// ✅ 필터링된 관심 매물 조회를 위한 메서드 추가
