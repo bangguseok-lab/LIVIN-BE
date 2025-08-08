@@ -215,10 +215,11 @@
         WHERE property_id = #{propertyId}
     </select>
 
-    <select id="selectPropertyById" resultMap="BasePropertyMap">
+    <select id="selectPropertyById" resultMap="PropertyMapWithSavedAt">
         SELECT
         <include refid="SelectPropertyListBase"/>,
-        CASE WHEN f.user_id IS NOT NULL THEN true ELSE false END AS is_favorite
+        CASE WHEN f.user_id IS NOT NULL THEN true ELSE false END AS is_favorite,
+        f.saved_at
         <include refid="CommonJoins"/>
         WHERE p.property_id = #{propertyId}
     </select>

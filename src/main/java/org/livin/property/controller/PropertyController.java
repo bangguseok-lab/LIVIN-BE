@@ -111,32 +111,11 @@ public class PropertyController {
 	) {
 		log.info("관심 매물 삭제 요청 - propertyId: {}, userDetails: {}", propertyId, userDetails);
 
-		if (userDetails == null || userDetails.getProviderId() == null) {
-			log.warn("관심 매물 삭제를 위한 인증 정보가 없습니다.");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new SuccessResponse<>(false, "인증 정보가 없습니다.", "{}"));
-		}
-
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
-		if (userId == null) {
-			log.warn("제공된 providerId에 해당하는 userId를 찾을 수 없습니다: {}", userDetails.getProviderId());
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new SuccessResponse<>(false, "유저 정보를 찾을 수 없습니다.", "{}"));
-		}
 
-		try {
-			propertyService.removeFavoriteProperty(propertyId, userId);
-			return ResponseEntity.status(HttpStatus.OK)
-				.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 삭제했습니다.", "{}"));
-		} catch (IllegalArgumentException e) {
-			log.warn("관심 매물 삭제 중 사용자 관련 에러: {}", e.getMessage());
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new SuccessResponse<>(false, "삭제할 수 없는 요청입니다.", "{}"));
-		} catch (RuntimeException e) {
-			log.error("관심 매물 삭제 실패: {}", e.getMessage(), e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new SuccessResponse<>(false, "관심 매물 삭제 중 서버 오류가 발생했습니다.", "{}"));
-		}
+		propertyService.removeFavoriteProperty(propertyId, userId);
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 삭제했습니다.", "{}"));
 	}
 
 
@@ -148,27 +127,10 @@ public class PropertyController {
 	) {
 		log.info("관심 매물 추가 요청 - propertyId: {}, userDetails: {}", propertyId, userDetails);
 
-		if (userDetails == null || userDetails.getProviderId() == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new SuccessResponse<>(false, "인증 정보가 없습니다.", null));
-		}
-
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
-		if (userId == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new SuccessResponse<>(false, "유저 정보를 찾을 수 없습니다.", null));
-		}
 
-		try {
-			PropertyDTO added = propertyService.addFavoriteProperty(userId, propertyId);
-			return ResponseEntity.status(HttpStatus.CREATED)
-				.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 추가했습니다.", added));
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new SuccessResponse<>(false, "이미 추가된 관심 매물입니다.", null));
-		} catch (RuntimeException e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new SuccessResponse<>(false, "관심 매물 추가 중 서버 오류가 발생했습니다.", null));
-		}
+		PropertyDTO added = propertyService.addFavoriteProperty(userId, propertyId);
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 추가했습니다.", added));
 	}
 }
