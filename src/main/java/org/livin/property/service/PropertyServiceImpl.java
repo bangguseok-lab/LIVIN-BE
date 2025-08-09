@@ -12,7 +12,8 @@ import org.livin.global.exception.ErrorCode;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.dto.realestateregister.response.OwnerInfoDTO;
+import org.livin.property.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.property.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.property.dto.realestateregister.request.RealEstateRegisterRequestDTO;
 import org.livin.property.dto.realestateregister.response.RealEstateRegisterResponseDTO;
 import org.livin.property.entity.PropertyDetailsVO;
@@ -218,7 +219,7 @@ public class PropertyServiceImpl implements PropertyService {
 		}
 	}
 
-	public OwnerInfoDTO getRealEstateRegisters(String uniqueNumber) {
+	public OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO) {
 		String encryptionPassword = "";
 		try {
 			encryptionPassword = rsaEncryptionService.encryptWithExternalPublicKey(password);
@@ -231,16 +232,16 @@ public class PropertyServiceImpl implements PropertyService {
 			.phoneNo("01083376023")
 			.password(encryptionPassword)
 			.inquiryType("0")
-			.uniqueNo(uniqueNumber)
+			.uniqueNo(ownerInfoRequestDTO.getCommUniqueNo())
 			.ePrepayNo(ePrepayNo)
 			.ePrepayPass(ePrepayPass)
 			.issueType("1")
 			.build();
 
-		return requestCodef(realEstateRegisterRequestDTO);
+		return requestCodef(realEstateRegisterRequestDTO, ownerInfoRequestDTO);
 	}
 
-	private OwnerInfoDTO requestCodef(RealEstateRegisterRequestDTO realEstateRegisterRequestDTO) {
+	private OwnerInfoResponseDTO requestCodef(RealEstateRegisterRequestDTO realEstateRegisterRequestDTO, OwnerInfoRequestDTO ownerInfoRequestDTO) {
 		int retryCount = 0;
 		while (true) {
 			// 토큰이 없거나 만료되었을 때만 재발급
@@ -265,7 +266,9 @@ public class PropertyServiceImpl implements PropertyService {
 				String decodedBody = URLDecoder.decode(rawResponseBody, StandardCharsets.UTF_8.name());
 				RealEstateRegisterResponseDTO realEstateRegisterResponseDTO = objectMapper.readValue(decodedBody, RealEstateRegisterResponseDTO.class);
 
-				return OwnerInfoDTO.fromRealEstateRegisterResponseDTO(realEstateRegisterResponseDTO);
+				OwnerInfoResponseDTO ownerInfoResponseDTO = OwnerInfoResponseDTO.fromRealEstateRegisterResponseDTO(realEstateRegisterResponseDTO);
+				//레디스 저장 추가
+				return ownerInfoResponseDTO;
 			} catch (Exception e) {
 				// 401 에러 발생 시 재시도
 				if (e.getMessage() != null && e.getMessage().contains("401") && retryCount < 1) {

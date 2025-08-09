@@ -7,7 +7,8 @@ import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.dto.realestateregister.response.OwnerInfoDTO;
+import org.livin.property.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.property.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.property.service.PropertyService;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -165,13 +167,14 @@ public class PropertyController {
 		}
 	}
 	//등기부등본 열람 api
-	@PostMapping("/real-estate-registers/{uniqueNumber}")
-	public ResponseEntity<SuccessResponse<OwnerInfoDTO>> getRealEstateRegisters(@PathVariable(name = "uniqueNumber") String uniqueNumber) {
-		log.info("부동산 고유 번호 : {}", uniqueNumber);
+	@PostMapping("/real-estate-registers")
+	public ResponseEntity<SuccessResponse<OwnerInfoResponseDTO>> getRealEstateRegisters(@RequestBody
+	OwnerInfoRequestDTO ownerInfoRequestDTO) {
+		log.info("부동산 고유 번호 : {}", ownerInfoRequestDTO.getCommUniqueNo());
 
-		OwnerInfoDTO ownerInfoDTO = propertyService.getRealEstateRegisters(uniqueNumber);
+		OwnerInfoResponseDTO ownerInfoResponseDTO = propertyService.getRealEstateRegisters(ownerInfoRequestDTO);
 		return ResponseEntity.ok(
-			new SuccessResponse<>(true, "등기부등본 열람이 성공하였습니다.", ownerInfoDTO)
+			new SuccessResponse<>(true, "등기부등본 열람이 성공하였습니다.", ownerInfoResponseDTO)
 		);
 	}
 }

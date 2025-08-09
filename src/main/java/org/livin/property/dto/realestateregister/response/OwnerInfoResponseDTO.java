@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 @Getter
 @Builder
 @AllArgsConstructor
-public class OwnerInfoDTO {
+public class OwnerInfoResponseDTO {
 	private String commUniqueNo;	//고유 번호
 	private String ownerName;	//소유자 명
 
-	public static OwnerInfoDTO fromRealEstateRegisterResponseDTO(
+	public static OwnerInfoResponseDTO fromRealEstateRegisterResponseDTO(
 		RealEstateRegisterResponseDTO realEstateRegisterResponseDTO) {
 		// 응답 데이터가 유효한지 확인
 		if (realEstateRegisterResponseDTO == null || realEstateRegisterResponseDTO.getData() == null || realEstateRegisterResponseDTO.getData().getResRegisterEntriesListDTO().isEmpty()) {
-			return OwnerInfoDTO.builder().commUniqueNo("정보 없음").ownerName("정보 없음").build();
+			return OwnerInfoResponseDTO.builder().commUniqueNo("정보 없음").ownerName("정보 없음").build();
 		}
 
 		// 고유 번호 추출
@@ -74,7 +74,7 @@ public class OwnerInfoDTO {
 
 								String[] parts = ownerInfo.split(" ");
 								if (parts.length > 1) {
-									return OwnerInfoDTO.builder()
+									return OwnerInfoResponseDTO.builder()
 										.commUniqueNo(commUniqueNo)
 										.ownerName(parts[1])
 										.build();
@@ -85,7 +85,7 @@ public class OwnerInfoDTO {
 				}
 			}
 		}
-		return OwnerInfoDTO.builder()
+		return OwnerInfoResponseDTO.builder()
 			.commUniqueNo(commUniqueNo)
 			.ownerName("정보 없음")
 			.build();
