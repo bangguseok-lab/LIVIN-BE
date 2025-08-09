@@ -1,11 +1,14 @@
 package org.livin.checklist.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
+import org.livin.checklist.dto.ChecklistFilteringDTO;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.dto.ChecklistItemStatusDTO;
@@ -16,6 +19,9 @@ import org.livin.checklist.dto.RequestCustomItemsDTO;
 import org.livin.checklist.entity.ChecklistItemVO;
 import org.livin.checklist.entity.ChecklistVO;
 import org.livin.checklist.mapper.ChecklistMapper;
+import org.livin.property.dto.PropertyDTO;
+import org.livin.property.entity.PropertyImageVO;
+import org.livin.property.entity.PropertyVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,10 +41,10 @@ public class ChecklistServiceImpl implements ChecklistService {
 
 		// 뒤에 체크리스트가 더 남았는지 확인하기 위해서 1개 더 많이 요청하고 실제 반환할 때는 앞에서 부터 5개만 반환
 		List<ChecklistVO> voList = checklistMapper.getAllList(userId, lastId, size + 1);
-		boolean hasNext = voList.size() > size;		// 더 조회될 체크리스트가 남았는 지 체크할 변수, isLast
+		boolean hasNext = voList.size() > size;        // 더 조회될 체크리스트가 남았는 지 체크할 변수, isLast
 
 		// 아직 마지막 페이지가 아닐 때
-		if(hasNext) {
+		if (hasNext) {
 			voList = voList.subList(0, size); // 초과한 1개 제거
 		}
 
@@ -49,14 +55,12 @@ public class ChecklistServiceImpl implements ChecklistService {
 		return new ChecklistListResponseDTO(dtoList, !hasNext);
 	}
 
-
 	// 체크리스트 상세 조회
 	@Override
 	public ChecklistDetailDTO getChecklistDetail(Long checklistId) {
 		List<ChecklistItemJoinDTO> joinRows = checklistMapper.getChecklistDetail(checklistId);
 		return ChecklistDetailDTO.from(joinRows);
 	}
-
 
 	// 체크리스트 생성
 	@Transactional    // 전체 과정이 하나의 트랜잭션으로 처리되도록 보장하는 어노테이션
@@ -115,7 +119,7 @@ public class ChecklistServiceImpl implements ChecklistService {
 	public List<ChecklistItemSimpleDTO> createCustomItem(Long checklistId,
 		RequestCustomItemsDTO requestCustomItemsDTO) {
 
-		for(CustomItemDTO customItem : requestCustomItemsDTO.getCustomItems()) {
+		for (CustomItemDTO customItem : requestCustomItemsDTO.getCustomItems()) {
 			// DTO -> VO 변환
 			ChecklistItemVO customItemVO = customItem.toVo(checklistId);
 
@@ -135,9 +139,10 @@ public class ChecklistServiceImpl implements ChecklistService {
 		// DTO -> VO 변환
 		ChecklistVO updateChecklistVO = updateChecklistDTO.toVo(userId);
 
-		try{
+		try {
 			// 체크리스트 이름, 설명 수정
-			checklistMapper.updateChecklist(updateChecklistVO.getTitle(), updateChecklistVO.getDescription(), checklistId);
+			checklistMapper.updateChecklist(updateChecklistVO.getTitle(), updateChecklistVO.getDescription(),
+				checklistId);
 
 			// Checklist + ChecklistItem 테이블 조인해서 상세정보 함께 반환
 			List<ChecklistItemJoinDTO> joinList = checklistMapper.getChecklistDetail(checklistId);
@@ -151,7 +156,6 @@ public class ChecklistServiceImpl implements ChecklistService {
 		}
 	}
 
-
 	// 체크리스트 아이템 활성 상태 수정
 	@Override
 	public ChecklistDetailDTO updateItem(Long checklistId, RequestChecklistItemDTO requestChecklistItemDTO) {
@@ -160,7 +164,7 @@ public class ChecklistServiceImpl implements ChecklistService {
 			List<ChecklistItemStatusDTO> requestItems = requestChecklistItemDTO.getItems();
 
 			// 체크리스트 아이템 수정
-			for(ChecklistItemStatusDTO item : requestItems) {
+			for (ChecklistItemStatusDTO item : requestItems) {
 				checklistMapper.updateItem(item.getChecklistItemId(), item.getIsActive());
 			}
 
@@ -170,7 +174,6 @@ public class ChecklistServiceImpl implements ChecklistService {
 			ChecklistDetailDTO resultDto = ChecklistDetailDTO.from(joinList);
 
 			return resultDto;
-
 
 		} catch (Exception e) {
 			log.error("============> 체크리스트 아이템 수정 중 에러 발생", e);
@@ -202,4 +205,50 @@ public class ChecklistServiceImpl implements ChecklistService {
 			throw new RuntimeException("나만의 아이템 삭제 실패", e);
 		}
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<PropertyDTO> getPropertiesByChecklist(ChecklistFilteringDTO dto) {
+		// DTO null 방어
+		if (dto == null) {
+			throw new IllegalArgumentException("ChecklistFilteringDTO is null");
+		}
+		if (dto.getChecklistId() == null) {
+			throw new IllegalArgumentException("checklistId is required");
+		}
+
+		// limit 기본값 설정
+		if (dto.getLimit() == null || dto.getLimit() <= 0) {
+			dto.setLimit(20);
+		} else if (dto.getLimit() > 50) {
+			dto.setLimit(50);
+		}
+
+		try {
+			// lastId → lastCreatedAt 변환
+			if (dto.getLastId() != null && dto.getLastId() > 0) {
+				LocalDateTime cursorCreatedAt =
+					checklistMapper.findChecklistCreatedAtByPropertyId(dto.getLastId());
+				dto.setLastCreatedAt(cursorCreatedAt);
+			}
+
+			// 쿼리 실행
+			List<PropertyVO> list = checklistMapper.selectPropertiesByChecklistId(dto);
+
+			if (list == null || list.isEmpty()) {
+				return List.of();
+			}
+
+			return list.stream()
+				.filter(Objects::nonNull) // null 요소 제거
+				.map(PropertyDTO::of)
+				.collect(Collectors.toList());
+
+		} catch (Exception e) {
+			log.error("getPropertiesByChecklist error", e);
+			return List.of();
+		}
+	}
+
 }
+
