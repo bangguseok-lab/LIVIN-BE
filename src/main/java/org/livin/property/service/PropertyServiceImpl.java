@@ -1,6 +1,9 @@
 package org.livin.property.service;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +12,9 @@ import org.livin.global.exception.ErrorCode;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
+import org.livin.property.dto.realestateregister.OwnerInfoDTO;
+import org.livin.property.dto.realestateregister.RealEstateRegisterRequestDTO;
+import org.livin.property.dto.realestateregister.RealEstateRegisterResponseDTO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
@@ -16,12 +22,17 @@ import org.livin.property.mapper.FavoritePropertyMapper;
 import org.livin.property.mapper.PropertyMapper;
 import org.livin.user.mapper.UserMapper;
 import org.livin.user.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.client.RestTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 @RequiredArgsConstructor
 @Log4j2
@@ -32,6 +43,23 @@ public class PropertyServiceImpl implements PropertyService {
 	private final PropertyMapper propertyMapper;
 	private final UserService userService;
 
+	private final RsaEncryptionService rsaEncryptionService;
+	private final ObjectMapper objectMapper;
+	@Value("${codef.password}")
+	private String password;
+	@Value("${codef.ePrepayNo}")
+	private String ePrepayNo;
+	@Value("${codef.ePrepayPass}")
+	private String ePrepayPass;
+	@Value("${codef.real-estate-registry}")
+	private String codefUrl;
+	@Value("${codef.client-id}")
+	private String clientId;
+	@Value("${codef.client-secret}")
+	private String clientSecret;
+
+	private String codefAccessToken = "";
+	private RealEstateRegisterResponseDTO realEstateRegisterResponseDTO;
 	// 관심 매물
 	@Override
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address) {
@@ -190,4 +218,108 @@ public class PropertyServiceImpl implements PropertyService {
 			log.info("관심 매물 추가 성공 - userId: {}, propertyId: {}", userId, propertyId);
 		}
 	}
+
+	public OwnerInfoDTO getRealEstateRegisters(String uniqueNumber) {
+		String encryptionPassword = "";
+		try {
+			encryptionPassword = rsaEncryptionService.encryptWithExternalPublicKey(password);
+		} catch (Exception e) {
+			log.error("암호화 실패");
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+		RealEstateRegisterRequestDTO realEstateRegisterRequestDTO = RealEstateRegisterRequestDTO.builder()
+			.organization("0002")
+			.phoneNo("01083376023")
+			.password(encryptionPassword)
+			.inquiryType("0")
+			.uniqueNo(uniqueNumber)
+			.ePrepayNo(ePrepayNo)
+			.ePrepayPass(ePrepayPass)
+			.issueType("1")
+			.build();
+
+		return requestCodef(realEstateRegisterRequestDTO);
+	}
+
+	private OwnerInfoDTO requestCodef(RealEstateRegisterRequestDTO realEstateRegisterRequestDTO) {
+		int retryCount = 0;
+		while (true) {
+			// 토큰이 없거나 만료되었을 때만 재발급
+			if (codefAccessToken.isEmpty()) {
+				HashMap<String, Object> map = CodefService.publishToken(clientId, clientSecret);
+				if (map != null && map.containsKey("access_token")) {
+					this.codefAccessToken = (String) map.get("access_token");
+				} else {
+					log.error("CodeF access token 발급 실패.");
+					throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+				}
+			}
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.setBearerAuth(codefAccessToken);
+			HttpEntity<RealEstateRegisterRequestDTO> requestEntity = new HttpEntity<>(realEstateRegisterRequestDTO, headers);
+			RestTemplate restTemplate = new RestTemplate();
+			try {
+				ResponseEntity<String> responseEntity = restTemplate.postForEntity(codefUrl, requestEntity, String.class);
+				log.info("CodeF API 요청 성공. Status Code: {}", responseEntity.getStatusCode());
+				String rawResponseBody = responseEntity.getBody();
+				String decodedBody = URLDecoder.decode(rawResponseBody, StandardCharsets.UTF_8.name());
+				this.realEstateRegisterResponseDTO = objectMapper.readValue(decodedBody, RealEstateRegisterResponseDTO.class);
+
+				return OwnerInfoDTO.fromRealEstateRegisterResponseDTO(this.realEstateRegisterResponseDTO);
+			} catch (Exception e) {
+				// 401 에러 발생 시 재시도
+				if (e.getMessage() != null && e.getMessage().contains("401") && retryCount < 1) {
+					log.warn("401 Unauthorized 에러 발생. 토큰 재발급 후 재시도합니다.");
+					this.codefAccessToken = "";
+					retryCount++;
+					continue;
+				}
+				log.error("CodeF API 요청 중 오류 발생: {}", e.getMessage(), e);
+				throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+			}
+
+		}
+	}
+	// private OwnerInfoDTO parseAndExtractInfo(String decodedBody, String uniqueNumber) throws Exception {
+	// 	HashMap<String, Object> responseBodyMap = objectMapper.readValue(decodedBody, new TypeReference<HashMap<String, Object>>() {});
+	// 	List<HashMap<String, Object>> resRegisterEntriesList = (List<HashMap<String, Object>>) ((HashMap<String, Object>) responseBodyMap.get("data")).get("resRegisterEntriesList");
+	// 	HashMap<String, Object> entry = resRegisterEntriesList.get(0); // 첫 번째 항목만 가정
+	// 	List<HashMap<String, Object>> resRegistrationHisList = (List<HashMap<String, Object>>) entry.get("resRegistrationHisList");
+	//
+	// 	OwnerInfoDTO info = new OwnerInfoDTO();
+	//
+	// 	for (HashMap<String, Object> hisItem : resRegistrationHisList) {
+	// 		if ("갑구".equals(hisItem.get("resType"))) {
+	// 			List<HashMap<String, Object>> contentsList = (List<HashMap<String, Object>>) hisItem.get("resContentsList");
+	// 			// 가장 최근 소유권 이전 등기 찾기
+	// 			// '소유권이전' 또는 '소유권보존' 등기 중 가장 마지막 등기를 찾습니다.
+	// 			HashMap<String, Object> latestOwnerEntry = null;
+	// 			for (int i = contentsList.size() - 1; i >= 0; i--) {
+	// 				HashMap<String, Object> currentEntry = contentsList.get(i);
+	// 				String registrationPurpose = (String)((List<HashMap<String, Object>>) currentEntry.get("resDetailList")).stream()
+	// 					.filter(d -> "등기목적".equals(d.get("resContents")))
+	// 					.map(d -> d.get("resContents"))
+	// 					.findFirst().orElse("");
+	//
+	// 				if ("소유권이전".equals(registrationPurpose) || "소유권보존".equals(registrationPurpose)) {
+	// 					latestOwnerEntry = currentEntry;
+	// 					break;
+	// 				}
+	// 			}
+	//
+	// 			if (latestOwnerEntry != null) {
+	// 				List<HashMap<String, Object>> detailList = (List<HashMap<String, Object>>) latestOwnerEntry.get("resDetailList");
+	// 				String ownerInfo = (String)detailList.stream().filter(d -> "권리자 및 기타사항".equals(d.get("resContents"))).map(d -> d.get("resContents")).findFirst().orElse("");
+	// 				String[] parts = ownerInfo.split(" ");
+	// 				if (parts.length > 1) {
+	// 					info = OwnerInfoDTO.builder()
+	// 						.commUniqueNo(uniqueNumber)
+	// 						.ownerName(parts[1])
+	// 						.build();
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 }

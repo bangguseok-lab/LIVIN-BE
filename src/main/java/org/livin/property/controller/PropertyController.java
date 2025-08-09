@@ -3,10 +3,12 @@ package org.livin.property.controller;
 import java.util.List;
 
 import org.livin.global.jwt.filter.CustomUserDetails;
+import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.service.PropertyServiceImpl;
+import org.livin.property.dto.realestateregister.OwnerInfoDTO;
+import org.livin.property.service.PropertyService;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +31,7 @@ import lombok.extern.log4j.Log4j2;
 public class PropertyController {
 
 	private final UserService userService;
-	private final PropertyServiceImpl propertyService;
+	private final PropertyService propertyService;
 
 	// 관심 매물 조회 - 메인페이지 전용
 	@GetMapping("/properties/favorite")
@@ -161,5 +163,15 @@ public class PropertyController {
 			log.error("관심 매물 추가 실패: {}", e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
+	}
+	//등기부등본 열람 api
+	@PostMapping("/real-estate-registers/{uniqueNumber}")
+	public ResponseEntity<SuccessResponse<OwnerInfoDTO>> getRealEstateRegisters(@PathVariable(name = "uniqueNumber") String uniqueNumber) {
+		log.info("부동산 고유 번호 : {}", uniqueNumber);
+
+		OwnerInfoDTO ownerInfoDTO = propertyService.getRealEstateRegisters(uniqueNumber);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "등기부등본 열람이 성공하였습니다.", ownerInfoDTO)
+		);
 	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
+import org.livin.property.dto.realestateregister.OwnerInfoDTO;
 
 public interface PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address);
@@ -20,4 +21,6 @@ public interface PropertyService {
 
 	// ✅ 관심 매물 추가를 위한 메서드 추가
 	public void addFavoriteProperty(Long userId, Long propertyId);
+
+	OwnerInfoDTO getRealEstateRegisters(String uniqueNumber);
 }
