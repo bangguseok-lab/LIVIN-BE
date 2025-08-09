@@ -13,29 +13,33 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 public class OwnerInfoResponseDTO {
-	private String commUniqueNo;	//고유 번호
-	private String ownerName;	//소유자 명
+	private String commUniqueNo;    //고유 번호
+	private String ownerName;    //소유자 명
 
 	public static OwnerInfoResponseDTO fromRealEstateRegisterResponseDTO(
 		RealEstateRegisterResponseDTO realEstateRegisterResponseDTO) {
 		// 응답 데이터가 유효한지 확인
-		if (realEstateRegisterResponseDTO == null || realEstateRegisterResponseDTO.getData() == null || realEstateRegisterResponseDTO.getData().getResRegisterEntriesListDTO().isEmpty()) {
+		if (realEstateRegisterResponseDTO == null || realEstateRegisterResponseDTO.getData() == null
+			|| realEstateRegisterResponseDTO.getData().getResRegisterEntriesList().isEmpty()) {
 			return OwnerInfoResponseDTO.builder().commUniqueNo("정보 없음").ownerName("정보 없음").build();
 		}
 
 		// 고유 번호 추출
-		String commUniqueNo = realEstateRegisterResponseDTO.getData().getResRegisterEntriesListDTO().get(0).getCommUniqueNo();
+		String commUniqueNo = realEstateRegisterResponseDTO.getData()
+			.getResRegisterEntriesList()
+			.get(0)
+			.getCommUniqueNo();
 
 		// '갑구' 항목 추출
 		Optional<ResRegistrationHisListDTO> optionalHisList = realEstateRegisterResponseDTO.getData()
-			.getResRegisterEntriesListDTO().get(0)
+			.getResRegisterEntriesList().get(0)
 			.getResRegistrationHisList().stream()
 			.filter(his -> "갑구".equals(his.getResType()))
 			.findFirst();
 
 		if (optionalHisList.isPresent()) {
 			ResRegistrationHisListDTO hisList = optionalHisList.get();
-			List<ResContentsListDTO> contentsList = hisList.getResContentsListDTO();
+			List<ResContentsListDTO> contentsList = hisList.getResContentsList();
 
 			// 헤더 항목을 찾아 각 필드의 인덱스(resNumber)를 저장
 			ResContentsListDTO header = contentsList.stream()
@@ -44,12 +48,12 @@ public class OwnerInfoResponseDTO {
 
 			if (header != null) {
 				// '등기목적'과 '권리자 및 기타사항' 필드의 인덱스 추출
-				String purposeIndex = header.getResDetailListDTO().stream()
+				String purposeIndex = header.getResDetailList().stream()
 					.filter(d -> "등기목적".equals(d.getResContents()))
 					.map(ResDetailListDTO::getResNumber)
 					.findFirst().orElse(null);
 
-				String ownerInfoIndex = header.getResDetailListDTO().stream()
+				String ownerInfoIndex = header.getResDetailList().stream()
 					.filter(d -> "권리자 및 기타사항".equals(d.getResContents()))
 					.map(ResDetailListDTO::getResNumber)
 					.findFirst().orElse(null);
@@ -61,13 +65,13 @@ public class OwnerInfoResponseDTO {
 						ResContentsListDTO currentEntry = contentsList.get(i);
 						if ("2".equals(currentEntry.getResType2())) {
 
-							String registrationPurpose = currentEntry.getResDetailListDTO().stream()
+							String registrationPurpose = currentEntry.getResDetailList().stream()
 								.filter(d -> purposeIndex.equals(d.getResNumber()))
 								.map(ResDetailListDTO::getResContents)
 								.findFirst().orElse("");
 
 							if ("소유권이전".equals(registrationPurpose) || "소유권보존".equals(registrationPurpose)) {
-								String ownerInfo = currentEntry.getResDetailListDTO().stream()
+								String ownerInfo = currentEntry.getResDetailList().stream()
 									.filter(d -> ownerInfoIndex.equals(d.getResNumber()))
 									.map(ResDetailListDTO::getResContents)
 									.findFirst().orElse("");

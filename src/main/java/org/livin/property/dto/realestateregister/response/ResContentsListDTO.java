@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ResContentsListDTO {
 	private String resType2;
-	private List<ResDetailListDTO> resDetailListDTO;
+	private List<ResDetailListDTO> resDetailList;
 	private String resNumber;
 }

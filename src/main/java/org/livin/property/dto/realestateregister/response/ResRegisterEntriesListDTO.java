@@ -20,7 +20,7 @@ class ResRegisterEntriesListDTO {
 	private String resRealty;
 	private String resPublishNo;
 	private String resPublishDate;
-	private List<ResRegistrationSumListDTO> resRegistrationSumListDTO;
+	private List<ResRegistrationSumListDTO> resRegistrationSumList;
 	private String commCompetentRegistryOffice;
 	private List<Object> resPrecautionsList;
 }

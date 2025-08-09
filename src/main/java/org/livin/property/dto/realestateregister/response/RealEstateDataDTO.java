@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class RealEstateDataDTO {
-	private List<ResRegisterEntriesListDTO> resRegisterEntriesListDTO;
+	private List<ResRegisterEntriesListDTO> resRegisterEntriesList;
 	private String resOriGinalData;
 	private String commStartPageNo;
 	private String resIssueYN;

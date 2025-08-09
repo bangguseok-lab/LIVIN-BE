@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ResRegistrationSumListDTO {
 	private String resType;
-	private List<ResContentsListDTO> resContentsListDTO;
+	private List<ResContentsListDTO> resContentsList;
 	private String resType1;
 }
