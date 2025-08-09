@@ -166,10 +166,12 @@ public class PropertyController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
+
 	//등기부등본 열람 api
-	@PostMapping("/real-estate-registers")
-	public ResponseEntity<SuccessResponse<OwnerInfoResponseDTO>> getRealEstateRegisters(@RequestBody
-	OwnerInfoRequestDTO ownerInfoRequestDTO) {
+	@PostMapping("/properties/real-estate-registers")
+	public ResponseEntity<SuccessResponse<OwnerInfoResponseDTO>> getRealEstateRegisters(
+		@RequestBody OwnerInfoRequestDTO ownerInfoRequestDTO
+	) {
 		log.info("부동산 고유 번호 : {}", ownerInfoRequestDTO.getCommUniqueNo());
 
 		OwnerInfoResponseDTO ownerInfoResponseDTO = propertyService.getRealEstateRegisters(ownerInfoRequestDTO);
