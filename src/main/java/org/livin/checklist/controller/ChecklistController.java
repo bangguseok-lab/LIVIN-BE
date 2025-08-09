@@ -190,14 +190,16 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "나만의 아이템을 성공적으로 삭제했습니다.", "{}"));
 	}
 
-	// todo: 특정 체크리스트가 적용된 매물 조회
+	// 특정 체크리스트 적용 매물 필터링 조회 페이지
 	@GetMapping("/{checklistId}/properties")
 	public ResponseEntity<List<PropertyDTO>> getPropertiesByChecklist(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@ModelAttribute ChecklistFilteringDTO checklistFilteringDTO
 	) {
+		// 회원 인증 정보를 통해 user_id 식별
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
+		// DTO 세팅
 		checklistFilteringDTO.setUserId(userId);
 
 		List<PropertyDTO> result = checklistService.getPropertiesByChecklist(checklistFilteringDTO);

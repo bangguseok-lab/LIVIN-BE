@@ -57,9 +57,6 @@ public interface ChecklistMapper {
 	LocalDateTime findChecklistCreatedAtByPropertyId(Long PropertyId);
 
 	//
-	List<PropertyVO> selectChecklistFavoritePropertiesWithFilter(ChecklistFilteringDTO checklistFilteringDTO);
-
-	//
 	List<PropertyVO> selectChecklistPropertyListByRegion(ChecklistFilteringDTO checklistFilteringDTO);
 
 	//

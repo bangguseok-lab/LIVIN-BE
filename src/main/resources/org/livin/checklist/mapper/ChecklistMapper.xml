@@ -218,6 +218,13 @@
         LEFT JOIN PropertyImage pi ON p.property_id = pi.property_id AND pi.represent = true
     </sql>
 
+    <!--  일반/관심 매물 필터  -->
+    <sql id="FavoritePropertyFilterCondition">
+        <if test="isFavorite != null and isFavorite == true">
+            AND f.user_id IS NOT NULL
+        </if>
+    </sql>
+
     <!-- 전세/월세 필터 -->
     <sql id="TransactionTypeFilterCondition">
         <if test="transactionType != null and transactionType != ''">
@@ -274,54 +281,21 @@
         </if>
     </sql>
 
-    <!--  특정 체크리스트 적용된 관심 매물 조회  -->
-    <select id="selectChecklistFavoritePropertiesWithFilter" resultMap="BasePropertyMap"
-            parameterType="org.livin.checklist.dto.ChecklistFilteringDTO">
-        SELECT
-        -- property 정보 SELECT
-        <include refid="SelectPropertyListBase"/>,
-        true AS is_favorite,
-        f.saved_at
-        <include refid="CommonJoins"/>
-        <where>
-
-            1 = 1
-
-            -- 전세 월세 필터링
-            <include refid="TransactionTypeFilterCondition"/>
-
-            -- 지역 필터링
-            <include refid="RegionFilterCondition"/>
-
-            -- 가격 필터링
-            <include refid="PriceFilterCondition"/>
-
-            -- 안전 매물 필터링
-            <include refid="SafePropertyFilterCondition"/>
-
-            -- 무한 스트롤 기준점
-            <if test="lastCreatedAt != null">
-                AND property_created_at &lt; #{lastCreatedAt}
-            </if>
-
-        </where>
-        -- 등록일자 기준 최신순 정렬
-        ORDER BY property_created_at DESC
-        LIMIT #{limit}
-    </select>
-
     <!--  특정 체크리스트 적용된 일반 매물 조회  -->
     <select id="selectChecklistPropertyListByRegion" resultMap="BasePropertyMap"
             parameterType="org.livin.checklist.dto.ChecklistFilteringDTO">
         SELECT
         -- property 정보 SELECT
-        <include refid="SelectPropertyListBase"/>
+        <include refid="SelectPropertyListBase"/>,
+        CASE WHEN f.user_id IS NOT NULL THEN true ELSE false END AS is_favorite
         -- 매물 필터링에 필요한 데이터 join 처리
         <include refid="CommonJoins"/>
         <where>
 
             1 = 1
 
+            <include refid="FavoritePropertyFilterCondition"></include>
+
             -- 전세 월세 필터링
             <include refid="TransactionTypeFilterCondition"/>
 
@@ -336,12 +310,12 @@
 
             -- 무한 스트롤 기준점
             <if test="lastCreatedAt != null">
-                AND property_created_at &lt; #{lastCreatedAt}
+                AND p.created_at &lt; #{lastCreatedAt}
             </if>
 
         </where>
         -- 등록일자 기준 최신순 정렬
-        ORDER BY property_created_at DESC
+        ORDER BY p.created_at DESC
         LIMIT #{limit}
     </select>
 

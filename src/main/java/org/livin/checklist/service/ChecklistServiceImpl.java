@@ -223,14 +223,7 @@ public class ChecklistServiceImpl implements ChecklistService {
 			}
 
 			// 메인 쿼리 실행
-			List<PropertyVO> list = List.of();
-			if (Boolean.TRUE.equals(checklistFilteringDTO.getFavorite())) {
-				log.info("Favorite = {} => 관심 매물만 필터링", checklistFilteringDTO.getFavorite());
-				list = checklistMapper.selectChecklistFavoritePropertiesWithFilter(checklistFilteringDTO);
-			} else {
-				log.info("Favorite = {} => false OR null => 전체 매물 조회", checklistFilteringDTO.getFavorite());
-				list = checklistMapper.selectChecklistPropertyListByRegion(checklistFilteringDTO);
-			}
+			List<PropertyVO> list = checklistMapper.selectChecklistPropertyListByRegion(checklistFilteringDTO);
 
 			log.info("_list: {}", list);
 

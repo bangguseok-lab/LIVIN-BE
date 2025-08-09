@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChecklistFilteringDTO {
 
+	private String nickname;
+	private String title;
+
 	// 지역 필터링
 	private String sido;
 	private String sigungu;
@@ -37,7 +40,8 @@ public class ChecklistFilteringDTO {
 	// 로그인 인증 정보를 통해 얻은 userId 정보를 저장하는 필드.
 	private Long userId;
 
-	private Boolean favorite;
+	// 관심 매물 필터링 여부
+	private Boolean isFavorite;
 
 	// 매물 리스트 출력시, 등록일순으로 나열하기 위해
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
