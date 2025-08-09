@@ -7,7 +7,7 @@ import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.dto.realestateregister.OwnerInfoDTO;
+import org.livin.property.dto.realestateregister.response.OwnerInfoDTO;
 import org.livin.property.service.PropertyService;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;

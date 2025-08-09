@@ -1,4 +1,4 @@
-package org.livin.property.dto.realestateregister;
+package org.livin.property.dto.realestateregister.response;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +16,8 @@ public class OwnerInfoDTO {
 	private String commUniqueNo;	//고유 번호
 	private String ownerName;	//소유자 명
 
-	public static OwnerInfoDTO fromRealEstateRegisterResponseDTO(RealEstateRegisterResponseDTO realEstateRegisterResponseDTO) {
+	public static OwnerInfoDTO fromRealEstateRegisterResponseDTO(
+		RealEstateRegisterResponseDTO realEstateRegisterResponseDTO) {
 		// 응답 데이터가 유효한지 확인
 		if (realEstateRegisterResponseDTO == null || realEstateRegisterResponseDTO.getData() == null || realEstateRegisterResponseDTO.getData().getResRegisterEntriesListDTO().isEmpty()) {
 			return OwnerInfoDTO.builder().commUniqueNo("정보 없음").ownerName("정보 없음").build();

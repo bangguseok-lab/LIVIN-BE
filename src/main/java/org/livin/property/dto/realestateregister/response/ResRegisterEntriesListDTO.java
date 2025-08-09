@@ -1,4 +1,4 @@
-package org.livin.property.dto.realestateregister;
+package org.livin.property.dto.realestateregister.response;
 
 import java.util.List;
 

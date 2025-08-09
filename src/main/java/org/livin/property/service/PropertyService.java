@@ -5,7 +5,7 @@ import java.util.List;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.dto.realestateregister.OwnerInfoDTO;
+import org.livin.property.dto.realestateregister.response.OwnerInfoDTO;
 
 public interface PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address);
