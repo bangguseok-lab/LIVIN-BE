@@ -105,6 +105,23 @@
         f.user_id=#{userId}
     </sql>
 
+    <select id="countProperties" parameterType="org.livin.property.dto.FilteringDTO" resultType="long">
+        SELECT COUNT(DISTINCT p.property_id)
+        <include refid="CommonJoins"/>
+        <where>
+            1 = 1
+
+            <include refid="TransactionTypeFilterCondition"/>
+
+            <include refid="RegionFilterCondition"/>
+
+            <include refid="PriceFilterCondition"/>
+
+            <include refid="SafePropertyFilterCondition"/>
+
+        </where>
+    </select>
+
     <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
             parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
@@ -388,4 +405,5 @@
                  LEFT JOIN FavoriteProperty fp ON p.property_id = fp.property_id AND fp.user_id = #{userId}
         WHERE p.property_id = #{propertyId}
     </select>
+
 </mapper>

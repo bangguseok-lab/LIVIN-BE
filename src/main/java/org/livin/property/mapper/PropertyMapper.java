@@ -21,6 +21,8 @@ public interface PropertyMapper {
 
 	LocalDateTime findCreatedAtByPropertyId(Long propertyId);
 
+	long countProperties(FilteringDTO filter);
+
 	Optional<PropertyDetailsVO> getPropertyDetailsById(@Param("propertyId") Long propertyId,
 		@Param("userId") Long userId);
 
