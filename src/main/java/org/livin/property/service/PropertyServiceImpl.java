@@ -59,7 +59,6 @@ public class PropertyServiceImpl implements PropertyService {
 	private String clientSecret;
 
 	private String codefAccessToken = "";
-	private RealEstateRegisterResponseDTO realEstateRegisterResponseDTO;
 	// 관심 매물
 	@Override
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address) {
@@ -264,9 +263,9 @@ public class PropertyServiceImpl implements PropertyService {
 				log.info("CodeF API 요청 성공. Status Code: {}", responseEntity.getStatusCode());
 				String rawResponseBody = responseEntity.getBody();
 				String decodedBody = URLDecoder.decode(rawResponseBody, StandardCharsets.UTF_8.name());
-				this.realEstateRegisterResponseDTO = objectMapper.readValue(decodedBody, RealEstateRegisterResponseDTO.class);
+				RealEstateRegisterResponseDTO realEstateRegisterResponseDTO = objectMapper.readValue(decodedBody, RealEstateRegisterResponseDTO.class);
 
-				return OwnerInfoDTO.fromRealEstateRegisterResponseDTO(this.realEstateRegisterResponseDTO);
+				return OwnerInfoDTO.fromRealEstateRegisterResponseDTO(realEstateRegisterResponseDTO);
 			} catch (Exception e) {
 				// 401 에러 발생 시 재시도
 				if (e.getMessage() != null && e.getMessage().contains("401") && retryCount < 1) {
@@ -281,45 +280,4 @@ public class PropertyServiceImpl implements PropertyService {
 
 		}
 	}
-	// private OwnerInfoDTO parseAndExtractInfo(String decodedBody, String uniqueNumber) throws Exception {
-	// 	HashMap<String, Object> responseBodyMap = objectMapper.readValue(decodedBody, new TypeReference<HashMap<String, Object>>() {});
-	// 	List<HashMap<String, Object>> resRegisterEntriesList = (List<HashMap<String, Object>>) ((HashMap<String, Object>) responseBodyMap.get("data")).get("resRegisterEntriesList");
-	// 	HashMap<String, Object> entry = resRegisterEntriesList.get(0); // 첫 번째 항목만 가정
-	// 	List<HashMap<String, Object>> resRegistrationHisList = (List<HashMap<String, Object>>) entry.get("resRegistrationHisList");
-	//
-	// 	OwnerInfoDTO info = new OwnerInfoDTO();
-	//
-	// 	for (HashMap<String, Object> hisItem : resRegistrationHisList) {
-	// 		if ("갑구".equals(hisItem.get("resType"))) {
-	// 			List<HashMap<String, Object>> contentsList = (List<HashMap<String, Object>>) hisItem.get("resContentsList");
-	// 			// 가장 최근 소유권 이전 등기 찾기
-	// 			// '소유권이전' 또는 '소유권보존' 등기 중 가장 마지막 등기를 찾습니다.
-	// 			HashMap<String, Object> latestOwnerEntry = null;
-	// 			for (int i = contentsList.size() - 1; i >= 0; i--) {
-	// 				HashMap<String, Object> currentEntry = contentsList.get(i);
-	// 				String registrationPurpose = (String)((List<HashMap<String, Object>>) currentEntry.get("resDetailList")).stream()
-	// 					.filter(d -> "등기목적".equals(d.get("resContents")))
-	// 					.map(d -> d.get("resContents"))
-	// 					.findFirst().orElse("");
-	//
-	// 				if ("소유권이전".equals(registrationPurpose) || "소유권보존".equals(registrationPurpose)) {
-	// 					latestOwnerEntry = currentEntry;
-	// 					break;
-	// 				}
-	// 			}
-	//
-	// 			if (latestOwnerEntry != null) {
-	// 				List<HashMap<String, Object>> detailList = (List<HashMap<String, Object>>) latestOwnerEntry.get("resDetailList");
-	// 				String ownerInfo = (String)detailList.stream().filter(d -> "권리자 및 기타사항".equals(d.get("resContents"))).map(d -> d.get("resContents")).findFirst().orElse("");
-	// 				String[] parts = ownerInfo.split(" ");
-	// 				if (parts.length > 1) {
-	// 					info = OwnerInfoDTO.builder()
-	// 						.commUniqueNo(uniqueNumber)
-	// 						.ownerName(parts[1])
-	// 						.build();
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
 }
