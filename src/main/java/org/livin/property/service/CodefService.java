@@ -1,9 +1,5 @@
 package org.livin.property.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Service;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,10 +8,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Base64;
+import java.util.HashMap;
+
+import org.livin.global.exception.CustomException;
+import org.livin.global.exception.ErrorCode;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.log4j.Log4j2;
 
 @Service
+@Log4j2
 public class CodefService {
 
 	// ObjectMapper는 한 번만 생성해서 재사용하는 것이 효율적입니다.
@@ -30,7 +36,7 @@ public class CodefService {
 			URL url = new URL("https://oauth.codef.io/oauth/token");
 			String params = "grant_type=client_credentials&scope=read";
 
-			con = (HttpURLConnection) url.openConnection();
+			con = (HttpURLConnection)url.openConnection();
 			con.setRequestMethod("POST");
 			con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
@@ -70,18 +76,15 @@ public class CodefService {
 
 			// 응답결과 URL Decoding(UTF-8)
 			String decodedResponse = URLDecoder.decode(responseStr.toString(), StandardCharsets.UTF_8);
-			return mapper.readValue(decodedResponse, new TypeReference<HashMap<String, Object>>(){});
+			return mapper.readValue(decodedResponse, new TypeReference<HashMap<String, Object>>() {
+			});
+		} catch (IOException e) {
+			log.error("CodeF 토큰 발급 중 발생", e);
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
-			e.printStackTrace(); // 예외 로그 출력
-			return null;
+			log.error("CodeF 토큰 발급 중 오류 발생", e);
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-					// 예외 로그
-				}
-			}
 			if (con != null) {
 				con.disconnect();
 			}
