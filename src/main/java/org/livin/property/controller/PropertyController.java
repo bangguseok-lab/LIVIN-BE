@@ -2,13 +2,13 @@ package org.livin.property.controller;
 
 import java.util.List;
 
+import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.dto.realestateregister.request.OwnerInfoRequestDTO;
-import org.livin.property.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.property.service.PropertyService;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;

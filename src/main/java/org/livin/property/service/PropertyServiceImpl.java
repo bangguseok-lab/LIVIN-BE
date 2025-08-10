@@ -200,17 +200,7 @@ public class PropertyServiceImpl implements PropertyService {
 	}
 
 	public OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO) {
-		String encryptionPassword = codefService.getEncryptWithExternalPublicKey();
-
-		return requestRealEstateResister(encryptionPassword, ownerInfoRequestDTO);
-	}
-
-	private OwnerInfoResponseDTO requestRealEstateResister(
-		String encryptionPassword,
-		OwnerInfoRequestDTO ownerInfoRequestDTO
-	) {
 		RealEstateRegisterResponseDTO realEstateRegisterResponseDTO = codefService.requestRealEstateResister(
-			encryptionPassword,
 			ownerInfoRequestDTO
 		);
 		Long maximumBondAmount = RealEstateRegisterResponseDTO.parseMaximumBondAmount(

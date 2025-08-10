@@ -10,12 +10,16 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.livin.global.codef.dto.buildingregister.request.BuildingRegisterRequestDTO;
+import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.global.codef.dto.realestateregister.request.RealEstateRegisterRequestDTO;
+import org.livin.global.codef.dto.realestateregister.response.RealEstateRegisterResponseDTO;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
-import org.livin.property.dto.realestateregister.request.OwnerInfoRequestDTO;
-import org.livin.property.dto.realestateregister.request.RealEstateRegisterRequestDTO;
-import org.livin.property.dto.realestateregister.response.RealEstateRegisterResponseDTO;
+import org.livin.risk.dto.RiskAnalysisRequestDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -44,12 +48,23 @@ public class CodefServiceImpl implements CodefService {
 	@Value("${codef.ePrepayPass}")
 	private String ePrepayPass;
 	@Value("${codef.real-estate-registry}")
-	private String codefUrl;
+	private String realEstateRegisterRequestUrl;
+	@Value("${codef.building-registry-general}")
+	private String generalBuildingRegisterRequestUrl;
+	@Value("${codef.building-registry-set}")
+	private String setBuildingRegisterRequestUrl;
 	@Value("${codef.client-id}")
 	private String clientId;
 	@Value("${codef.client-secret}")
 	private String clientSecret;
-
+	@Value("${codef.user-id}")
+	private String userId;
+	@Value("${codef.user-password}")
+	private String userPassword;
+	@Value("${juso.api.url}")
+	private String jusoApiUrl;
+	@Value("${juso.api.confmKey}")
+	private String jusoApiConfmKey;
 	private String codefAccessToken = "";
 	private final RsaEncryptionService rsaEncryptionService;
 
@@ -117,10 +132,10 @@ public class CodefServiceImpl implements CodefService {
 		}
 	}
 
-	public String getEncryptWithExternalPublicKey() {
+	private String getEncryptWithExternalPublicKey(String pw) {
 		String encryptionPassword = "";
 		try {
-			encryptionPassword = rsaEncryptionService.encryptWithExternalPublicKey(password);
+			encryptionPassword = rsaEncryptionService.encryptWithExternalPublicKey(pw);
 		} catch (Exception e) {
 			log.error("암호화 실패");
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -130,53 +145,42 @@ public class CodefServiceImpl implements CodefService {
 
 	//등기부등본 열람
 	public RealEstateRegisterResponseDTO requestRealEstateResister(
-		String encryptionPassword,
 		OwnerInfoRequestDTO ownerInfoRequestDTO
 	) {
 		RealEstateRegisterRequestDTO realEstateRegisterRequestDTO = RealEstateRegisterRequestDTO.builder()
 			.organization("0002")
 			.phoneNo("01083376023")
-			.password(encryptionPassword)
+			.password(getEncryptWithExternalPublicKey(password))
 			.inquiryType("0")
 			.uniqueNo(ownerInfoRequestDTO.getCommUniqueNo())
 			.ePrepayNo(ePrepayNo)
 			.ePrepayPass(ePrepayPass)
 			.issueType("1")
 			.build();
-		int retryCount = 0;
-		while (true) {
-			// 토큰이 없거나 만료되었을 때만 재발급
-			if (codefAccessToken.isEmpty()) {
-				HashMap<String, Object> map = publishToken(clientId, clientSecret);
-				if (map != null && map.containsKey("access_token")) {
-					this.codefAccessToken = (String)map.get("access_token");
-				} else {
-					log.error("CodeF access token 발급 실패.");
-					throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
-				}
-			}
-			HttpEntity<RealEstateRegisterRequestDTO> requestEntity = createRequestEntity(realEstateRegisterRequestDTO);
-			RestTemplate restTemplate = new RestTemplate();
-			try {
-				ResponseEntity<String> responseEntity = restTemplate.postForEntity(codefUrl, requestEntity,
-					String.class);
-				log.info("CodeF API 요청 성공. Status Code: {}", responseEntity.getStatusCode());
-				String rawResponseBody = responseEntity.getBody();
-				String decodedBody = URLDecoder.decode(rawResponseBody, StandardCharsets.UTF_8.name());
-				return mapper.readValue(decodedBody,
-					RealEstateRegisterResponseDTO.class);
-			} catch (Exception e) {
-				// 401 에러 발생 시 재시도
-				if (e.getMessage() != null && e.getMessage().contains("401") && retryCount < 1) {
-					log.warn("401 Unauthorized 에러 발생. 토큰 재발급 후 재시도합니다.");
-					this.codefAccessToken = "";
-					retryCount++;
-					continue;
-				}
-				log.error("CodeF API 요청 중 오류 발생: {}", e.getMessage(), e);
-				throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
-			}
+		return executeCodefRequest(realEstateRegisterRequestUrl, realEstateRegisterRequestDTO,
+			RealEstateRegisterResponseDTO.class);
+	}
+
+	public void requestBuildingRegister(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
+		String address = requestJusoApi(riskAnalysisRequestDTO);
+		BuildingRegisterRequestDTO buildingRegisterRequestDTO = BuildingRegisterRequestDTO.builder()
+			.organization("0001")
+			.loginType("1")
+			.userId(userId)
+			.userPassword(getEncryptWithExternalPublicKey(userPassword))
+			.address(address)
+			.dong(riskAnalysisRequestDTO.getDong())
+			.ho(riskAnalysisRequestDTO.getHo())
+			.type("0")
+			.zipCode(riskAnalysisRequestDTO.getZipCode())
+			.originDataYN("0")
+			.build();
+		if (riskAnalysisRequestDTO.isGeneral()) {
+			executeCodefRequest(generalBuildingRegisterRequestUrl, buildingRegisterRequestDTO, Object.class);
+		} else {
+			executeCodefRequest(setBuildingRegisterRequestUrl, buildingRegisterRequestDTO, Object.class);
 		}
+
 	}
 
 	private <T> HttpEntity<T> createRequestEntity(T body) {
@@ -184,5 +188,96 @@ public class CodefServiceImpl implements CodefService {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.setBearerAuth(codefAccessToken);
 		return new HttpEntity<>(body, headers);
+	}
+
+	private void ensureAccessToken() {
+		if (codefAccessToken.isEmpty()) {
+			HashMap<String, Object> map = publishToken(clientId, clientSecret);
+			if (map != null && map.containsKey("access_token")) {
+				this.codefAccessToken = (String)map.get("access_token");
+			} else {
+				log.error("CodeF access token 발급 실패.");
+				throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+			}
+		}
+	}
+
+	private <T, R> R executeCodefRequest(String url, T requestBody, Class<R> responseType) {
+		int retryCount = 0;
+		while (true) {
+			ensureAccessToken();
+			HttpEntity<T> requestEntity = createRequestEntity(requestBody);
+			RestTemplate restTemplate = new RestTemplate();
+
+			try {
+				ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
+				log.info("건축물대장:{}", URLDecoder.decode(responseEntity.getBody()));
+				// 성공 시 루프를 빠져나오고 결과 반환
+				return mapper.readValue(URLDecoder.decode(responseEntity.getBody(), StandardCharsets.UTF_8.name()),
+					responseType);
+			} catch (Exception e) {
+				// 401 에러 발생 시 재시도
+				if (e.getMessage() != null && e.getMessage().contains("401") && retryCount < 1) {
+					log.warn("401 Unauthorized 에러 발생. 토큰 재발급 후 재시도합니다.");
+					this.codefAccessToken = "";
+					retryCount++;
+					continue; // 루프의 다음 시도로 이동
+				}
+				log.error("CodeF API 요청 중 오류 발생: {}", e.getMessage(), e);
+				throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+			}
+		}
+	}
+
+	private String requestJusoApi(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
+		String keyword = riskAnalysisRequestDTO.getRoadNo();
+		try {
+			String url = String.format(
+				"%s?confmKey=%s&currentPage=1&countPerPage=10&keyword=%s&resultType=json",
+				jusoApiUrl,
+				jusoApiConfmKey,
+				keyword
+			);
+
+			RestTemplate restTemplate = new RestTemplate();
+			ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
+
+			if (responseEntity.getStatusCode().is2xxSuccessful()) {
+				String responseBody = responseEntity.getBody();
+				log.info("도로명주소 API 요청 성공. 응답: {}", responseBody);
+
+				HashMap<String, Object> responseMap = mapper.readValue(responseBody,
+					new TypeReference<HashMap<String, Object>>() {
+					});
+
+				@SuppressWarnings("unchecked")
+				List<Map<String, Object>> jusoList = (List<Map<String, Object>>)((Map<String, Object>)responseMap.get(
+					"results")).get("juso");
+
+				if (jusoList != null && !jusoList.isEmpty()) {
+					Map<String, Object> juso = jusoList.get(0);
+					String rn = (String)juso.get("rn");
+					String buldMnnm = (String)juso.get("buldMnnm");
+					String buldSlno = (String)juso.get("buldSlno");
+
+					// 6. 원하는 형식으로 주소 조합
+					StringBuilder addressBuilder = new StringBuilder();
+					addressBuilder.append(rn).append(buldMnnm);
+					if (buldSlno != null && !"0".equals(buldSlno)) {
+						addressBuilder.append("-").append(buldSlno);
+					}
+					return addressBuilder.toString();
+				} else {
+					log.warn("도로명주소 API 응답에 주소 정보가 없습니다.");
+					throw new CustomException(ErrorCode.NOT_FOUND);
+				}
+			} else {
+				log.error("도로명주소 API 요청 실패. Status Code: {}", responseEntity.getStatusCode());
+				throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+			}
+		} catch (Exception e) {
+			log.error("도로명주소 API 요청 중 오류 발생", e);
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
 	}
 }
