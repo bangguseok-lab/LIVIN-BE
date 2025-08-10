@@ -1,10 +1,9 @@
-package org.livin.property.dto.realestateregister.response;
+package org.livin.global.codef.dto.realestateregister.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Getter
 @AllArgsConstructor

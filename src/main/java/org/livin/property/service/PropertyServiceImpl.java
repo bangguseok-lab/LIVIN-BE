@@ -6,15 +6,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
+import org.livin.global.codef.dto.realestateregister.response.RealEstateRegisterResponseDTO;
 import org.livin.global.codef.service.CodefService;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.dto.realestateregister.request.OwnerInfoRequestDTO;
-import org.livin.property.dto.realestateregister.response.OwnerInfoResponseDTO;
-import org.livin.property.dto.realestateregister.response.RealEstateRegisterResponseDTO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
