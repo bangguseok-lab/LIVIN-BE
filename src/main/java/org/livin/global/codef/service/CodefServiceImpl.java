@@ -155,13 +155,7 @@ public class CodefServiceImpl implements CodefService {
 					throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 				}
 			}
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			headers.setBearerAuth(codefAccessToken);
-			HttpEntity<RealEstateRegisterRequestDTO> requestEntity = new HttpEntity<>(
-				realEstateRegisterRequestDTO,
-				headers
-			);
+			HttpEntity<RealEstateRegisterRequestDTO> requestEntity = createRequestEntity(realEstateRegisterRequestDTO);
 			RestTemplate restTemplate = new RestTemplate();
 			try {
 				ResponseEntity<String> responseEntity = restTemplate.postForEntity(codefUrl, requestEntity,
@@ -183,5 +177,12 @@ public class CodefServiceImpl implements CodefService {
 				throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 			}
 		}
+	}
+
+	private <T> HttpEntity<T> createRequestEntity(T body) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setBearerAuth(codefAccessToken);
+		return new HttpEntity<>(body, headers);
 	}
 }
