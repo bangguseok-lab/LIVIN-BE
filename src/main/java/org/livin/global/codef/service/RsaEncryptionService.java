@@ -1,4 +1,4 @@
-package org.livin.property.service;
+package org.livin.global.codef.service;
 
 import java.security.KeyFactory;
 import java.security.PublicKey;
