@@ -70,14 +70,16 @@ public class OwnerInfoResponseDTO {
 								.map(ResDetailListDTO::getResContents)
 								.findFirst().orElse("");
 
-							if ("소유권이전".equals(registrationPurpose) || "소유권보존".equals(registrationPurpose)) {
+							// 등기목적에 '소유권이전' 또는 '소유권보존'이 포함되는지 확인
+							if (registrationPurpose.contains("소유권이전") || registrationPurpose.contains("소유권보존")) {
 								String ownerInfo = currentEntry.getResDetailList().stream()
 									.filter(d -> ownerInfoIndex.equals(d.getResNumber()))
 									.map(ResDetailListDTO::getResContents)
 									.findFirst().orElse("");
 
 								String[] parts = ownerInfo.split(" ");
-								if (parts.length > 1) {
+								// '소유자' 키워드로 시작하는지 확인
+								if (parts.length > 1 && parts[0].contains("소유자")) {
 									return OwnerInfoResponseDTO.builder()
 										.commUniqueNo(commUniqueNo)
 										.ownerName(parts[1])

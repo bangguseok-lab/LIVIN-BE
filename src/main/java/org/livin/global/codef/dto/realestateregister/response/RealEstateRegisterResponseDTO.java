@@ -86,6 +86,7 @@ public class RealEstateRegisterResponseDTO {
 				}
 			}
 		}
+		log.info("채권최고액:{}", maximumBondAmount);
 		return maximumBondAmount > 0 ? maximumBondAmount : null;
 
 	}
