@@ -1,12 +1,16 @@
 package org.livin.checklist.mapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
+import org.livin.checklist.dto.ChecklistFilteringDTO;
 import org.livin.checklist.dto.ChecklistItemJoinDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.entity.ChecklistVO;
-import org.mapstruct.Mapper;
+import org.apache.ibatis.annotations.Mapper;
+import org.livin.property.entity.PropertyImageVO;
+import org.livin.property.entity.PropertyVO;
 
 @Mapper
 public interface ChecklistMapper {
@@ -47,4 +51,13 @@ public interface ChecklistMapper {
 
 	// 나만의 아이템 삭제
 	void deleteCustomItem(@Param("checklistId") Long checklistId, @Param("checklistItemId") Long checklistItemId);
+
+	LocalDateTime findChecklistCreatedAtByPropertyId(Long PropertyId);
+
+	List<PropertyVO> selectChecklistPropertyListByRegion(ChecklistFilteringDTO checklistFilteringDTO);
+
+	List<PropertyImageVO> selectChecklistThumbnailImageByPropertyId(Long propertyId);
+
+	List<PropertyVO> selectPropertiesByChecklistId(ChecklistFilteringDTO ChecklistFilteringDTO);
+
 }

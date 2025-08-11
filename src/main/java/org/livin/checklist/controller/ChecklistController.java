@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.livin.checklist.dto.ChecklistCreateRequestDTO;
 import org.livin.checklist.dto.ChecklistDetailDTO;
+import org.livin.checklist.dto.ChecklistFilteringDTO;
 import org.livin.checklist.dto.ChecklistItemSimpleDTO;
 import org.livin.checklist.dto.ChecklistListResponseDTO;
 import org.livin.checklist.dto.RequestChecklistItemDTO;
@@ -11,12 +12,15 @@ import org.livin.checklist.dto.RequestCustomItemsDTO;
 import org.livin.checklist.service.ChecklistService;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
+import org.livin.property.dto.PropertyDTO;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -54,7 +58,6 @@ public class ChecklistController {
 		);
 	}
 
-
 	// 체크리스트 상세 조회
 	@GetMapping("/{checklistId}")
 	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> getChecklistDetail(@PathVariable Long checklistId) {
@@ -68,7 +71,6 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "체크리스트 목록을 성공적으로 조회했습니다.", checklistDetailList));
 
 	}
-
 
 	// 체크리스트 생성
 	@PostMapping("")
@@ -85,7 +87,6 @@ public class ChecklistController {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 생성했습니다.", checklist));
 	}
-
 
 	// 기본 항목 외에 체크리스트 아이템 항목 생성
 	@PostMapping("/{checklistId}/{type}/items")
@@ -104,7 +105,6 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "기본 항목 외 아이템 생성 완료", createdNewItemLists));
 	}
 
-
 	// 체크리스트 이름, 설명 수정 실행
 	@PutMapping("/{checklistId}")
 	public ResponseEntity<SuccessResponse<ChecklistDetailDTO>> modifyChecklist(
@@ -121,7 +121,6 @@ public class ChecklistController {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 수정했습니다.", updatedChecklist));
 	}
-
 
 	// 체크리스트 아이템 수정 (is_active의 true, false 값 수정)
 	@PutMapping("/{checklistId}/items")
@@ -140,7 +139,6 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "체크리스트에 새로운 항목을 추가했습니다.", checklistItemsResponseDTO));
 	}
 
-
 	// 체크리스트 삭제
 	@DeleteMapping("/{checklistId}")
 	public ResponseEntity<SuccessResponse<String>> deleteChecklist(
@@ -155,7 +153,6 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "체크리스트를 성공적으로 삭제했습니다.", "{}"));
 	}
 
-
 	// 나만의 아이템 항목 생성
 	@PostMapping("/{checklistId}/custom/item")
 	public ResponseEntity<SuccessResponse<List<ChecklistItemSimpleDTO>>> createCustomItem(
@@ -165,12 +162,12 @@ public class ChecklistController {
 		log.info("🍀 나만의 아이템 항목 생성 실행");
 
 		// 나만의 아이템 항목 생성
-		List<ChecklistItemSimpleDTO> createCustomItem = checklistService.createCustomItem(checklistId, requestCustomItemsDTO);
+		List<ChecklistItemSimpleDTO> createCustomItem = checklistService.createCustomItem(checklistId,
+			requestCustomItemsDTO);
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(new SuccessResponse<>(true, "나만의 아이템 항목 생성 완료", createCustomItem));
 	}
-
 
 	// 나만의 아이템 삭제
 	@DeleteMapping("/{checklistId}/custom/items/{checklistItemId}")
@@ -187,6 +184,23 @@ public class ChecklistController {
 			.body(new SuccessResponse<>(true, "나만의 아이템을 성공적으로 삭제했습니다.", "{}"));
 	}
 
-	// todo: 특정 체크리스트가 적용된 매물 조회
+	// 특정 체크리스트 적용 매물 필터링 조회 페이지
+	@GetMapping("/{checklistId}/properties")
+	public ResponseEntity<List<PropertyDTO>> getPropertiesByChecklist(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long checklistId,
+		@ModelAttribute ChecklistFilteringDTO checklistFilteringDTO
+	) {
+		// 회원 인증 정보를 통해 user_id 식별
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		// DTO 세팅
+		checklistFilteringDTO.setChecklistId(checklistId);
+		checklistFilteringDTO.setUserId(userId);
+
+		List<PropertyDTO> result = checklistService.getPropertiesByChecklist(checklistFilteringDTO);
+
+		return ResponseEntity.ok(result);
+	}
 
 }

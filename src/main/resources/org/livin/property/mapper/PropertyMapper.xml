@@ -105,6 +105,23 @@
         f.user_id=#{userId}
     </sql>
 
+    <select id="countProperties" parameterType="org.livin.property.dto.FilteringDTO" resultType="long">
+        SELECT COUNT(DISTINCT p.property_id)
+        <include refid="CommonJoins"/>
+        <where>
+            1 = 1
+
+            <include refid="TransactionTypeFilterCondition"/>
+
+            <include refid="RegionFilterCondition"/>
+
+            <include refid="PriceFilterCondition"/>
+
+            <include refid="SafePropertyFilterCondition"/>
+
+        </where>
+    </select>
+
     <select id="selectPropertyListByRegion" resultMap="BasePropertyMap"
             parameterType="org.livin.property.dto.FilteringDTO">
         SELECT
@@ -123,10 +140,10 @@
             <include refid="SafePropertyFilterCondition"/>
 
             <if test="lastCreatedAt != null">
-                AND property_created_at &lt; #{lastCreatedAt}
+                AND p.created_at &lt; #{lastCreatedAt}
             </if>
         </where>
-        ORDER BY property_created_at DESC
+        ORDER BY p.created_at DESC
         LIMIT #{limit}
     </select>
 
@@ -210,9 +227,18 @@
     </select>
 
     <select id="findCreatedAtByPropertyId" resultType="java.time.LocalDateTime">
-        SELECT property_created_at
+        SELECT created_at
         FROM Property
         WHERE property_id = #{propertyId}
+    </select>
+
+    <select id="selectPropertyById" resultMap="PropertyMapWithSavedAt">
+        SELECT
+        <include refid="SelectPropertyListBase"/>,
+        CASE WHEN f.user_id IS NOT NULL THEN true ELSE false END AS is_favorite,
+        f.saved_at
+        <include refid="CommonJoins"/>
+        WHERE p.property_id = #{propertyId}
     </select>
 
     <!-- ✅ 공통 resultMap -->
@@ -388,4 +414,5 @@
                  LEFT JOIN FavoriteProperty fp ON p.property_id = fp.property_id AND fp.user_id = #{userId}
         WHERE p.property_id = #{propertyId}
     </select>
+
 </mapper>
