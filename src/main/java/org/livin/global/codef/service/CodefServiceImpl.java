@@ -161,7 +161,7 @@ public class CodefServiceImpl implements CodefService {
 			RealEstateRegisterResponseDTO.class);
 	}
 
-	public void requestBuildingRegister(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
+	public <R> R requestBuildingRegister(RiskAnalysisRequestDTO riskAnalysisRequestDTO, Class<R> responseType) {
 		String address = requestJusoApi(riskAnalysisRequestDTO);
 		BuildingRegisterRequestDTO buildingRegisterRequestDTO = BuildingRegisterRequestDTO.builder()
 			.organization("0001")
@@ -170,15 +170,16 @@ public class CodefServiceImpl implements CodefService {
 			.userPassword(getEncryptWithExternalPublicKey(userPassword))
 			.address(address)
 			.dong(riskAnalysisRequestDTO.getDong())
-			.ho(riskAnalysisRequestDTO.getHo())
 			.type("0")
 			.zipCode(riskAnalysisRequestDTO.getZipCode())
 			.originDataYN("0")
 			.build();
 		if (riskAnalysisRequestDTO.isGeneral()) {
-			executeCodefRequest(generalBuildingRegisterRequestUrl, buildingRegisterRequestDTO, Object.class);
+			return executeCodefRequest(generalBuildingRegisterRequestUrl, buildingRegisterRequestDTO,
+				responseType);
 		} else {
-			executeCodefRequest(setBuildingRegisterRequestUrl, buildingRegisterRequestDTO, Object.class);
+			return executeCodefRequest(setBuildingRegisterRequestUrl, buildingRegisterRequestDTO,
+				responseType);
 		}
 
 	}
@@ -211,7 +212,7 @@ public class CodefServiceImpl implements CodefService {
 
 			try {
 				ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
-				log.info("건축물대장:{}", URLDecoder.decode(responseEntity.getBody()));
+				log.info(URLDecoder.decode(responseEntity.getBody()));
 				// 성공 시 루프를 빠져나오고 결과 반환
 				return mapper.readValue(URLDecoder.decode(responseEntity.getBody(), StandardCharsets.UTF_8.name()),
 					responseType);

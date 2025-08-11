@@ -13,5 +13,5 @@ public interface CodefService {
 
 	RealEstateRegisterResponseDTO requestRealEstateResister(OwnerInfoRequestDTO ownerInfoRequestDTO);    //등기부등본 요청
 
-	void requestBuildingRegister(RiskAnalysisRequestDTO riskAnalysisRequestDTO);
+	<R> R requestBuildingRegister(RiskAnalysisRequestDTO riskAnalysisRequestDTO, Class<R> responseType);
 }
