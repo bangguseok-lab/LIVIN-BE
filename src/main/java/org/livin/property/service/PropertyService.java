@@ -21,5 +21,5 @@ public interface PropertyService {
 	public void removeFavoriteProperty(Long propertyId, Long userId);
 
 	// ✅ 관심 매물 추가를 위한 메서드 추가
-	public void addFavoriteProperty(Long userId, Long propertyId);
+	public PropertyDTO addFavoriteProperty(Long userId, Long propertyId);
 }

@@ -119,19 +119,17 @@ public class PropertyServiceImpl implements PropertyService {
 		log.info(propertyDetailsDTO);
 		return propertyDetailsDTO;
   }
-	// ✅ 구현: 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
+	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@Override
 	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO) {
 		log.info("서비스: 필터링된 관심 매물 조회 요청 - filteringDTO: {}", filteringDTO);
 
-		// 서비스 계층에서는 이미 FilteringDTO 안에 userId가 설정되어 있다고 가정합니다 (컨트롤러에서 설정했으므로).
 		if (filteringDTO.getUserId() == null) {
 			log.error("getFavoritePropertiesWithFilter: userId가 FilteringDTO에 설정되지 않았습니다.");
 			throw new IllegalArgumentException("사용자 ID가 필요합니다.");
 		}
 
 		try {
-			// 매퍼 호출 (Mapping.xml에 selectFavoritePropertiesWithFilter 쿼리가 필요함)
 			List<PropertyVO> list = propertyMapper.selectFavoritePropertiesWithFilter(filteringDTO);
 
 			// 각 매물에 썸네일 이미지 주입
@@ -151,54 +149,50 @@ public class PropertyServiceImpl implements PropertyService {
 		}
 	}
 
-	// ✅ 구현: 관심 매물 삭제
+	// 관심 매물 삭제
+	@Transactional
 	@Override
 	public void removeFavoriteProperty(Long propertyId, Long userId) {
 		log.info("서비스: 관심 매물 삭제 요청 - propertyId: {}, userId: {}", propertyId, userId);
-
 		if (userId == null) {
-			throw new IllegalArgumentException("삭제를 위해 사용자 ID가 필요합니다.");
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
 		}
 
-		try {
-			// FavoritePropertyMapper를 사용하여 관심 매물 삭제
-			// favorite_property 테이블에서 property_id와 user_id가 일치하는 레코드 삭제
-			int deletedRows = propertyMapper.deleteFavoriteProperty(propertyId, userId);
-
-			if (deletedRows == 0) {
-				log.warn("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에 없거나 이미 삭제되었습니다.", propertyId, userId);
-				// 이미 삭제되었거나 존재하지 않는 경우, 클라이언트에게 성공으로 알리거나 특정 에러를 반환할 수 있습니다.
-				// 여기서는 IllegalArgumentException을 던져 컨트롤러에서 400 Bad Request로 처리하도록 합니다.
-				throw new IllegalArgumentException("관심 매물 목록에 없거나 이미 삭제된 매물입니다.");
-			}
-			log.info("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에서 성공적으로 삭제되었습니다.", propertyId, userId);
-
-		} catch (Exception e) {
-			log.error("removeFavoriteProperty 서비스 에러: {}", e.getMessage(), e);
-			throw new RuntimeException("관심 매물 삭제 실패", e);
+		int deletedRows = propertyMapper.deleteFavoriteProperty(propertyId, userId);
+		if (deletedRows == 0) {
+			log.warn("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에 없거나 이미 삭제되었습니다.", propertyId, userId);
+			throw new CustomException(ErrorCode.BAD_REQUEST);
 		}
+		log.info("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에서 성공적으로 삭제되었습니다.", propertyId, userId);
 	}
 
+	// 관심 매물 추가
+	@Transactional
 	@Override
-	@Transactional // 데이터 변경이므로 @Transactional 어노테이션 추가
-	public void addFavoriteProperty(Long userId, Long propertyId) {
+	public PropertyDTO addFavoriteProperty(Long userId, Long propertyId) {
 		log.info("관심 매물 추가 요청 - userId: {}, propertyId: {}", userId, propertyId);
 
+		// 1. 이미 관심 매물로 등록되어 있는지 확인
 		Integer count = propertyMapper.checkIfFavoriteExists(userId, propertyId);
 		if (count != null && count > 0) {
-		    log.warn("이미 등록된 관심 매물 - userId: {}, propertyId: {}", userId, propertyId);
-		    // throw new IllegalArgumentException("이미 관심 매물로 등록되어 있습니다.");
-		    return; // 또는 특정 예외를 발생시켜 클라이언트에 알림
+			log.warn("이미 등록된 관심 매물 - userId: {}, propertyId: {}", userId, propertyId);
+			throw new CustomException(ErrorCode.BAD_REQUEST);
 		}
 
-		// saved_at 필드는 현재 시간으로 설정
+		// 2. 관심 매물 추가
 		int insertedRows = propertyMapper.addFavoriteProperty(userId, propertyId, LocalDateTime.now());
-
 		if (insertedRows == 0) {
 			log.error("관심 매물 추가 실패 - userId: {}, propertyId: {}", userId, propertyId);
-			// throw new RuntimeException("관심 매물 추가에 실패했습니다.");
-		} else {
-			log.info("관심 매물 추가 성공 - userId: {}, propertyId: {}", userId, propertyId);
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
+
+		// 3. 성공 시, 추가된 매물 정보를 조회하여 DTO로 반환
+		PropertyVO addedProperty = propertyMapper.selectPropertyById(propertyId, userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+		List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(addedProperty.getPropertyId());
+		addedProperty.setImages(images);
+
+		return PropertyDTO.of(addedProperty);
 	}
 }
