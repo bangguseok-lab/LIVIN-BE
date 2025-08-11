@@ -216,6 +216,13 @@
         LEFT JOIN Building b ON p.building_id = b.building_id
         LEFT JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
         LEFT JOIN PropertyImage pi ON p.property_id = pi.property_id AND pi.represent = true
+        INNER JOIN Property_CheckList pc ON p.property_id = pc.property_id
+    </sql>
+
+    <sql id="ChecklistFilterCondition">
+        <if test="checklistId != null">
+            AND pc.checklist_id = #{checklistId}
+        </if>
     </sql>
 
     <!--  일반/관심 매물 필터  -->
@@ -294,6 +301,10 @@
 
             1 = 1
 
+            <!-- 체크리스트 필터링 -->
+            <include refid="ChecklistFilterCondition"/>
+
+            -- 일반/관심 매물 필터링
             <include refid="FavoritePropertyFilterCondition"></include>
 
             -- 전세 월세 필터링
