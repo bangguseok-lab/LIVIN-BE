@@ -1,16 +1,16 @@
-package org.livin.property.dto.realestateregister.response;
+package org.livin.global.codef.dto.buildingregister.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@Getter
-@AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @Builder
-public class ResDetailListDTO {
-	private String resNumber;
+@AllArgsConstructor
+public class AuthStatusDTO {
+	private String resType;
+	private String resType1;
 	private String resContents;
 }

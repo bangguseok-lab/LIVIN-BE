@@ -1,4 +1,4 @@
-package org.livin.property.dto.realestateregister.request;
+package org.livin.global.codef.dto.realestateregister.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,4 +1,4 @@
-package org.livin.property.dto.realestateregister.response;
+package org.livin.global.codef.dto.realestateregister.response;
 
 import java.util.List;
 import java.util.Optional;
@@ -86,6 +86,7 @@ public class RealEstateRegisterResponseDTO {
 				}
 			}
 		}
+		log.info("채권최고액:{}", maximumBondAmount);
 		return maximumBondAmount > 0 ? maximumBondAmount : null;
 
 	}
