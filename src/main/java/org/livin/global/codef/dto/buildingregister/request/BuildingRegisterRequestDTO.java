@@ -16,7 +16,6 @@ public class BuildingRegisterRequestDTO {
 	private String userPassword;
 	private String address;
 	private String dong;
-	private String ho;
 	private String type;
 	private String zipCode;
 	private String originDataYN;
