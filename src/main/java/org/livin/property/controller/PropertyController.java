@@ -7,7 +7,9 @@ import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.service.PropertyServiceImpl;
+import org.livin.property.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.property.dto.realestateregister.response.OwnerInfoResponseDTO;
+import org.livin.property.service.PropertyService;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,7 +33,7 @@ import lombok.extern.log4j.Log4j2;
 public class PropertyController {
 
 	private final UserService userService;
-	private final PropertyServiceImpl propertyService;
+	private final PropertyService propertyService;
 
 	// 관심 매물 조회 - 메인페이지 전용
 	@GetMapping("/properties/favorite")
@@ -139,5 +142,18 @@ public class PropertyController {
 		PropertyDTO added = propertyService.addFavoriteProperty(userId, propertyId);
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 추가했습니다.", added));
+	}
+
+	//등기부등본 열람 api
+	@PostMapping("/properties/real-estate-registers")
+	public ResponseEntity<SuccessResponse<OwnerInfoResponseDTO>> getRealEstateRegisters(
+		@RequestBody OwnerInfoRequestDTO ownerInfoRequestDTO
+	) {
+		log.info("부동산 고유 번호 : {}", ownerInfoRequestDTO.getCommUniqueNo());
+
+		OwnerInfoResponseDTO ownerInfoResponseDTO = propertyService.getRealEstateRegisters(ownerInfoRequestDTO);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "등기부등본 열람이 성공하였습니다.", ownerInfoResponseDTO)
+		);
 	}
 }

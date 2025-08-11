@@ -1,7 +1,12 @@
 package org.livin.property.service;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.livin.global.exception.CustomException;
@@ -9,6 +14,11 @@ import org.livin.global.exception.ErrorCode;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
+import org.livin.property.dto.realestateregister.RiskTemporaryDTO;
+import org.livin.property.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.property.dto.realestateregister.request.RealEstateRegisterRequestDTO;
+import org.livin.property.dto.realestateregister.response.OwnerInfoResponseDTO;
+import org.livin.property.dto.realestateregister.response.RealEstateRegisterResponseDTO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
@@ -16,8 +26,17 @@ import org.livin.property.mapper.FavoritePropertyMapper;
 import org.livin.property.mapper.PropertyMapper;
 import org.livin.user.mapper.UserMapper;
 import org.livin.user.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -31,6 +50,24 @@ public class PropertyServiceImpl implements PropertyService {
 	private final FavoritePropertyMapper favoritePropertyMapper;
 	private final PropertyMapper propertyMapper;
 	private final UserService userService;
+
+	private final RsaEncryptionService rsaEncryptionService;
+	private final ObjectMapper objectMapper;
+	@Value("${codef.password}")
+	private String password;
+	@Value("${codef.ePrepayNo}")
+	private String ePrepayNo;
+	@Value("${codef.ePrepayPass}")
+	private String ePrepayPass;
+	@Value("${codef.real-estate-registry}")
+	private String codefUrl;
+	@Value("${codef.client-id}")
+	private String clientId;
+	@Value("${codef.client-secret}")
+	private String clientSecret;
+
+	private String codefAccessToken = "";
+	private final RedisTemplate<String, RiskTemporaryDTO> riskTemporaryRedisTemplate;
 
 	// 관심 매물
 	@Override
@@ -134,7 +171,8 @@ public class PropertyServiceImpl implements PropertyService {
 
 			// 각 매물에 썸네일 이미지 주입
 			for (PropertyVO property : list) {
-				List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(property.getPropertyId());
+				List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(
+					property.getPropertyId());
 				property.setImages(images);
 			}
 
@@ -194,5 +232,92 @@ public class PropertyServiceImpl implements PropertyService {
 		addedProperty.setImages(images);
 
 		return PropertyDTO.of(addedProperty);
+	}
+
+	public OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO) {
+		String encryptionPassword = "";
+		try {
+			encryptionPassword = rsaEncryptionService.encryptWithExternalPublicKey(password);
+		} catch (Exception e) {
+			log.error("암호화 실패");
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+		RealEstateRegisterRequestDTO realEstateRegisterRequestDTO = RealEstateRegisterRequestDTO.builder()
+			.organization("0002")
+			.phoneNo("01083376023")
+			.password(encryptionPassword)
+			.inquiryType("0")
+			.uniqueNo(ownerInfoRequestDTO.getCommUniqueNo())
+			.ePrepayNo(ePrepayNo)
+			.ePrepayPass(ePrepayPass)
+			.issueType("1")
+			.build();
+
+		return requestCodef(realEstateRegisterRequestDTO, ownerInfoRequestDTO);
+	}
+
+	private OwnerInfoResponseDTO requestCodef(RealEstateRegisterRequestDTO realEstateRegisterRequestDTO,
+		OwnerInfoRequestDTO ownerInfoRequestDTO) {
+		int retryCount = 0;
+		while (true) {
+			// 토큰이 없거나 만료되었을 때만 재발급
+			if (codefAccessToken.isEmpty()) {
+				HashMap<String, Object> map = CodefService.publishToken(clientId, clientSecret);
+				if (map != null && map.containsKey("access_token")) {
+					this.codefAccessToken = (String)map.get("access_token");
+				} else {
+					log.error("CodeF access token 발급 실패.");
+					throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+				}
+			}
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.setBearerAuth(codefAccessToken);
+			HttpEntity<RealEstateRegisterRequestDTO> requestEntity = new HttpEntity<>(realEstateRegisterRequestDTO,
+				headers);
+			RestTemplate restTemplate = new RestTemplate();
+			try {
+				ResponseEntity<String> responseEntity = restTemplate.postForEntity(codefUrl, requestEntity,
+					String.class);
+				log.info("CodeF API 요청 성공. Status Code: {}", responseEntity.getStatusCode());
+				String rawResponseBody = responseEntity.getBody();
+				String decodedBody = URLDecoder.decode(rawResponseBody, StandardCharsets.UTF_8.name());
+				RealEstateRegisterResponseDTO realEstateRegisterResponseDTO = objectMapper.readValue(decodedBody,
+					RealEstateRegisterResponseDTO.class);
+				Long maximumBondAmount = RealEstateRegisterResponseDTO.parseMaximumBondAmount(
+					realEstateRegisterResponseDTO);
+				OwnerInfoResponseDTO ownerInfoResponseDTO = OwnerInfoResponseDTO.fromRealEstateRegisterResponseDTO(
+					realEstateRegisterResponseDTO);
+
+				RiskTemporaryDTO riskTemporaryDTO = RiskTemporaryDTO.builder()
+					.isOwner(Objects.equals(ownerInfoResponseDTO.getOwnerName(), ownerInfoRequestDTO.getOwnerName()))
+					.maximum_bond_amount(maximumBondAmount)
+					.build();
+				long ownerExpiration = 1000L * 60 * 60 * 24;
+
+				riskTemporaryRedisTemplate.opsForValue()
+					.set(ownerInfoResponseDTO.getCommUniqueNo(), riskTemporaryDTO, Duration.ofMillis(ownerExpiration));
+
+				RiskTemporaryDTO retrievedDto = riskTemporaryRedisTemplate.opsForValue()
+					.get(ownerInfoResponseDTO.getCommUniqueNo());
+				if (retrievedDto != null) {
+					log.info("Redis에서 가져온 정보: isOwner={}, maximumBondAmount={}",
+						retrievedDto.isOwner(), retrievedDto.getMaximum_bond_amount());
+				}
+				//레디스 저장 추가
+				return ownerInfoResponseDTO;
+			} catch (Exception e) {
+				// 401 에러 발생 시 재시도
+				if (e.getMessage() != null && e.getMessage().contains("401") && retryCount < 1) {
+					log.warn("401 Unauthorized 에러 발생. 토큰 재발급 후 재시도합니다.");
+					this.codefAccessToken = "";
+					retryCount++;
+					continue;
+				}
+				log.error("CodeF API 요청 중 오류 발생: {}", e.getMessage(), e);
+				throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+			}
+
+		}
 	}
 }
