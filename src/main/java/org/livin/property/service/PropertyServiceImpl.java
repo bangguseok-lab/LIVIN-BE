@@ -124,21 +124,20 @@ public class PropertyServiceImpl implements PropertyService {
 		PropertyDetailsDTO propertyDetailsDTO = PropertyDetailsDTO.fromPropertyDetailsVO(propertyDetailsVO);
 		log.info(propertyDetailsDTO);
 		return propertyDetailsDTO;
+
 	}
 
-	// ✅ 구현: 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
+	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@Override
 	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO) {
 		log.info("서비스: 필터링된 관심 매물 조회 요청 - filteringDTO: {}", filteringDTO);
 
-		// 서비스 계층에서는 이미 FilteringDTO 안에 userId가 설정되어 있다고 가정합니다 (컨트롤러에서 설정했으므로).
 		if (filteringDTO.getUserId() == null) {
 			log.error("getFavoritePropertiesWithFilter: userId가 FilteringDTO에 설정되지 않았습니다.");
 			throw new IllegalArgumentException("사용자 ID가 필요합니다.");
 		}
 
 		try {
-			// 매퍼 호출 (Mapping.xml에 selectFavoritePropertiesWithFilter 쿼리가 필요함)
 			List<PropertyVO> list = propertyMapper.selectFavoritePropertiesWithFilter(filteringDTO);
 
 			// 각 매물에 썸네일 이미지 주입
@@ -159,60 +158,51 @@ public class PropertyServiceImpl implements PropertyService {
 		}
 	}
 
-	// ✅ 관심 매물 삭제 (ChecklistServiceImpl 패턴 적용)
+	// 관심 매물 삭제
 	@Transactional
 	@Override
 	public void removeFavoriteProperty(Long propertyId, Long userId) {
 		log.info("서비스: 관심 매물 삭제 요청 - propertyId: {}, userId: {}", propertyId, userId);
 		if (userId == null) {
-			throw new IllegalArgumentException("삭제를 위해 사용자 ID가 필요합니다.");
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
 		}
-		try {
-			int deletedRows = propertyMapper.deleteFavoriteProperty(propertyId, userId);
-			if (deletedRows == 0) {
-				log.warn("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에 없거나 이미 삭제되었습니다.", propertyId, userId);
-				throw new IllegalArgumentException("관심 매물 목록에 없거나 이미 삭제된 매물입니다.");
-			}
-			log.info("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에서 성공적으로 삭제되었습니다.", propertyId, userId);
-		} catch (Exception e) {
-			log.error("============> 관심 매물 삭제 중 에러 발생", e);
-			throw new RuntimeException("관심 매물 삭제 실패", e);
+
+		int deletedRows = propertyMapper.deleteFavoriteProperty(propertyId, userId);
+		if (deletedRows == 0) {
+			log.warn("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에 없거나 이미 삭제되었습니다.", propertyId, userId);
+			throw new CustomException(ErrorCode.BAD_REQUEST);
 		}
+		log.info("removeFavoriteProperty: 매물 {}이 사용자 {}의 관심 매물에서 성공적으로 삭제되었습니다.", propertyId, userId);
 	}
 
-	// ✅ 관심 매물 추가 (ChecklistServiceImpl 패턴 적용)
+	// 관심 매물 추가
 	@Transactional
 	@Override
 	public PropertyDTO addFavoriteProperty(Long userId, Long propertyId) {
 		log.info("관심 매물 추가 요청 - userId: {}, propertyId: {}", userId, propertyId);
-		try {
-			// 1. 이미 관심 매물로 등록되어 있는지 확인
-			Integer count = propertyMapper.checkIfFavoriteExists(userId, propertyId);
-			if (count != null && count > 0) {
-				log.warn("이미 등록된 관심 매물 - userId: {}, propertyId: {}", userId, propertyId);
-				throw new IllegalArgumentException("이미 관심 매물로 등록되어 있습니다.");
-			}
 
-			// 2. 관심 매물 추가 (saved_at 필드는 현재 시간으로 설정)
-			int insertedRows = propertyMapper.addFavoriteProperty(userId, propertyId, LocalDateTime.now());
-			if (insertedRows == 0) {
-				log.error("관심 매물 추가 실패 - userId: {}, propertyId: {}", userId, propertyId);
-				throw new RuntimeException("관심 매물 추가에 실패했습니다.");
-			}
-
-			// 3. 성공 시, 추가된 매물 정보를 조회하여 DTO로 반환
-			PropertyVO addedProperty = propertyMapper.selectPropertyById(propertyId, userId)
-				.orElseThrow(() -> new IllegalArgumentException("추가된 매물을 찾을 수 없습니다."));
-
-			List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(
-				addedProperty.getPropertyId());
-			addedProperty.setImages(images);
-
-			return PropertyDTO.of(addedProperty);
-		} catch (Exception e) {
-			log.error("============> 관심 매물 추가 중 에러 발생", e);
-			throw new RuntimeException("관심 매물 추가 실패", e);
+		// 1. 이미 관심 매물로 등록되어 있는지 확인
+		Integer count = propertyMapper.checkIfFavoriteExists(userId, propertyId);
+		if (count != null && count > 0) {
+			log.warn("이미 등록된 관심 매물 - userId: {}, propertyId: {}", userId, propertyId);
+			throw new CustomException(ErrorCode.BAD_REQUEST);
 		}
+
+		// 2. 관심 매물 추가
+		int insertedRows = propertyMapper.addFavoriteProperty(userId, propertyId, LocalDateTime.now());
+		if (insertedRows == 0) {
+			log.error("관심 매물 추가 실패 - userId: {}, propertyId: {}", userId, propertyId);
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+
+		// 3. 성공 시, 추가된 매물 정보를 조회하여 DTO로 반환
+		PropertyVO addedProperty = propertyMapper.selectPropertyById(propertyId, userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+		List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(addedProperty.getPropertyId());
+		addedProperty.setImages(images);
+
+		return PropertyDTO.of(addedProperty);
 	}
 
 	public OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO) {
