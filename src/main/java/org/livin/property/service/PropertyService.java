@@ -25,4 +25,6 @@ public interface PropertyService {
 	OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO);
 
 	public PropertyDTO addFavoriteProperty(Long userId, Long propertyId);
+
+	List<String> getChecklistTitlesByUserId(Long userId);
 }

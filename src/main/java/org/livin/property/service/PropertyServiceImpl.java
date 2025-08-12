@@ -23,6 +23,7 @@ import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
 import org.livin.property.mapper.FavoritePropertyMapper;
+import org.livin.property.mapper.PropertyChecklistMapper;
 import org.livin.property.mapper.PropertyMapper;
 import org.livin.user.mapper.UserMapper;
 import org.livin.user.service.UserService;
@@ -50,6 +51,7 @@ public class PropertyServiceImpl implements PropertyService {
 	private final FavoritePropertyMapper favoritePropertyMapper;
 	private final PropertyMapper propertyMapper;
 	private final UserService userService;
+	private final PropertyChecklistMapper propertyChecklistMapper;
 
 	private final RsaEncryptionService rsaEncryptionService;
 	private final ObjectMapper objectMapper;
@@ -319,5 +321,22 @@ public class PropertyServiceImpl implements PropertyService {
 			}
 
 		}
+	}
+
+	// 매물 상세페이지에서 체크리스트 목록 출력
+	@Transactional
+	@Override
+	public List<String> getChecklistTitlesByUserId(Long userId) {
+
+		Objects.requireNonNull(userId, "userId must not be null");
+
+		try {
+			List<String> titles = propertyChecklistMapper.selectChecklistTitlesByUserId(userId);
+			return (titles == null) ? java.util.Collections.emptyList() : titles;
+		} catch (Exception e) {
+			log.error("체크리스트 제목 조회 실패 userId={}", userId, e);
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+
 	}
 }

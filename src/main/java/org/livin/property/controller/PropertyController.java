@@ -2,6 +2,7 @@ package org.livin.property.controller;
 
 import java.util.List;
 
+import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.FilteringDTO;
@@ -155,5 +156,19 @@ public class PropertyController {
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "등기부등본 열람이 성공하였습니다.", ownerInfoResponseDTO)
 		);
+	}
+
+	// 매물 상세 페이지 체크리스트 목록 출력
+	@GetMapping("/properties/checklist")
+	public ResponseEntity<List<String>> getChecklistTitles(
+		@AuthenticationPrincipal CustomUserDetails userDetails
+	) {
+		// 인증 정보 -> userId
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		// 사용자가 만든 체크리스트 제목 목록 조회
+		List<String> titles = propertyService.getChecklistTitlesByUserId(userId);
+
+		return ResponseEntity.ok(titles);
 	}
 }
