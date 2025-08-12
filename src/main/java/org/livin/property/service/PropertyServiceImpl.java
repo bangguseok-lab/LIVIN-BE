@@ -124,7 +124,8 @@ public class PropertyServiceImpl implements PropertyService {
 		PropertyDetailsDTO propertyDetailsDTO = PropertyDetailsDTO.fromPropertyDetailsVO(propertyDetailsVO);
 		log.info(propertyDetailsDTO);
 		return propertyDetailsDTO;
-  }
+	}
+
 	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@Override
 	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO) {
@@ -190,25 +191,6 @@ public class PropertyServiceImpl implements PropertyService {
 		int insertedRows = propertyMapper.addFavoriteProperty(userId, propertyId, LocalDateTime.now());
 		if (insertedRows == 0) {
 			log.error("관심 매물 추가 실패 - userId: {}, propertyId: {}", userId, propertyId);
-			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
-		}
-
-		// 3. 성공 시, 추가된 매물 정보를 조회하여 DTO로 반환
-		PropertyVO addedProperty = propertyMapper.selectPropertyById(propertyId, userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-
-		List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(addedProperty.getPropertyId());
-		addedProperty.setImages(images);
-
-		return PropertyDTO.of(addedProperty);
-	}
-
-	public OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO) {
-		String encryptionPassword = "";
-		try {
-			encryptionPassword = rsaEncryptionService.encryptWithExternalPublicKey(password);
-		} catch (Exception e) {
-			log.error("암호화 실패");
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
 
