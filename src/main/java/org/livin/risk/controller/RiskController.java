@@ -35,7 +35,7 @@ public class RiskController {
 	) {
 		riskService.deleteRiskTemporaryInfo(commUniqueNo);
 		return ResponseEntity.ok(
-			new SuccessResponse<>(true, "소유자와 사용자의 정보일치 판단 여부가 저장되었습니다.", null)
+			new SuccessResponse<>(true, "고유번호가 일치하지 않아 진행과정을 취소합니다.", null)
 		);
 	}
 }

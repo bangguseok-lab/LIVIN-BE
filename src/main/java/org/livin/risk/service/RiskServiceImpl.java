@@ -15,6 +15,10 @@ import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
 import org.livin.property.dto.PropertyTemporaryDTO;
 import org.livin.property.entity.BuildingVO;
+import org.livin.property.entity.property_enum.AbleStatus;
+import org.livin.property.entity.property_enum.EntranceStructure;
+import org.livin.property.entity.property_enum.HeatingFuel;
+import org.livin.property.entity.property_enum.HeatingType;
 import org.livin.risk.dto.RiskAnalysisRequestDTO;
 import org.livin.risk.dto.RiskTemporaryDTO;
 import org.livin.risk.entity.RiskAnalysisVO;
@@ -35,68 +39,107 @@ public class RiskServiceImpl implements RiskService {
 
 	@Override
 	public void createRiskTemporaryInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
-		BuildingInfoDTO buildingInfoDTO;
+		try {
+			BuildingInfoDTO buildingInfoDTO = requestBuildingInfo(riskAnalysisRequestDTO);
+			MarketPriceInfoDTO marketPriceInfoDTO = requestMarketPriceInfo(buildingInfoDTO, riskAnalysisRequestDTO);
+			RiskTemporaryDTO riskTemporaryDTO = getRiskTemporaryInfo(riskAnalysisRequestDTO.getCommUniqueNo());
+
+			int jeonseRatio = calculateJeonseRatio(riskAnalysisRequestDTO.getJeonseDeposit(), marketPriceInfoDTO);
+			boolean isSafe = jeonseRatio <= 70 && !buildingInfoDTO.isViolating();
+
+			RiskAnalysisVO riskAnalysisVO = buildRiskAnalysisVO(riskTemporaryDTO, isSafe, buildingInfoDTO.isViolating(),
+				jeonseRatio);
+			BuildingVO buildingVO = buildBuildingVO(buildingInfoDTO, marketPriceInfoDTO, riskAnalysisRequestDTO);
+
+			PropertyTemporaryDTO propertyTemporaryDTO = PropertyTemporaryDTO.builder()
+				.riskAnalysisVO(riskAnalysisVO)
+				.buildingVO(buildingVO)
+				.build();
+
+			propertyTemporaryRedisTemplate.opsForValue()
+				.set(riskAnalysisRequestDTO.getCommUniqueNo(), propertyTemporaryDTO);
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	//건물 정보 가져오기
+	private BuildingInfoDTO requestBuildingInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
 		if (riskAnalysisRequestDTO.isGeneral()) {
 			GeneralBuildingRegisterResponseDTO response = requestGeneralBuildingRegister(riskAnalysisRequestDTO);
-			buildingInfoDTO = BuildingInfoParser.parse(response);
+			return BuildingInfoParser.parse(response);
 		} else {
 			try {
 				BuildingRegisterCollgationResponseDTO response = requestBuildingCollgationRegister(
 					riskAnalysisRequestDTO);
-				buildingInfoDTO = BuildingInfoParser.parse(response);
+				return BuildingInfoParser.parse(response);
 			} catch (Exception e) {
 				SetBuildingRegisterResponseDTO response = requestSetBuildingRegister(riskAnalysisRequestDTO);
-				buildingInfoDTO = BuildingInfoParser.parse(response);
+				return BuildingInfoParser.parse(response);
 			}
-
 		}
-		log.info(buildingInfoDTO.getTotalFloors() + " " + buildingInfoDTO.getTotalParkingSpaces() + " "
-			+ buildingInfoDTO.getHasElevator());
-		BuildingCodeResponseDTO buildingCodeResponseDTO = codefService.requestBuildingCode(buildingInfoDTO);
+	}
 
+	//시세정보 가져오기
+	private MarketPriceInfoDTO requestMarketPriceInfo(BuildingInfoDTO buildingInfoDTO,
+		RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
+		BuildingCodeResponseDTO buildingCodeResponseDTO = codefService.requestBuildingCode(buildingInfoDTO);
 		String commComplexNo = BuildingCodeParser.parseCommComplexNo(buildingInfoDTO.getResidentialName(),
 			buildingCodeResponseDTO);
 		MarketInfoResponseDTO marketInfoResponseDTO = codefService.requestMarketInfo(commComplexNo,
 			riskAnalysisRequestDTO);
+		return MarketInfoParser.parseMarketPriceInfo(marketInfoResponseDTO);
+	}
 
-		MarketPriceInfoDTO marketPriceInfoDTO = MarketInfoParser.parseMarketPriceInfo(marketInfoResponseDTO);
-		RiskTemporaryDTO riskTemporaryDTO = riskTemporaryRedisTemplate.opsForValue()
-			.get(riskAnalysisRequestDTO.getCommUniqueNo());
+	//이전에 등기부등본 과정에서 redis에 저장한 임시 데이터 가져오기
+	private RiskTemporaryDTO getRiskTemporaryInfo(String commUniqueNo) {
+		RiskTemporaryDTO riskTemporaryDTO = riskTemporaryRedisTemplate.opsForValue().get(commUniqueNo);
+		if (riskTemporaryDTO == null) {
+			log.error("Redis에서 RiskTemporaryDTO를 찾을 수 없습니다. 키: {}", commUniqueNo);
+			throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+		return riskTemporaryDTO;
+	}
 
-		long jeonseRatio = (riskAnalysisRequestDTO.getJeonseDeposit() / (
-			(Integer.parseInt(marketPriceInfoDTO.getTopPrice()) + Integer.parseInt(
-				marketPriceInfoDTO.getLowestPrice())) / 2)) * 100;
+	//전세가율 계산
+	private int calculateJeonseRatio(long jeonseDeposit, MarketPriceInfoDTO marketPriceInfoDTO) {
+		long averageMarketPrice = (Long.parseLong(marketPriceInfoDTO.getTopPrice()) * 10000L
+			+ Long.parseLong(marketPriceInfoDTO.getLowestPrice()) * 10000L) / 2;
+		double jeonseRatioDouble = ((double)jeonseDeposit / averageMarketPrice) * 100;
+		return (int)Math.round(jeonseRatioDouble);
+	}
 
-		boolean isSafe = jeonseRatio <= 70 && buildingInfoDTO.isViolating();
-
-		RiskAnalysisVO riskAnalysisVO = RiskAnalysisVO.builder()
-			.checkLandlord(riskTemporaryDTO.isOwner())
-			.isSafe(isSafe)
-			.injusticeBuilding(buildingInfoDTO.isViolating())
-			.jeonseRatio((int)jeonseRatio)
-			.build();
-
-		BuildingVO buildingVO = BuildingVO.builder()
+	//BuildingVO 생성
+	private BuildingVO buildBuildingVO(BuildingInfoDTO buildingInfoDTO, MarketPriceInfoDTO marketPriceInfoDTO,
+		RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
+		return BuildingVO.builder()
 			.elevator("있음".equals(buildingInfoDTO.getHasElevator()))
 			.roadAddress(riskAnalysisRequestDTO.getRoadNo())
 			.totalFloors(Integer.parseInt(buildingInfoDTO.getTotalFloors()))
-			.heatingType(marketPriceInfoDTO.getHeatingType())
+			.heatingType(marketPriceInfoDTO.getHeatingType() != null ?
+				marketPriceInfoDTO.getHeatingType() : HeatingType.CENTRAL_HEATING)
+			.heatingFuel(HeatingFuel.LPG)
+			.entranceStructure(EntranceStructure.HALLWAY)
 			.numParking(buildingInfoDTO.getTotalParkingSpaces())
 			.postcode(riskAnalysisRequestDTO.getZipCode())
 			.totalUnit(Integer.parseInt(buildingInfoDTO.getTotalHouseholds()))
+			.parking(AbleStatus.ABLE)
+			.completionYear(2022)
 			.build();
-		//redis에 building정보, 안전정보를 박아 넣어 둬야 함
-		//매물 등록 요청시 building 정보 꺼내서 저장 하고 다음 매물 다음 순으로 저장
-		//총괄로 안나온다면 표제부로 재요청하도록 그래야 승강기, 주차 자리도 가져올 수 있음
-		PropertyTemporaryDTO propertyTemporaryDTO = PropertyTemporaryDTO.builder()
-			.riskAnalysisVO(riskAnalysisVO)
-			.buildingVO(buildingVO)
-			.build();
-
-		propertyTemporaryRedisTemplate.opsForValue()
-			.set(riskAnalysisRequestDTO.getCommUniqueNo(), propertyTemporaryDTO);
 	}
 
+	//RiskAnalysisVO 생성
+	private RiskAnalysisVO buildRiskAnalysisVO(RiskTemporaryDTO riskTemporaryDTO, boolean isSafe, boolean isViolating,
+		int jeonseRatio) {
+		return RiskAnalysisVO.builder()
+			.checkLandlord(riskTemporaryDTO.isOwner())
+			.isSafe(isSafe)
+			.injusticeBuilding(isViolating)
+			.jeonseRatio(jeonseRatio)
+			.build();
+	}
+
+	//임시 위험 데이터 삭제
 	@Override
 	public void deleteRiskTemporaryInfo(String commUniqueNo) {
 		try {
@@ -106,17 +149,20 @@ public class RiskServiceImpl implements RiskService {
 		}
 	}
 
+	//일반 건축물대장 요청
 	private GeneralBuildingRegisterResponseDTO requestGeneralBuildingRegister
-		(
-			RiskAnalysisRequestDTO riskAnalysisRequestDTO
-		) {
+	(
+		RiskAnalysisRequestDTO riskAnalysisRequestDTO
+	) {
 		return codefService.requestBuildingRegister(riskAnalysisRequestDTO, GeneralBuildingRegisterResponseDTO.class);
 	}
 
+	//집합 건축물
 	private SetBuildingRegisterResponseDTO requestSetBuildingRegister(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
 		return codefService.requestBuildingRegister(riskAnalysisRequestDTO, SetBuildingRegisterResponseDTO.class);
 	}
 
+	//총괄 집합 건축물대장 요청
 	private BuildingRegisterCollgationResponseDTO requestBuildingCollgationRegister(
 		RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
 		return codefService.requestBuildingRegister(riskAnalysisRequestDTO,
