@@ -1,6 +1,6 @@
 package org.livin.config;
 
-import org.livin.property.dto.realestateregister.RiskTemporaryDTO;
+import org.livin.risk.dto.RiskTemporaryDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
