@@ -19,6 +19,7 @@ public class RiskAnalysisRequestDTO {
 	private String zipCode; //우편번호
 	private String dong;
 	private String ho;
+	private String commUniqueNo;
 	@JsonProperty("isGeneral")
 	private boolean isGeneral;
 }
