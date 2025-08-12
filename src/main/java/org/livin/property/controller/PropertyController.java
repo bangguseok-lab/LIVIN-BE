@@ -9,6 +9,7 @@ import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
+import org.livin.property.dto.PropertyRequestDTO;
 import org.livin.property.service.PropertyService;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -128,7 +129,6 @@ public class PropertyController {
 			.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 삭제했습니다.", "{}"));
 	}
 
-
 	// 관심 매물 추가 API
 	@PostMapping("/properties/{id}/favorite")
 	public ResponseEntity<SuccessResponse<PropertyDTO>> addFavoriteProperty(
@@ -154,6 +154,15 @@ public class PropertyController {
 		OwnerInfoResponseDTO ownerInfoResponseDTO = propertyService.getRealEstateRegisters(ownerInfoRequestDTO);
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "등기부등본 열람이 성공하였습니다.", ownerInfoResponseDTO)
+		);
+	}
+
+	@PostMapping("/properties")
+	public ResponseEntity<SuccessResponse<Void>> createProperty(@ModelAttribute PropertyRequestDTO propertyRequestDTO) {
+
+		propertyService.createProperty(propertyRequestDTO);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "매물 등록이 완료되었습니다.", null)
 		);
 	}
 }

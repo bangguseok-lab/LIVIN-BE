@@ -2,6 +2,7 @@ package org.livin.property.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -12,14 +13,21 @@ import org.livin.global.codef.dto.realestateregister.response.RealEstateRegister
 import org.livin.global.codef.service.CodefService;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
+import org.livin.global.s3.service.S3ServiceImpl;
 import org.livin.property.dto.FilteringDTO;
+import org.livin.property.dto.ManagementDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
+import org.livin.property.dto.PropertyImgRequestDTO;
+import org.livin.property.dto.PropertyRequestDTO;
+import org.livin.property.dto.PropertyTemporaryDTO;
+import org.livin.property.entity.BuildingVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
 import org.livin.property.mapper.PropertyMapper;
 import org.livin.risk.dto.RiskTemporaryDTO;
+import org.livin.risk.service.RiskService;
 import org.livin.user.service.UserService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -36,7 +44,10 @@ public class PropertyServiceImpl implements PropertyService {
 	private final PropertyMapper propertyMapper;
 	private final UserService userService;
 	private final CodefService codefService;
+	private final RiskService riskService;
+	private final S3ServiceImpl s3ServiceImpl;
 	private final RedisTemplate<String, RiskTemporaryDTO> riskTemporaryRedisTemplate;
+	private final RedisTemplate<String, PropertyTemporaryDTO> propertyTemporaryRedisTemplate;
 
 	// 관심 매물
 	@Override
@@ -222,5 +233,54 @@ public class PropertyServiceImpl implements PropertyService {
 		riskTemporaryRedisTemplate.opsForValue()
 			.set(ownerInfoResponseDTO.getCommUniqueNo(), riskTemporaryDTO, Duration.ofMillis(ownerExpiration));
 		return ownerInfoResponseDTO;
+	}
+
+	public void createProperty(PropertyRequestDTO propertyRequestDTO) {
+		try {
+			PropertyTemporaryDTO propertyTemporaryDTO = propertyTemporaryRedisTemplate.opsForValue()
+				.get(propertyRequestDTO.getPropertyNum());
+			Long buildingId = createBuilding(propertyTemporaryDTO.getBuildingVO());
+			PropertyVO propertyVO = PropertyRequestDTO.toPropertyVO(propertyRequestDTO, buildingId);
+			Long propertyId = propertyMapper.createProperty(propertyVO);
+			riskService.createRiskAnalysis(propertyTemporaryDTO.getRiskAnalysisVO(), propertyId);
+			List<Long> optionIdList = propertyRequestDTO.getOptionIdList();
+			if (optionIdList != null && !optionIdList.isEmpty()) {
+				propertyMapper.createPropertyOptions(propertyId, optionIdList);
+			}
+			List<ManagementDTO> managementDTOList = propertyRequestDTO.getManagementDTOList();
+			if (managementDTOList != null && !managementDTOList.isEmpty()) {
+				propertyMapper.createManagement(propertyId, managementDTOList);
+			}
+			List<PropertyImgRequestDTO> imageList = propertyRequestDTO.getImageList();
+			if (imageList != null && !imageList.isEmpty()) {
+				List<PropertyImageVO> imageUrls = new ArrayList<>();
+				// 리스트를 순회하며 각 파일을 S3에 업로드
+				for (PropertyImgRequestDTO p : imageList) {
+					if (!p.getImg().isEmpty()) {
+						String imageUrl = s3ServiceImpl.uploadFile(p.getImg());
+						PropertyImageVO propertyImageVO = PropertyImageVO.builder()
+							.propertyId(propertyId)
+							.represent(p.getRepresent())
+							.imageUrl(imageUrl)
+							.build();
+						imageUrls.add(propertyImageVO);
+					}
+				}
+				// 생성된 이미지 URL들을 DB에 저장
+				propertyMapper.createPropertyImages(propertyId, imageUrls);
+			}
+
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+
+	}
+
+	private Long createBuilding(BuildingVO buildingVO) {
+		if (propertyMapper.existsBuilding(buildingVO.getRoadAddress())) {
+			BuildingVO building = propertyMapper.getBuilding(buildingVO.getRoadAddress());
+			return building.getBuildingId();
+		}
+		return propertyMapper.createBuilding(buildingVO);
 	}
 }

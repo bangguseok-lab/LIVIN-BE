@@ -22,6 +22,7 @@ import org.livin.property.entity.property_enum.HeatingType;
 import org.livin.risk.dto.RiskAnalysisRequestDTO;
 import org.livin.risk.dto.RiskTemporaryDTO;
 import org.livin.risk.entity.RiskAnalysisVO;
+import org.livin.risk.mapper.RiskMapper;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,7 @@ public class RiskServiceImpl implements RiskService {
 	private final RedisTemplate<String, RiskTemporaryDTO> riskTemporaryRedisTemplate;
 	private final CodefService codefService;
 	private final RedisTemplate<String, PropertyTemporaryDTO> propertyTemporaryRedisTemplate;
+	private final RiskMapper riskMapper;
 
 	@Override
 	public void createRiskTemporaryInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
@@ -147,6 +149,12 @@ public class RiskServiceImpl implements RiskService {
 		} catch (Exception e) {
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@Override
+	public void createRiskAnalysis(RiskAnalysisVO riskAnalysisVO, Long propertyId) {
+		riskAnalysisVO.setPropertyId(propertyId);
+		riskMapper.createRiskAnalysis(riskAnalysisVO);
 	}
 
 	//일반 건축물대장 요청

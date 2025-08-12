@@ -7,6 +7,7 @@ import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseD
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
+import org.livin.property.dto.PropertyRequestDTO;
 
 public interface PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address);
@@ -26,4 +27,7 @@ public interface PropertyService {
 	OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO);
 
 	public PropertyDTO addFavoriteProperty(Long userId, Long propertyId);
+
+	void createProperty(PropertyRequestDTO propertyRequestDTO);
+
 }
