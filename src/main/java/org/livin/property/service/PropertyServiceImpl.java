@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
+import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
@@ -157,7 +159,8 @@ public class PropertyServiceImpl implements PropertyService {
 		PropertyDetailsDTO propertyDetailsDTO = PropertyDetailsDTO.fromPropertyDetailsVO(propertyDetailsVO);
 		log.info(propertyDetailsDTO);
 		return propertyDetailsDTO;
-  }
+	}
+
 	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@Override
 	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO) {
@@ -326,17 +329,31 @@ public class PropertyServiceImpl implements PropertyService {
 	// 매물 상세페이지에서 체크리스트 목록 출력
 	@Transactional
 	@Override
-	public List<String> getChecklistTitlesByUserId(Long userId) {
+	public List<ChecklistTitleDTO> getChecklistTitlesByUserId(Long userId) {
 
 		Objects.requireNonNull(userId, "userId must not be null");
 
 		try {
-			List<String> titles = propertyChecklistMapper.selectChecklistTitlesByUserId(userId);
+			List<ChecklistTitleDTO> titles = propertyChecklistMapper.selectChecklistTitlesByUserId(userId);
 			return (titles == null) ? java.util.Collections.emptyList() : titles;
 		} catch (Exception e) {
 			log.error("체크리스트 제목 조회 실패 userId={}", userId, e);
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
+	}
 
+	@Transactional(readOnly = true)
+	@Override
+	public List<ChecklistItemDTO> getChecklistItemsByChecklistId(Long userId, Long checklistId) {
+		Objects.requireNonNull(userId, "userId must not be null");
+		Objects.requireNonNull(checklistId, "checklistId must not be null");
+
+		List<ChecklistItemDTO> items = propertyChecklistMapper.selectChecklistItemsOwnedByUser(userId, checklistId);
+
+		if (items.isEmpty()) {
+			// 정책에 따라 404(없음) 또는 403(권한 없음) 반환
+			// throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+		return items;
 	}
 }

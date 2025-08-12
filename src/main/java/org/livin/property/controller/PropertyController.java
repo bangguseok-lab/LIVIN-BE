@@ -5,6 +5,8 @@ import java.util.List;
 import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
+import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
@@ -160,15 +162,26 @@ public class PropertyController {
 
 	// 매물 상세 페이지 체크리스트 목록 출력
 	@GetMapping("/properties/checklist")
-	public ResponseEntity<List<String>> getChecklistTitles(
+	public ResponseEntity<List<ChecklistTitleDTO>> getChecklistTitles(
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 		// 인증 정보 -> userId
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
 		// 사용자가 만든 체크리스트 제목 목록 조회
-		List<String> titles = propertyService.getChecklistTitlesByUserId(userId);
+		List<ChecklistTitleDTO> list = propertyService.getChecklistTitlesByUserId(userId);
 
-		return ResponseEntity.ok(titles);
+		return ResponseEntity.ok(list);
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
+	@GetMapping("/properties/checklist/{checklistId}/items")
+	public ResponseEntity<List<ChecklistItemDTO>> getChecklistItems(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long checklistId
+	) {
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		return ResponseEntity.ok(propertyService.getChecklistItemsByChecklistId(userId, checklistId));
 	}
 }
