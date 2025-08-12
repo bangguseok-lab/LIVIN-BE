@@ -22,8 +22,8 @@
         SELECT
         ci.checklistitem_id AS checklistItemId,
         ci.keyword,
-        ci.is_active        AS active,
-        ci.is_checked       AS checked,
+        ci.is_active        AS isActive,
+        ci.is_checked       AS isChecked,
         ci.type,
         ci.checklist_id     AS checklistId
         FROM ChecklistItem ci
