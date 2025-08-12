@@ -13,7 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.livin.global.codef.dto.buildingregister.BuildingInfoDTO;
+import org.livin.global.codef.dto.buildingregister.request.BuildingRegisterCollgationRequestDTO;
 import org.livin.global.codef.dto.buildingregister.request.BuildingRegisterRequestDTO;
+import org.livin.global.codef.dto.marketprice.request.BuildingCodeRequestDTO;
+import org.livin.global.codef.dto.marketprice.request.MarketInfoRequestDTO;
+import org.livin.global.codef.dto.marketprice.response.BuildingCodeResponseDTO;
+import org.livin.global.codef.dto.marketprice.response.MarketInfoResponseDTO;
 import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
 import org.livin.global.codef.dto.realestateregister.request.RealEstateRegisterRequestDTO;
 import org.livin.global.codef.dto.realestateregister.response.RealEstateRegisterResponseDTO;
@@ -65,6 +71,12 @@ public class CodefServiceImpl implements CodefService {
 	private String jusoApiUrl;
 	@Value("${juso.api.confmKey}")
 	private String jusoApiConfmKey;
+	@Value("${codef.building-info}")
+	private String buildingCodeRequestUrl;
+	@Value("${codef.market-price-info}")
+	private String marketInfoRequestUrl;
+	@Value("${codef.building-registry-colligation}")
+	private String colligationBuildingRegisterRequestUrl;
 	private String codefAccessToken = "";
 	private final RsaEncryptionService rsaEncryptionService;
 
@@ -163,25 +175,76 @@ public class CodefServiceImpl implements CodefService {
 
 	public <R> R requestBuildingRegister(RiskAnalysisRequestDTO riskAnalysisRequestDTO, Class<R> responseType) {
 		String address = requestJusoApi(riskAnalysisRequestDTO);
-		BuildingRegisterRequestDTO buildingRegisterRequestDTO = BuildingRegisterRequestDTO.builder()
-			.organization("0001")
-			.loginType("1")
-			.userId(userId)
-			.userPassword(getEncryptWithExternalPublicKey(userPassword))
-			.address(address)
-			.dong(riskAnalysisRequestDTO.getDong())
-			.type("0")
-			.zipCode(riskAnalysisRequestDTO.getZipCode())
-			.originDataYN("0")
-			.build();
+
 		if (riskAnalysisRequestDTO.isGeneral()) {
+			BuildingRegisterRequestDTO buildingRegisterRequestDTO = BuildingRegisterRequestDTO.builder()
+				.organization("0001")
+				.loginType("1")
+				.userId(userId)
+				.userPassword(getEncryptWithExternalPublicKey(userPassword))
+				.address(address)
+				.dong(riskAnalysisRequestDTO.getDong())
+				.type("0")
+				.zipCode(riskAnalysisRequestDTO.getZipCode())
+				.originDataYN("0")
+				.build();
 			return executeCodefRequest(generalBuildingRegisterRequestUrl, buildingRegisterRequestDTO,
 				responseType);
 		} else {
-			return executeCodefRequest(setBuildingRegisterRequestUrl, buildingRegisterRequestDTO,
-				responseType);
+			BuildingRegisterCollgationRequestDTO buildingRegisterCollgationRequestDTO = BuildingRegisterCollgationRequestDTO.builder()
+				.organization("0001")
+				.loginType("1")
+				.userId(userId)
+				.userPassword(getEncryptWithExternalPublicKey(userPassword))
+				.address(address)
+				.inquiryType("1")
+				.type("0")
+				.zipCode(riskAnalysisRequestDTO.getZipCode())
+				.originDataYN("0")
+				.build();
+			try {
+				return executeCodefRequest(colligationBuildingRegisterRequestUrl, buildingRegisterCollgationRequestDTO,
+					responseType);
+			} catch (Exception e) {
+				BuildingRegisterRequestDTO buildingRegisterRequestDTO = BuildingRegisterRequestDTO.builder()
+					.organization("0001")
+					.loginType("1")
+					.userId(userId)
+					.userPassword(getEncryptWithExternalPublicKey(userPassword))
+					.address(address)
+					.dong(riskAnalysisRequestDTO.getDong())
+					.type("0")
+					.zipCode(riskAnalysisRequestDTO.getZipCode())
+					.originDataYN("0")
+					.build();
+				return executeCodefRequest(setBuildingRegisterRequestUrl, buildingRegisterRequestDTO,
+					responseType);
+			}
 		}
 
+	}
+
+	public BuildingCodeResponseDTO requestBuildingCode(BuildingInfoDTO buildingInfoDTO) {
+		BuildingCodeRequestDTO buildingCodeRequestDTO = BuildingCodeRequestDTO.builder()
+			.organization("0011")
+			.addrSido(buildingInfoDTO.getSido())
+			.addrSigun(buildingInfoDTO.getSigungu())
+			.addrDong(buildingInfoDTO.getEupmyeondong())
+			.build();
+
+		return executeCodefRequest(buildingCodeRequestUrl, buildingCodeRequestDTO, BuildingCodeResponseDTO.class);
+	}
+
+	public MarketInfoResponseDTO requestMarketInfo(String complexNo, RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
+		MarketInfoRequestDTO marketInfoRequestDTO = MarketInfoRequestDTO.builder()
+			.organization("0011")
+			.searchGbn("2")
+			.complexNo(complexNo)
+			.dong(riskAnalysisRequestDTO.getDong().replaceAll("동", ""))
+			.ho(riskAnalysisRequestDTO.getHo())
+			.build();
+
+		return executeCodefRequest(marketInfoRequestUrl, marketInfoRequestDTO, MarketInfoResponseDTO.class);
 	}
 
 	private <T> HttpEntity<T> createRequestEntity(T body) {
