@@ -14,4 +14,9 @@ public class BuildingInfoDTO {
 	private boolean isViolating;
 	private String totalFloors;
 	private int totalParkingSpaces;
+	private String sido;
+	private String sigungu;
+	private String eupmyeondong;
+	private String residentialName;
+	private String totalHouseholds;
 }

@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BuildingCodeRequestDTO {
+public class MarketInfoRequestDTO {
 	private String organization;
-	private String addrSido;
-	private String addrSigun;
-	private String addrDong;
+	private String searchGbn;
+	private String complexNo;
+	private String dong;
+	private String ho;
 }
