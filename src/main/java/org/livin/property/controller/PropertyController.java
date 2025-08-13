@@ -193,8 +193,11 @@ public class PropertyController {
 		@PathVariable Long checklistId,
 		@RequestBody List<ChecklistItemUpdateRequestDTO> updates
 	) {
+
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
 		propertyService.updateChecklistItems(userId, checklistId, updates);
+
 		return ResponseEntity.ok().build();
 	}
 }

@@ -365,9 +365,19 @@ public class PropertyServiceImpl implements PropertyService {
 		Objects.requireNonNull(checklistId, "checklistId must not be null");
 		Objects.requireNonNull(updates, "updates must not be null");
 
+		// 로그 추가: 메서드 시작 시 주요 파라미터 값 출력
+		log.info("Starting updateChecklistItems. userId: {}, checklistId: {}, updates count: {}", userId, checklistId, updates.size());
+
 		for (ChecklistItemUpdateRequestDTO update : updates) {
+			// 로그 추가: 각 아이템 업데이트 직전에 파라미터 값 출력
+			log.info("Attempting to update checklist item. checklistItemId: {}, isChecked: {}", update.getChecklistItemId(), update.isChecked());
+
 			propertyChecklistMapper.updateChecklistItemIsChecked(userId, checklistId, update.getChecklistItemId(),
 				update.isChecked());
+
+			// MyBatis 업데이트 결과 로그 출력
+			// 이 부분은 MyBatis 설정을 통해 확인할 수 있으므로, 별도의 로그 코드를 추가하지 않아도 됩니다.
 		}
+		log.info("Finished updateChecklistItems for checklistId: {}", checklistId);
 	}
 }
