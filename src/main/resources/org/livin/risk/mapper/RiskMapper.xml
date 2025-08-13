@@ -7,12 +7,12 @@
 
     <insert id="createRiskAnalysis" parameterType="org.livin.risk.entity.RiskAnalysisVO"
             useGeneratedKeys="true" keyProperty="riskAnalysisId">
-        INSERT INTO risk_analysis (property_id,
-                                   is_safe,
-                                   floating_charge,
-                                   check_landlord,
-                                   injustice_building,
-                                   jeonse_ratio)
+        INSERT INTO riskAnalysis (property_id,
+                                  is_safe,
+                                  floating_charge,
+                                  check_landlord,
+                                  injustice_building,
+                                  jeonse_ratio)
         VALUES (#{propertyId},
                 #{isSafe},
                 #{floatingCharge},

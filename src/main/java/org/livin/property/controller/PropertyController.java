@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -159,9 +161,11 @@ public class PropertyController {
 	}
 
 	@PostMapping("/properties")
-	public ResponseEntity<SuccessResponse<Void>> createProperty(@ModelAttribute PropertyRequestDTO propertyRequestDTO) {
+	public ResponseEntity<SuccessResponse<Void>> createProperty(
+		@RequestPart("propertyRequest") PropertyRequestDTO propertyRequestDTO,
+		@RequestPart("images") List<MultipartFile> imageFiles) {
 
-		propertyService.createProperty(propertyRequestDTO);
+		propertyService.createProperty(propertyRequestDTO, imageFiles);
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "매물 등록이 완료되었습니다.", null)
 		);

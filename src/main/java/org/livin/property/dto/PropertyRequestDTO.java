@@ -42,7 +42,7 @@ public class PropertyRequestDTO {
 	private AbleStatus pet;
 	private AbleStatus loan;
 	private List<Long> optionIdList;
-	private List<PropertyImgRequestDTO> imageList;
+	private List<PropertyImgRequestDTO> imgRepresentList;
 	private List<ManagementDTO> managementDTOList;
 
 	public static PropertyVO toPropertyVO(PropertyRequestDTO propertyRequestDTO, Long buildingId) {

@@ -34,6 +34,7 @@ import org.livin.user.service.UserService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -237,7 +238,7 @@ public class PropertyServiceImpl implements PropertyService {
 		return ownerInfoResponseDTO;
 	}
 
-	public void createProperty(PropertyRequestDTO propertyRequestDTO) {
+	public void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles) {
 		try {
 			PropertyTemporaryDTO propertyTemporaryDTO = propertyTemporaryRedisTemplate.opsForValue()
 				.get(propertyRequestDTO.getPropertyNum());
@@ -245,37 +246,49 @@ public class PropertyServiceImpl implements PropertyService {
 			PropertyVO propertyVO = PropertyRequestDTO.toPropertyVO(propertyRequestDTO, buildingId);
 			Long propertyId = propertyMapper.createProperty(propertyVO);
 			riskService.createRiskAnalysis(propertyTemporaryDTO.getRiskAnalysisVO(), propertyId);
+
+			// 옵션 리스트 처리
 			List<Long> optionIdList = propertyRequestDTO.getOptionIdList();
 			if (optionIdList != null && !optionIdList.isEmpty()) {
 				propertyMapper.createPropertyOptions(propertyId, optionIdList);
 			}
+
+			// 관리비 리스트 처리
 			List<ManagementDTO> managementDTOList = propertyRequestDTO.getManagementDTOList();
 			if (managementDTOList != null && !managementDTOList.isEmpty()) {
 				propertyMapper.createManagement(propertyId, managementDTOList);
 			}
-			List<PropertyImgRequestDTO> imageList = propertyRequestDTO.getImageList();
-			if (imageList != null && !imageList.isEmpty()) {
-				List<PropertyImageVO> imageUrls = new ArrayList<>();
-				// 리스트를 순회하며 각 파일을 S3에 업로드
-				for (PropertyImgRequestDTO p : imageList) {
-					if (!p.getImg().isEmpty()) {
-						String imageUrl = s3ServiceImpl.uploadFile(p.getImg());
+
+			// 이미지 리스트 처리
+			List<PropertyImgRequestDTO> imageMetadataList = propertyRequestDTO.getImgRepresentList();
+			if (imageFiles != null && !imageFiles.isEmpty() && imageMetadataList != null
+				&& !imageMetadataList.isEmpty()) {
+				if (imageFiles.size() != imageMetadataList.size()) {
+					throw new IllegalArgumentException("이미지 파일 수와 메타데이터 수가 일치하지 않습니다.");
+				}
+				List<PropertyImageVO> propertyImages = new ArrayList<>();
+				for (int i = 0; i < imageFiles.size(); i++) {
+					MultipartFile file = imageFiles.get(i);
+					boolean represent = imageMetadataList.get(i).getRepresent();
+
+					if (!file.isEmpty()) {
+						String imageUrl = s3ServiceImpl.uploadFile(file);
 						PropertyImageVO propertyImageVO = PropertyImageVO.builder()
 							.propertyId(propertyId)
-							.represent(p.getRepresent())
+							.represent(represent)
 							.imageUrl(imageUrl)
 							.build();
-						imageUrls.add(propertyImageVO);
+						propertyImages.add(propertyImageVO);
 					}
 				}
 				// 생성된 이미지 URL들을 DB에 저장
-				propertyMapper.createPropertyImages(propertyId, imageUrls);
+				propertyMapper.createPropertyImages(propertyImages);
 			}
 
 		} catch (Exception e) {
+			// 예외 발생 시, 롤백 로직 추가 필요
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
-
 	}
 
 	private Long createBuilding(BuildingVO buildingVO) {

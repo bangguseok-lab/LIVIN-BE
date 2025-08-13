@@ -51,8 +51,7 @@ public interface PropertyMapper {
 	void createManagement(@Param("propertyId") Long propertyId,
 		@Param("managementDTOList") List<ManagementDTO> managementDTOList);
 
-	void createPropertyImages(@Param("propertyId") Long propertyId,
-		@Param("imgUrls") List<PropertyImageVO> propertyImageVOList);
+	void createPropertyImages(@Param("propertyImages") List<PropertyImageVO> propertyImages);
 
 	List<OptionVO> getOptionList();
 }

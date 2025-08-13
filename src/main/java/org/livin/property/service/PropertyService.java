@@ -9,6 +9,7 @@ import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.dto.PropertyRequestDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address);
@@ -29,7 +30,7 @@ public interface PropertyService {
 
 	public PropertyDTO addFavoriteProperty(Long userId, Long propertyId);
 
-	void createProperty(PropertyRequestDTO propertyRequestDTO);
+	void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles);
 
 	List<OptionDTO> getOptionList();
 }

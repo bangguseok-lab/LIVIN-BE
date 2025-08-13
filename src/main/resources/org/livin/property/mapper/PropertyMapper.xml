@@ -220,7 +220,7 @@
     </insert>
     <insert id="createBuilding" parameterType="org.livin.property.entity.BuildingVO"
             useGeneratedKeys="true" keyProperty="buildingId">
-        INSERT INTO building (total_floors,
+        INSERT INTO Building (total_floors,
                               num_parking,
                               parking,
                               elevator,
@@ -245,7 +245,7 @@
     </insert>
     <insert id="createProperty" parameterType="org.livin.property.entity.PropertyVO"
             useGeneratedKeys="true" keyProperty="propertyId">
-        INSERT INTO property (name,
+        INSERT INTO Property (name,
                               detail_address,
                               jeonse_deposit,
                               monthly_deposit,
@@ -297,14 +297,14 @@
                 #{buildingId})
     </insert>
     <insert id="createPropertyOptions">
-        INSERT INTO property_option (property_id, option_id)
+        INSERT INTO Option_Property (property_id, option_id)
         VALUES
         <foreach collection="optionIdList" item="optionId" separator=",">
             (#{propertyId}, #{optionId})
         </foreach>
     </insert>
     <insert id="createManagement">
-        INSERT INTO management (
+        INSERT INTO Management (
         property_id,
         management_type,
         management_fee
@@ -317,11 +317,11 @@
             )
         </foreach>
     </insert>
-    <insert id="createPropertyImages">
-        INSERT INTO property_image (property_id, image_url, represent)
+    <insert id="createPropertyImages" useGeneratedKeys="true" parameterType="java.util.List">
+        INSERT INTO PropertyImage (property_id, image_url, represent)
         VALUES
-        <foreach collection="imageUrls" item="imageUrl" separator=",">
-            (#{propertyId}, #{imageUrl}, #{represent})
+        <foreach collection="propertyImages" item="item" separator=",">
+            (#{item.propertyId}, #{item.imageUrl}, #{item.represent})
         </foreach>
     </insert>
 
@@ -541,7 +541,7 @@
     </select>
     <select id="existsBuilding" resultType="java.lang.Boolean">
         SELECT EXISTS (SELECT 1
-                       FROM building
+                       FROM Building
                        WHERE road_address = #{roadAddress})
     </select>
     <select id="getBuilding" parameterType="java.lang.String" resultType="org.livin.property.entity.BuildingVO">
@@ -557,7 +557,7 @@
                completion_year    AS completionYear,
                postcode,
                road_address       AS roadAddress
-        FROM building
+        FROM Building
         WHERE road_address = #{roadAddress}
     </select>
     <select id="getOptionList" resultType="OptionVO">

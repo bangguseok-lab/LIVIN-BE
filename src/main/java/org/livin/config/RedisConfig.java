@@ -53,8 +53,8 @@ public class RedisConfig {
 		template.setConnectionFactory(connectionFactory);
 
 		template.setKeySerializer(new StringRedisSerializer());
-		Jackson2JsonRedisSerializer<RiskTemporaryDTO> jsonSerializer = new Jackson2JsonRedisSerializer<>(
-			RiskTemporaryDTO.class);
+		Jackson2JsonRedisSerializer<PropertyTemporaryDTO> jsonSerializer = new Jackson2JsonRedisSerializer<>(
+			PropertyTemporaryDTO.class);
 		template.setValueSerializer(jsonSerializer);
 
 		return template;
