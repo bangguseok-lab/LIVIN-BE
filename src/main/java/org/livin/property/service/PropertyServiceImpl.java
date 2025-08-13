@@ -283,6 +283,7 @@ public class PropertyServiceImpl implements PropertyService {
 				}
 				// 생성된 이미지 URL들을 DB에 저장
 				propertyMapper.createPropertyImages(propertyImages);
+				propertyTemporaryRedisTemplate.delete(propertyRequestDTO.getPropertyNum());
 			}
 
 		} catch (Exception e) {
