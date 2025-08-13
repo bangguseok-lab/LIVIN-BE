@@ -242,21 +242,22 @@ public class PropertyServiceImpl implements PropertyService {
 		try {
 			PropertyTemporaryDTO propertyTemporaryDTO = propertyTemporaryRedisTemplate.opsForValue()
 				.get(propertyRequestDTO.getPropertyNum());
-			Long buildingId = createBuilding(propertyTemporaryDTO.getBuildingVO());
-			PropertyVO propertyVO = PropertyRequestDTO.toPropertyVO(propertyRequestDTO, buildingId);
-			Long propertyId = propertyMapper.createProperty(propertyVO);
-			riskService.createRiskAnalysis(propertyTemporaryDTO.getRiskAnalysisVO(), propertyId);
+			long buildingId = createBuilding(propertyTemporaryDTO.getBuildingVO());
+			PropertyVO propertyVO = PropertyRequestDTO.toPropertyVO(propertyRequestDTO,
+				buildingId);
+			propertyMapper.createProperty(propertyVO);
+			riskService.createRiskAnalysis(propertyTemporaryDTO.getRiskAnalysisVO(), propertyVO.getPropertyId());
 
 			// 옵션 리스트 처리
 			List<Long> optionIdList = propertyRequestDTO.getOptionIdList();
 			if (optionIdList != null && !optionIdList.isEmpty()) {
-				propertyMapper.createPropertyOptions(propertyId, optionIdList);
+				propertyMapper.createPropertyOptions(propertyVO.getPropertyId(), optionIdList);
 			}
 
 			// 관리비 리스트 처리
 			List<ManagementDTO> managementDTOList = propertyRequestDTO.getManagementDTOList();
 			if (managementDTOList != null && !managementDTOList.isEmpty()) {
-				propertyMapper.createManagement(propertyId, managementDTOList);
+				propertyMapper.createManagement(propertyVO.getPropertyId(), managementDTOList);
 			}
 
 			// 이미지 리스트 처리
@@ -274,7 +275,7 @@ public class PropertyServiceImpl implements PropertyService {
 					if (!file.isEmpty()) {
 						String imageUrl = s3ServiceImpl.uploadFile(file);
 						PropertyImageVO propertyImageVO = PropertyImageVO.builder()
-							.propertyId(propertyId)
+							.propertyId(propertyVO.getPropertyId())
 							.represent(represent)
 							.imageUrl(imageUrl)
 							.build();
@@ -293,11 +294,13 @@ public class PropertyServiceImpl implements PropertyService {
 	}
 
 	private Long createBuilding(BuildingVO buildingVO) {
+		BuildingVO building;
 		if (propertyMapper.existsBuilding(buildingVO.getRoadAddress())) {
-			BuildingVO building = propertyMapper.getBuilding(buildingVO.getRoadAddress());
+			building = propertyMapper.getBuilding(buildingVO.getRoadAddress());
 			return building.getBuildingId();
 		}
-		return propertyMapper.createBuilding(buildingVO);
+		propertyMapper.createBuilding(buildingVO);
+		return buildingVO.getBuildingId();
 	}
 
 	public List<OptionDTO> getOptionList() {

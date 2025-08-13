@@ -13,13 +13,20 @@
                                   check_landlord,
                                   injustice_building,
                                   jeonse_ratio,
-                                  maximum_bond_amount)
+                                  maximum_bond_amount,
+                                  sale_price)
         VALUES (#{propertyId},
                 #{isSafe},
                 #{floatingCharge},
                 #{checkLandlord},
                 #{injusticeBuilding},
                 #{jeonseRatio},
-                #{maximum_bond_amount})
+                #{maximumBondAmount},
+                #{salePrice})
     </insert>
+    <select id="getRiskAnalysis" resultType="org.livin.risk.entity.RiskAnalysisVO">
+        SELECT *
+        FROM riskAnalysis
+        WHERE property_id = #{propertyId}
+    </select>
 </mapper>

@@ -17,5 +17,6 @@ public class RiskAnalysisVO {
 	private boolean checkLandlord;    // 임대인 확인
 	private boolean injusticeBuilding; // 불법 건축물 여부
 	private int jeonseRatio;          // 전세가율
-	private long maximum_bond_amount;    //채권 최고액
+	private Long maximumBondAmount;    //채권 최고액
+	private Long salePrice;            //매매가
 }

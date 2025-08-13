@@ -20,9 +20,11 @@ import org.livin.property.entity.property_enum.EntranceStructure;
 import org.livin.property.entity.property_enum.HeatingFuel;
 import org.livin.property.entity.property_enum.HeatingType;
 import org.livin.risk.dto.RiskAnalysisRequestDTO;
+import org.livin.risk.dto.RiskAnalysisResponseDTO;
 import org.livin.risk.dto.RiskTemporaryDTO;
 import org.livin.risk.entity.RiskAnalysisVO;
 import org.livin.risk.mapper.RiskMapper;
+import org.livin.user.service.UserService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,7 @@ public class RiskServiceImpl implements RiskService {
 	private final CodefService codefService;
 	private final RedisTemplate<String, PropertyTemporaryDTO> propertyTemporaryRedisTemplate;
 	private final RiskMapper riskMapper;
+	private final UserService userService;
 
 	@Override
 	public void createRiskTemporaryInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
@@ -49,8 +52,11 @@ public class RiskServiceImpl implements RiskService {
 			int jeonseRatio = calculateJeonseRatio(riskAnalysisRequestDTO.getJeonseDeposit(), marketPriceInfoDTO);
 			boolean isSafe = jeonseRatio <= 70 && !buildingInfoDTO.isViolating();
 
+			Long salePrice = (Long.parseLong(marketPriceInfoDTO.getTopPrice()) * 10000L
+				+ Long.parseLong(marketPriceInfoDTO.getLowestPrice()) * 10000L) / 2;
+
 			RiskAnalysisVO riskAnalysisVO = buildRiskAnalysisVO(riskTemporaryDTO, isSafe, buildingInfoDTO.isViolating(),
-				jeonseRatio);
+				jeonseRatio, salePrice);
 			BuildingVO buildingVO = buildBuildingVO(buildingInfoDTO, marketPriceInfoDTO, riskAnalysisRequestDTO);
 
 			PropertyTemporaryDTO propertyTemporaryDTO = PropertyTemporaryDTO.builder()
@@ -132,13 +138,14 @@ public class RiskServiceImpl implements RiskService {
 
 	//RiskAnalysisVO 생성
 	private RiskAnalysisVO buildRiskAnalysisVO(RiskTemporaryDTO riskTemporaryDTO, boolean isSafe, boolean isViolating,
-		int jeonseRatio) {
+		int jeonseRatio, Long salePrice) {
 		return RiskAnalysisVO.builder()
 			.checkLandlord(riskTemporaryDTO.isOwner())
 			.isSafe(isSafe)
 			.injusticeBuilding(isViolating)
 			.jeonseRatio(jeonseRatio)
-			.maximum_bond_amount(riskTemporaryDTO.getMaximum_bond_amount())
+			.maximumBondAmount(riskTemporaryDTO.getMaximum_bond_amount())
+			.salePrice(salePrice)
 			.build();
 	}
 
@@ -176,5 +183,12 @@ public class RiskServiceImpl implements RiskService {
 		RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
 		return codefService.requestBuildingRegister(riskAnalysisRequestDTO,
 			BuildingRegisterCollgationResponseDTO.class);
+	}
+
+	@Override
+	public RiskAnalysisResponseDTO getRiskAnalysis(Long propertyId, String providerId) {
+		RiskAnalysisVO riskAnalysisVO = riskMapper.getRiskAnalysis(propertyId);
+		Long userDeposit = userService.getUserDeposit(providerId);
+		return RiskAnalysisResponseDTO.fromRiskAnalysisVO(riskAnalysisVO, userDeposit);
 	}
 }
