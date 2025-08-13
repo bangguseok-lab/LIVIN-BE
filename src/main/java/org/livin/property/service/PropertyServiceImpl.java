@@ -16,12 +16,14 @@ import org.livin.global.exception.ErrorCode;
 import org.livin.global.s3.service.S3ServiceImpl;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.ManagementDTO;
+import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.dto.PropertyImgRequestDTO;
 import org.livin.property.dto.PropertyRequestDTO;
 import org.livin.property.dto.PropertyTemporaryDTO;
 import org.livin.property.entity.BuildingVO;
+import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
@@ -282,5 +284,15 @@ public class PropertyServiceImpl implements PropertyService {
 			return building.getBuildingId();
 		}
 		return propertyMapper.createBuilding(buildingVO);
+	}
+
+	public List<OptionDTO> getOptionList() {
+		List<OptionVO> optionVOList = propertyMapper.getOptionList();
+		if (optionVOList.isEmpty()) {
+			throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+		return optionVOList.stream()
+			.map(OptionDTO::fromOptionVO)
+			.toList();
 	}
 }

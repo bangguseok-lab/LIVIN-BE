@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.ManagementDTO;
 import org.livin.property.entity.BuildingVO;
+import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
@@ -52,5 +53,7 @@ public interface PropertyMapper {
 
 	void createPropertyImages(@Param("propertyId") Long propertyId,
 		@Param("imgUrls") List<PropertyImageVO> propertyImageVOList);
+
+	List<OptionVO> getOptionList();
 }
 

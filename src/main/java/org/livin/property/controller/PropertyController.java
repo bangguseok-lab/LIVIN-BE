@@ -7,6 +7,7 @@ import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseD
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.FilteringDTO;
+import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.dto.PropertyRequestDTO;
@@ -163,6 +164,14 @@ public class PropertyController {
 		propertyService.createProperty(propertyRequestDTO);
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "매물 등록이 완료되었습니다.", null)
+		);
+	}
+
+	@GetMapping("/properties/options")
+	public ResponseEntity<SuccessResponse<List<OptionDTO>>> getOptionList() {
+		List<OptionDTO> optionDTOList = propertyService.getOptionList();
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "옵션 조회가 완료되었습니다.", optionDTOList)
 		);
 	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
 import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.property.dto.FilteringDTO;
+import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.dto.PropertyRequestDTO;
@@ -30,4 +31,5 @@ public interface PropertyService {
 
 	void createProperty(PropertyRequestDTO propertyRequestDTO);
 
+	List<OptionDTO> getOptionList();
 }

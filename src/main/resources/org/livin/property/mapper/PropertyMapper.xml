@@ -317,7 +317,7 @@
             )
         </foreach>
     </insert>
-    <insert id="savePropertyImages">
+    <insert id="createPropertyImages">
         INSERT INTO property_image (property_id, image_url, represent)
         VALUES
         <foreach collection="imageUrls" item="imageUrl" separator=",">
@@ -559,5 +559,9 @@
                road_address       AS roadAddress
         FROM building
         WHERE road_address = #{roadAddress}
+    </select>
+    <select id="getOptionList" resultType="OptionVO">
+        SELECT *
+        FROM `Option`
     </select>
 </mapper>
