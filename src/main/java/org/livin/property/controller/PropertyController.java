@@ -2,16 +2,18 @@ package org.livin.property.controller;
 
 import java.util.List;
 
+import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.ChecklistItemDTO;
 import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
 import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
+import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.dto.realestateregister.request.OwnerInfoRequestDTO;
-import org.livin.property.dto.realestateregister.response.OwnerInfoResponseDTO;
+import org.livin.property.dto.PropertyRequestDTO;
 import org.livin.property.service.PropertyService;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -25,7 +27,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -132,7 +136,6 @@ public class PropertyController {
 			.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 삭제했습니다.", "{}"));
 	}
 
-
 	// 관심 매물 추가 API
 	@PostMapping("/properties/{id}/favorite")
 	public ResponseEntity<SuccessResponse<PropertyDTO>> addFavoriteProperty(
@@ -158,6 +161,25 @@ public class PropertyController {
 		OwnerInfoResponseDTO ownerInfoResponseDTO = propertyService.getRealEstateRegisters(ownerInfoRequestDTO);
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "등기부등본 열람이 성공하였습니다.", ownerInfoResponseDTO)
+		);
+	}
+
+	@PostMapping("/properties")
+	public ResponseEntity<SuccessResponse<Void>> createProperty(
+		@RequestPart("propertyRequest") PropertyRequestDTO propertyRequestDTO,
+		@RequestPart("images") List<MultipartFile> imageFiles) {
+
+		propertyService.createProperty(propertyRequestDTO, imageFiles);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "매물 등록이 완료되었습니다.", null)
+		);
+	}
+
+	@GetMapping("/properties/options")
+	public ResponseEntity<SuccessResponse<List<OptionDTO>>> getOptionList() {
+		List<OptionDTO> optionDTOList = propertyService.getOptionList();
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "옵션 조회가 완료되었습니다.", optionDTOList)
 		);
 	}
 
