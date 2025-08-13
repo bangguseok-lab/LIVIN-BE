@@ -12,12 +12,14 @@
                                   floating_charge,
                                   check_landlord,
                                   injustice_building,
-                                  jeonse_ratio)
+                                  jeonse_ratio,
+                                  maximum_bond_amount)
         VALUES (#{propertyId},
                 #{isSafe},
                 #{floatingCharge},
                 #{checkLandlord},
                 #{injusticeBuilding},
-                #{jeonseRatio})
+                #{jeonseRatio},
+                #{maximum_bond_amount})
     </insert>
 </mapper>

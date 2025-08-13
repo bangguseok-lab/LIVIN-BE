@@ -138,6 +138,7 @@ public class RiskServiceImpl implements RiskService {
 			.isSafe(isSafe)
 			.injusticeBuilding(isViolating)
 			.jeonseRatio(jeonseRatio)
+			.maximum_bond_amount(riskTemporaryDTO.getMaximum_bond_amount())
 			.build();
 	}
 
