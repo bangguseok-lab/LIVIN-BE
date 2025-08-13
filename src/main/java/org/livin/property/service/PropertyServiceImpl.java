@@ -52,8 +52,9 @@ public class PropertyServiceImpl implements PropertyService {
 	private final PropertyMapper propertyMapper;
 	private final UserService userService;
 	private final PropertyChecklistMapper propertyChecklistMapper;
-
-
+	private final CodefService codefService;
+	private final RiskService riskService;
+	private final S3ServiceImpl s3ServiceImpl;
 	private final RedisTemplate<String, RiskTemporaryDTO> riskTemporaryRedisTemplate;
 	private final RedisTemplate<String, PropertyTemporaryDTO> propertyTemporaryRedisTemplate;
 
