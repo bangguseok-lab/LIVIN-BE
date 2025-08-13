@@ -45,7 +45,7 @@ public class PropertyRequestDTO {
 	private List<PropertyImgRequestDTO> imgRepresentList;
 	private List<ManagementDTO> managementDTOList;
 
-	public static PropertyVO toPropertyVO(PropertyRequestDTO propertyRequestDTO, Long buildingId) {
+	public static PropertyVO toPropertyVO(PropertyRequestDTO propertyRequestDTO, Long buildingId, Long userId) {
 		return PropertyVO.builder()
 			.name(propertyRequestDTO.getName())
 			.detailAddress(propertyRequestDTO.getDetailAddress())
@@ -71,6 +71,7 @@ public class PropertyRequestDTO {
 			.pet(propertyRequestDTO.getPet())
 			.loan(propertyRequestDTO.getLoan())
 			.buildingId(buildingId)
+			.userId(userId)
 			.build();
 	}
 }

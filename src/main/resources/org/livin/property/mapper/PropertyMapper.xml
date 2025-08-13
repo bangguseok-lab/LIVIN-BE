@@ -269,7 +269,8 @@
                               property_num,
                               pet,
                               loan,
-                              building_id)
+                              building_id,
+                              user_id)
         VALUES (#{name},
                 #{detailAddress},
                 #{jeonseDeposit},
@@ -294,7 +295,8 @@
                 #{propertyNum},
                 #{pet},
                 #{loan},
-                #{buildingId})
+                #{buildingId},
+                #{userId})
     </insert>
     <insert id="createPropertyOptions">
         INSERT INTO Option_Property (property_id, option_id)

@@ -30,7 +30,7 @@ public interface PropertyService {
 
 	public PropertyDTO addFavoriteProperty(Long userId, Long propertyId);
 
-	void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles);
+	void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles, String providerId);
 
 	List<OptionDTO> getOptionList();
 }

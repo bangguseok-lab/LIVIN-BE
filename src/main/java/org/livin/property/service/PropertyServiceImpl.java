@@ -238,13 +238,15 @@ public class PropertyServiceImpl implements PropertyService {
 		return ownerInfoResponseDTO;
 	}
 
-	public void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles) {
+	public void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles,
+		String providerId) {
 		try {
+			Long userId = userService.getUserIdByProviderId(providerId);
 			PropertyTemporaryDTO propertyTemporaryDTO = propertyTemporaryRedisTemplate.opsForValue()
 				.get(propertyRequestDTO.getPropertyNum());
 			long buildingId = createBuilding(propertyTemporaryDTO.getBuildingVO());
 			PropertyVO propertyVO = PropertyRequestDTO.toPropertyVO(propertyRequestDTO,
-				buildingId);
+				buildingId, userId);
 			propertyMapper.createProperty(propertyVO);
 			riskService.createRiskAnalysis(propertyTemporaryDTO.getRiskAnalysisVO(), propertyVO.getPropertyId());
 
