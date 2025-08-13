@@ -315,7 +315,7 @@ public class PropertyServiceImpl implements PropertyService {
 			.toList();
 	}
 
-	// 매물 상세페이지에서 체크리스트 목록 출력
+	// 매물 상세 페이지 체크리스트 목록 출력
 	@Transactional
 	@Override
 	public List<ChecklistTitleDTO> getChecklistTitlesByUserId(Long userId) {
@@ -331,6 +331,7 @@ public class PropertyServiceImpl implements PropertyService {
 		}
 	}
 
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
 	@Transactional(readOnly = true)
 	@Override
 	public List<ChecklistItemDTO> getChecklistItemsByChecklistId(Long userId, Long checklistId) {
@@ -346,6 +347,7 @@ public class PropertyServiceImpl implements PropertyService {
 		return items;
 	}
 
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
 	@Transactional
 	@Override
 	public void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates) {
