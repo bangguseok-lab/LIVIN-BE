@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.livin.risk.mapper.RiskMapper">
+
+    <insert id="createRiskAnalysis" parameterType="org.livin.risk.entity.RiskAnalysisVO"
+            useGeneratedKeys="true" keyProperty="riskAnalysisId">
+        INSERT INTO riskAnalysis (property_id,
+                                  is_safe,
+                                  floating_charge,
+                                  check_landlord,
+                                  injustice_building,
+                                  jeonse_ratio)
+        VALUES (#{propertyId},
+                #{isSafe},
+                #{floatingCharge},
+                #{checkLandlord},
+                #{injusticeBuilding},
+                #{jeonseRatio})
+    </insert>
+</mapper>

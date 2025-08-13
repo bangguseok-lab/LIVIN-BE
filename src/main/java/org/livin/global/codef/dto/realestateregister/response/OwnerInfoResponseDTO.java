@@ -7,14 +7,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @NoArgsConstructor
 @Getter
 @Builder
 @AllArgsConstructor
+@Log4j2
 public class OwnerInfoResponseDTO {
 	private String commUniqueNo;    //고유 번호
 	private String ownerName;    //소유자 명
+	private boolean isGeneral;
 
 	public static OwnerInfoResponseDTO fromRealEstateRegisterResponseDTO(
 		RealEstateRegisterResponseDTO realEstateRegisterResponseDTO) {
@@ -24,11 +27,16 @@ public class OwnerInfoResponseDTO {
 			return OwnerInfoResponseDTO.builder().commUniqueNo("정보 없음").ownerName("정보 없음").build();
 		}
 
+		// resRegisterEntriesList에서 첫 번째 항목을 가져옵니다.
+		ResRegisterEntriesListDTO entry = realEstateRegisterResponseDTO.getData().getResRegisterEntriesList().get(0);
 		// 고유 번호 추출
 		String commUniqueNo = realEstateRegisterResponseDTO.getData()
 			.getResRegisterEntriesList()
 			.get(0)
 			.getCommUniqueNo();
+
+		// isGeneral 필드 판단
+		boolean isGeneral = !entry.getResDocTitle().contains("집합건물");
 
 		// '갑구' 항목 추출
 		Optional<ResRegistrationHisListDTO> optionalHisList = realEstateRegisterResponseDTO.getData()
@@ -83,6 +91,7 @@ public class OwnerInfoResponseDTO {
 									return OwnerInfoResponseDTO.builder()
 										.commUniqueNo(commUniqueNo)
 										.ownerName(parts[1])
+										.isGeneral(isGeneral)
 										.build();
 								}
 							}
@@ -94,6 +103,7 @@ public class OwnerInfoResponseDTO {
 		return OwnerInfoResponseDTO.builder()
 			.commUniqueNo(commUniqueNo)
 			.ownerName("정보 없음")
+			.isGeneral(isGeneral)
 			.build();
 	}
 }

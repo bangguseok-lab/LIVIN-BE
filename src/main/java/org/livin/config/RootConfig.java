@@ -21,8 +21,9 @@ import com.zaxxer.hikari.HikariDataSource;
 @PropertySource({"classpath:/application.properties"})
 @ComponentScan(basePackages = {"org.livin.property.service", "org.livin.user.service", "org.livin.auth.service",
 	"org.livin.checklist.service", "org.livin.global.exception", "org.livin.risk.service",
-	"org.livin.global.codef.service"})
-@MapperScan(basePackages = {"org.livin.property.mapper", "org.livin.user.mapper", "org.livin.checklist.mapper"})
+	"org.livin.global.codef.service", "org.livin.global.s3.service"})
+@MapperScan(basePackages = {"org.livin.property.mapper", "org.livin.user.mapper", "org.livin.checklist.mapper",
+	"org.livin.risk.mapper"})
 public class RootConfig {
 	@Value("${jdbc.driver}")
 	String driver;

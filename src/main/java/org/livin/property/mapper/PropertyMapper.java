@@ -6,6 +6,9 @@ import java.util.Optional;
 
 import org.apache.ibatis.annotations.Param;
 import org.livin.property.dto.FilteringDTO;
+import org.livin.property.dto.ManagementDTO;
+import org.livin.property.entity.BuildingVO;
+import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
@@ -34,5 +37,22 @@ public interface PropertyMapper {
 	int checkIfFavoriteExists(@Param("userId") Long userId, @Param("propertyId") Long propertyId);
 
 	Optional<PropertyVO> selectPropertyById(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
+
+	long createBuilding(BuildingVO buildingVO);
+
+	long createProperty(PropertyVO propertyVO);
+
+	Boolean existsBuilding(@Param("roadAddress") String roadAddress);
+
+	BuildingVO getBuilding(@Param("roadAddress") String roadAddress);
+
+	void createPropertyOptions(@Param("propertyId") Long propertyId, @Param("optionIdList") List<Long> optionIdList);
+
+	void createManagement(@Param("propertyId") Long propertyId,
+		@Param("managementDTOList") List<ManagementDTO> managementDTOList);
+
+	void createPropertyImages(@Param("propertyImages") List<PropertyImageVO> propertyImages);
+
+	List<OptionVO> getOptionList();
 }
 

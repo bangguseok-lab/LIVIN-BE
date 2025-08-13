@@ -1,5 +1,6 @@
 package org.livin.config;
 
+import org.livin.property.dto.PropertyTemporaryDTO;
 import org.livin.risk.dto.RiskTemporaryDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,20 @@ public class RedisConfig {
 		template.setKeySerializer(new StringRedisSerializer());
 		Jackson2JsonRedisSerializer<RiskTemporaryDTO> jsonSerializer = new Jackson2JsonRedisSerializer<>(
 			RiskTemporaryDTO.class);
+		template.setValueSerializer(jsonSerializer);
+
+		return template;
+	}
+
+	@Bean
+	public RedisTemplate<String, PropertyTemporaryDTO> proeprtyTemporaryRedisTemplate(
+		RedisConnectionFactory connectionFactory) {
+		RedisTemplate<String, PropertyTemporaryDTO> template = new RedisTemplate<>();
+		template.setConnectionFactory(connectionFactory);
+
+		template.setKeySerializer(new StringRedisSerializer());
+		Jackson2JsonRedisSerializer<PropertyTemporaryDTO> jsonSerializer = new Jackson2JsonRedisSerializer<>(
+			PropertyTemporaryDTO.class);
 		template.setValueSerializer(jsonSerializer);
 
 		return template;

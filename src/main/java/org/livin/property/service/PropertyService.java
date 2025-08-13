@@ -5,8 +5,11 @@ import java.util.List;
 import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
 import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.property.dto.FilteringDTO;
+import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
+import org.livin.property.dto.PropertyRequestDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesForMain(FilteringDTO address);
@@ -26,4 +29,8 @@ public interface PropertyService {
 	OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO);
 
 	public PropertyDTO addFavoriteProperty(Long userId, Long propertyId);
+
+	void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles);
+
+	List<OptionDTO> getOptionList();
 }
