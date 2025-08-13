@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
 import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
 import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
@@ -355,5 +356,18 @@ public class PropertyServiceImpl implements PropertyService {
 			// throw new CustomException(ErrorCode.NOT_FOUND);
 		}
 		return items;
+	}
+
+	@Transactional
+	@Override
+	public void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates) {
+		Objects.requireNonNull(userId, "userId must not be null");
+		Objects.requireNonNull(checklistId, "checklistId must not be null");
+		Objects.requireNonNull(updates, "updates must not be null");
+
+		for (ChecklistItemUpdateRequestDTO update : updates) {
+			propertyChecklistMapper.updateChecklistItemIsChecked(userId, checklistId, update.getChecklistItemId(),
+				update.getIsChecked());
+		}
 	}
 }

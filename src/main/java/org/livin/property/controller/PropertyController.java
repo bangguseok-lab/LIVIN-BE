@@ -2,10 +2,10 @@ package org.livin.property.controller;
 
 import java.util.List;
 
-import org.livin.checklist.dto.ChecklistDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
 import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
 import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -183,5 +184,17 @@ public class PropertyController {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
 		return ResponseEntity.ok(propertyService.getChecklistItemsByChecklistId(userId, checklistId));
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
+	@PutMapping("/properties/checklist/{checklistId}/items")
+	public ResponseEntity<Void> updateChecklistItems(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long checklistId,
+		@RequestBody List<ChecklistItemUpdateRequestDTO> updates
+	) {
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+		propertyService.updateChecklistItems(userId, checklistId, updates);
+		return ResponseEntity.ok().build();
 	}
 }

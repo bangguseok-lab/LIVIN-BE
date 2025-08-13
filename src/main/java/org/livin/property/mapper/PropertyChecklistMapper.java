@@ -18,4 +18,10 @@ public interface PropertyChecklistMapper {
 		@Param("checklistId") Long checklistId
 	);
 
+	void updateChecklistItemIsChecked(
+		@Param("userId") Long userId,
+		@Param("checklistId") Long checklistId,
+		@Param("checklistItemId") Long checklistItemId,
+		@Param("isChecked") boolean isChecked
+	);
 }

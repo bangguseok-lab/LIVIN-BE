@@ -3,6 +3,7 @@ package org.livin.property.service;
 import java.util.List;
 
 import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
 import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.PropertyDTO;
@@ -31,4 +32,6 @@ public interface PropertyService {
 	List<ChecklistTitleDTO> getChecklistTitlesByUserId(Long userId);
 
 	List<ChecklistItemDTO> getChecklistItemsByChecklistId(Long userId, Long checklistId);
+
+	void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates);
 }
