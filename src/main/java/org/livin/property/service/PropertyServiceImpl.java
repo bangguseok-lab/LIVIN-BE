@@ -367,7 +367,7 @@ public class PropertyServiceImpl implements PropertyService {
 
 		for (ChecklistItemUpdateRequestDTO update : updates) {
 			propertyChecklistMapper.updateChecklistItemIsChecked(userId, checklistId, update.getChecklistItemId(),
-				update.getIsChecked());
+				update.isChecked());
 		}
 	}
 }
