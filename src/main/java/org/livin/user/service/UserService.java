@@ -23,4 +23,6 @@ public interface UserService {
 	UserUpdateDTO updateProfileImage(UserUpdateDTO dto);
 
 	UserProfileImageDTO getProfileImage(Long userId);
+
+	Long getUserDeposit(String providerId);
 }

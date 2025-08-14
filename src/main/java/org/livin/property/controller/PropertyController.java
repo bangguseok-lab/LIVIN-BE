@@ -163,9 +163,11 @@ public class PropertyController {
 	@PostMapping("/properties")
 	public ResponseEntity<SuccessResponse<Void>> createProperty(
 		@RequestPart("propertyRequest") PropertyRequestDTO propertyRequestDTO,
-		@RequestPart("images") List<MultipartFile> imageFiles) {
+		@RequestPart("images") List<MultipartFile> imageFiles,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
+	) {
 
-		propertyService.createProperty(propertyRequestDTO, imageFiles);
+		propertyService.createProperty(propertyRequestDTO, imageFiles, customUserDetails.getProviderId());
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "매물 등록이 완료되었습니다.", null)
 		);

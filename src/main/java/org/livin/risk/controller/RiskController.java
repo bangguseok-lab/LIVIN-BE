@@ -1,10 +1,14 @@
 package org.livin.risk.controller;
 
+import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
 import org.livin.risk.dto.RiskAnalysisRequestDTO;
+import org.livin.risk.dto.RiskAnalysisResponseDTO;
 import org.livin.risk.service.RiskService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,6 +40,18 @@ public class RiskController {
 		riskService.deleteRiskTemporaryInfo(commUniqueNo);
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "고유번호가 일치하지 않아 진행과정을 취소합니다.", null)
+		);
+	}
+
+	@GetMapping("/risk-analysis/{id}")
+	public ResponseEntity<SuccessResponse<RiskAnalysisResponseDTO>> getRiskAnalysis(
+		@PathVariable(name = "id") Long propertyId,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
+	) {
+		RiskAnalysisResponseDTO riskAnalysisDTO = riskService.getRiskAnalysis(propertyId,
+			customUserDetails.getProviderId());
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "위험도 분석 데이터가 조회되었습니다.", riskAnalysisDTO)
 		);
 	}
 }

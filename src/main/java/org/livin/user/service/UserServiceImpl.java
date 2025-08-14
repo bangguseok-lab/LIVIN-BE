@@ -77,4 +77,9 @@ public class UserServiceImpl implements UserService {
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 		return UserProfileImageDTO.of(profileImage);
 	}
+
+	@Override
+	public Long getUserDeposit(String providerId) {
+		return userMapper.getUserDeposit(providerId);
+	}
 }

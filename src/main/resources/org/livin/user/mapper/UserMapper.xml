@@ -96,5 +96,10 @@
         FROM livin.User
         WHERE id = #{userId}
     </select>
+    <select id="getUserDeposit" resultType="java.lang.Long">
+        SELECT deposit
+        FROM User
+        WHERE provider_id = #{providerId}
+    </select>
 
 </mapper>

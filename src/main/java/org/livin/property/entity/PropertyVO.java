@@ -43,8 +43,8 @@ public class PropertyVO {
 	private String propertyNum;
 	private AbleStatus pet;
 	private AbleStatus loan;
-	private Long buildingId; //여기까지가 Property Table Fields
-
+	private Long buildingId;
+	private Long userId; //여기까지가 Property Table Fields
 	private List<PropertyImageVO> images;
 	private String thumbnailImageUrl;
 
