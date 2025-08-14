@@ -23,4 +23,6 @@ public class UserVO {
     private String phone;
     private String nickname;
     private int profileImage;
+
+    private Long deposit;
 }
