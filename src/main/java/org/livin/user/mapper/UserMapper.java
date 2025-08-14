@@ -35,4 +35,8 @@ public interface UserMapper {
 	String findProviderIdByUserId(Long userId);
 
 	Long getUserDeposit(String providerId);
+
+	int updateDeposit(UserVO user);
+
+	int clearDeposit(UserVO user);
 }

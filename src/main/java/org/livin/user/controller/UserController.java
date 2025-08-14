@@ -4,6 +4,7 @@ import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.jwt.service.TokenService;
 import org.livin.global.jwt.util.JwtUtil;
 import org.livin.global.response.SuccessResponse;
+import org.livin.user.dto.UserDepositDTO;
 import org.livin.user.dto.UserNicknameDTO;
 import org.livin.user.dto.UserProfileImageDTO;
 import org.livin.user.dto.UserResponseDTO;
@@ -151,4 +152,43 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(new SuccessResponse<>(true, "프로필 이미지가 조회되었습니다.", profileImage));
 	}
+
+	// 보증금 조회
+	@GetMapping("/deposit")
+	public ResponseEntity<SuccessResponse<UserDepositDTO>> getDeposit(
+		@AuthenticationPrincipal CustomUserDetails principal
+	) {
+		Long deposit = userService.getUserDeposit(principal.getProviderId()); // Long or null
+		UserDepositDTO dto = UserDepositDTO.of(deposit);
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "보증금이 조회되었습니다.", dto));
+	}
+
+	// 보증금 입력
+	@PutMapping("/deposit")
+	public ResponseEntity<SuccessResponse<UserDepositDTO>> upsertDeposit(
+		@AuthenticationPrincipal CustomUserDetails principal,
+		@RequestBody UserDepositDTO dto
+	) {
+		// dto에는 deposit만 들어옴
+		UserDepositDTO result = userService.upsertDeposit(principal.getProviderId(), dto.getDeposit());
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "보증금이 저장(수정)되었습니다.", result));
+	}
+
+	// org.livin.user.controller.UserController
+
+	@DeleteMapping("/deposit")
+	public ResponseEntity<SuccessResponse<UserDepositDTO>> clearDeposit(
+		@AuthenticationPrincipal CustomUserDetails principal) {
+
+		String providerId = principal.getProviderId();
+
+		UserDepositDTO result = userService.clearDeposit(providerId);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(new SuccessResponse<>(true, "보증금이 초기화되었습니다.", result));
+	}
+
 }
