@@ -13,8 +13,9 @@ public interface PropertyChecklistMapper {
 	// user_id로 체크리스트 제목 목록 조회 (최신순)
 	List<ChecklistTitleDTO> selectChecklistTitlesByUserId(@Param("userId") Long userId);
 
-	List<ChecklistItemDTO> selectChecklistItemsOwnedByUser(
+	List<ChecklistItemDTO> selectChecklistItemsForProperty(
 		@Param("userId") Long userId,
+		@Param("propertyId") Long propertyId,
 		@Param("checklistId") Long checklistId
 	);
 

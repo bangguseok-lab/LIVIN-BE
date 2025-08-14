@@ -200,14 +200,16 @@ public class PropertyController {
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
-	@GetMapping("/properties/checklist/{checklistId}/items")
+	@GetMapping("/properties/{propertyId}/checklist/{checklistId}/items")
 	public ResponseEntity<List<ChecklistItemDTO>> getChecklistItems(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long propertyId,
 		@PathVariable Long checklistId
 	) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
-		return ResponseEntity.ok(propertyService.getChecklistItemsByChecklistId(userId, checklistId));
+		// 서비스 호출 시 propertyId 전달
+		return ResponseEntity.ok(propertyService.getChecklistItemsForProperty(userId, propertyId, checklistId));
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정

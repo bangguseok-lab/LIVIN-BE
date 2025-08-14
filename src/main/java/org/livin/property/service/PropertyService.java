@@ -39,7 +39,7 @@ public interface PropertyService {
 
 	List<ChecklistTitleDTO> getChecklistTitlesByUserId(Long userId);
 
-	List<ChecklistItemDTO> getChecklistItemsByChecklistId(Long userId, Long checklistId);
+	List<ChecklistItemDTO> getChecklistItemsForProperty(Long userId, Long propertyId, Long checklistId);
 
 	void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates);
 }

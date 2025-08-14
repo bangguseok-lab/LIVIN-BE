@@ -352,11 +352,13 @@ public class PropertyServiceImpl implements PropertyService {
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
 	@Transactional(readOnly = true)
 	@Override
-	public List<ChecklistItemDTO> getChecklistItemsByChecklistId(Long userId, Long checklistId) {
+	public List<ChecklistItemDTO> getChecklistItemsForProperty(Long userId, Long propertyId, Long checklistId) {
 		Objects.requireNonNull(userId, "userId must not be null");
+		Objects.requireNonNull(propertyId, "propertyId must not be null");
 		Objects.requireNonNull(checklistId, "checklistId must not be null");
 
-		List<ChecklistItemDTO> items = propertyChecklistMapper.selectChecklistItemsOwnedByUser(userId, checklistId);
+		// 매퍼 메서드 호출
+		List<ChecklistItemDTO> items = propertyChecklistMapper.selectChecklistItemsForProperty(userId, propertyId, checklistId);
 
 		if (items.isEmpty()) {
 			// 정책에 따라 404(없음) 또는 403(권한 없음) 반환
