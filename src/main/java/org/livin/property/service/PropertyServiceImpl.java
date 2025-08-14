@@ -13,6 +13,9 @@ import org.livin.global.codef.dto.realestateregister.response.RealEstateRegister
 import org.livin.global.codef.service.CodefService;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
+import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
+import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.global.s3.service.S3ServiceImpl;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.ManagementDTO;
@@ -27,6 +30,8 @@ import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
+import org.livin.property.mapper.FavoritePropertyMapper;
+import org.livin.property.mapper.PropertyChecklistMapper;
 import org.livin.property.mapper.PropertyMapper;
 import org.livin.risk.dto.RiskTemporaryDTO;
 import org.livin.risk.service.RiskService;
@@ -46,6 +51,7 @@ public class PropertyServiceImpl implements PropertyService {
 
 	private final PropertyMapper propertyMapper;
 	private final UserService userService;
+	private final PropertyChecklistMapper propertyChecklistMapper;
 	private final CodefService codefService;
 	private final RiskService riskService;
 	private final S3ServiceImpl s3ServiceImpl;
@@ -313,5 +319,61 @@ public class PropertyServiceImpl implements PropertyService {
 		return optionVOList.stream()
 			.map(OptionDTO::fromOptionVO)
 			.toList();
+	}
+
+	// 매물 상세 페이지 체크리스트 목록 출력
+	@Transactional
+	@Override
+	public List<ChecklistTitleDTO> getChecklistTitlesByUserId(Long userId) {
+
+		Objects.requireNonNull(userId, "userId must not be null");
+
+		try {
+			List<ChecklistTitleDTO> titles = propertyChecklistMapper.selectChecklistTitlesByUserId(userId);
+			return (titles == null) ? java.util.Collections.emptyList() : titles;
+		} catch (Exception e) {
+			log.error("체크리스트 제목 조회 실패 userId={}", userId, e);
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
+	@Transactional(readOnly = true)
+	@Override
+	public List<ChecklistItemDTO> getChecklistItemsByChecklistId(Long userId, Long checklistId) {
+		Objects.requireNonNull(userId, "userId must not be null");
+		Objects.requireNonNull(checklistId, "checklistId must not be null");
+
+		List<ChecklistItemDTO> items = propertyChecklistMapper.selectChecklistItemsOwnedByUser(userId, checklistId);
+
+		if (items.isEmpty()) {
+			// 정책에 따라 404(없음) 또는 403(권한 없음) 반환
+			// throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+		return items;
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
+	@Transactional
+	@Override
+	public void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates) {
+		Objects.requireNonNull(userId, "userId must not be null");
+		Objects.requireNonNull(checklistId, "checklistId must not be null");
+		Objects.requireNonNull(updates, "updates must not be null");
+
+		// 로그 추가: 메서드 시작 시 주요 파라미터 값 출력
+		log.info("Starting updateChecklistItems. userId: {}, checklistId: {}, updates count: {}", userId, checklistId, updates.size());
+
+		for (ChecklistItemUpdateRequestDTO update : updates) {
+			// 로그 추가: 각 아이템 업데이트 직전에 파라미터 값 출력
+			log.info("Attempting to update checklist item. checklistItemId: {}, isChecked: {}", update.getChecklistItemId(), update.isChecked());
+
+			propertyChecklistMapper.updateChecklistItemIsChecked(userId, checklistId, update.getChecklistItemId(),
+				update.isChecked());
+
+			// MyBatis 업데이트 결과 로그 출력
+			// 이 부분은 MyBatis 설정을 통해 확인할 수 있으므로, 별도의 로그 코드를 추가하지 않아도 됩니다.
+		}
+		log.info("Finished updateChecklistItems for checklistId: {}", checklistId);
 	}
 }

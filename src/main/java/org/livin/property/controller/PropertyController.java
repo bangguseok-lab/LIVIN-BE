@@ -6,6 +6,9 @@ import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO
 import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
+import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
+import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -179,5 +183,45 @@ public class PropertyController {
 		return ResponseEntity.ok(
 			new SuccessResponse<>(true, "옵션 조회가 완료되었습니다.", optionDTOList)
 		);
+	}
+
+	// 매물 상세 페이지 체크리스트 목록 출력
+	@GetMapping("/properties/checklist")
+	public ResponseEntity<List<ChecklistTitleDTO>> getChecklistTitles(
+		@AuthenticationPrincipal CustomUserDetails userDetails
+	) {
+		// 인증 정보 -> userId
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		// 사용자가 만든 체크리스트 제목 목록 조회
+		List<ChecklistTitleDTO> list = propertyService.getChecklistTitlesByUserId(userId);
+
+		return ResponseEntity.ok(list);
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
+	@GetMapping("/properties/checklist/{checklistId}/items")
+	public ResponseEntity<List<ChecklistItemDTO>> getChecklistItems(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long checklistId
+	) {
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		return ResponseEntity.ok(propertyService.getChecklistItemsByChecklistId(userId, checklistId));
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
+	@PutMapping("/properties/checklist/{checklistId}/items")
+	public ResponseEntity<Void> updateChecklistItems(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long checklistId,
+		@RequestBody List<ChecklistItemUpdateRequestDTO> updates
+	) {
+
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		propertyService.updateChecklistItems(userId, checklistId, updates);
+
+		return ResponseEntity.ok().build();
 	}
 }

@@ -2,6 +2,9 @@ package org.livin.property.service;
 
 import java.util.List;
 
+import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
+import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
 import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.property.dto.FilteringDTO;
@@ -33,4 +36,10 @@ public interface PropertyService {
 	void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles, String providerId);
 
 	List<OptionDTO> getOptionList();
+
+	List<ChecklistTitleDTO> getChecklistTitlesByUserId(Long userId);
+
+	List<ChecklistItemDTO> getChecklistItemsByChecklistId(Long userId, Long checklistId);
+
+	void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates);
 }
