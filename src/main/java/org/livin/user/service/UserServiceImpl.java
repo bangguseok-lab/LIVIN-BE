@@ -3,6 +3,7 @@ package org.livin.user.service;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
 import org.livin.global.jwt.service.TokenService;
+import org.livin.user.dto.UserDepositDTO;
 import org.livin.user.dto.UserNicknameDTO;
 import org.livin.user.dto.UserProfileImageDTO;
 import org.livin.user.dto.UserResponseDTO;
@@ -76,5 +77,43 @@ public class UserServiceImpl implements UserService {
 		UserVO profileImage = userMapper.findUserById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 		return UserProfileImageDTO.of(profileImage);
+	}
+
+	@Override
+	public Long getUserDeposit(String providerId) {
+		return userMapper.getUserDeposit(providerId);
+	}
+
+	@Override
+	public UserDepositDTO upsertDeposit(String providerId, Long deposit) {
+		if (providerId == null) throw new CustomException(ErrorCode.BAD_REQUEST);
+		if (deposit == null || deposit <= 0) throw new CustomException(ErrorCode.BAD_REQUEST);
+
+		UserDepositDTO dto = UserDepositDTO.of(deposit);
+
+		int updated = userMapper.updateDeposit(dto.toVO(providerId));
+		if (updated == 0) throw new CustomException(ErrorCode.NOT_FOUND);
+
+		log.debug("upsertDeposit providerId={}, deposit={}", providerId, deposit);
+		return UserDepositDTO.of(deposit);
+	}
+
+	@Override
+	public UserDepositDTO clearDeposit(String providerId){
+		if (providerId == null || providerId.isBlank()) {
+			throw new CustomException(ErrorCode.BAD_REQUEST);
+		}
+
+		int updated = userMapper.clearDeposit(
+			UserVO.builder()
+				.providerId(providerId)
+				.build()
+		);
+		if (updated == 0) {
+			throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+
+		log.debug("clearDeposit providerId={}", providerId);
+		return UserDepositDTO.of(null);
 	}
 }

@@ -1,5 +1,6 @@
 package org.livin.user.service;
 
+import org.livin.user.dto.UserDepositDTO;
 import org.livin.user.dto.UserNicknameDTO;
 import org.livin.user.dto.UserProfileImageDTO;
 import org.livin.user.dto.UserResponseDTO;
@@ -23,4 +24,10 @@ public interface UserService {
 	UserUpdateDTO updateProfileImage(UserUpdateDTO dto);
 
 	UserProfileImageDTO getProfileImage(Long userId);
+
+	Long getUserDeposit(String providerId);
+
+	UserDepositDTO  upsertDeposit(String providerId, Long deposit);
+
+	UserDepositDTO clearDeposit(String providerId);
 }

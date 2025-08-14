@@ -33,4 +33,10 @@ public interface UserMapper {
 	String findProfileImageByProviderId(@Param("providerId") String providerId);
 
 	String findProviderIdByUserId(Long userId);
+
+	Long getUserDeposit(String providerId);
+
+	int updateDeposit(UserVO user);
+
+	int clearDeposit(UserVO user);
 }

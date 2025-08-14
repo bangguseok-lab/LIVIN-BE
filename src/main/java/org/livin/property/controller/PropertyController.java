@@ -2,12 +2,19 @@ package org.livin.property.controller;
 
 import java.util.List;
 
+import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
+import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
+import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
+import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
-import org.livin.property.service.PropertyServiceImpl;
+import org.livin.property.dto.PropertyRequestDTO;
+import org.livin.property.service.PropertyService;
 import org.livin.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +24,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -30,7 +41,7 @@ import lombok.extern.log4j.Log4j2;
 public class PropertyController {
 
 	private final UserService userService;
-	private final PropertyServiceImpl propertyService;
+	private final PropertyService propertyService;
 
 	// 관심 매물 조회 - 메인페이지 전용
 	@GetMapping("/properties/favorite")
@@ -125,7 +136,6 @@ public class PropertyController {
 			.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 삭제했습니다.", "{}"));
 	}
 
-
 	// 관심 매물 추가 API
 	@PostMapping("/properties/{id}/favorite")
 	public ResponseEntity<SuccessResponse<PropertyDTO>> addFavoriteProperty(
@@ -139,5 +149,79 @@ public class PropertyController {
 		PropertyDTO added = propertyService.addFavoriteProperty(userId, propertyId);
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(new SuccessResponse<>(true, "관심 매물을 성공적으로 추가했습니다.", added));
+	}
+
+	//등기부등본 열람 api
+	@PostMapping("/properties/real-estate-registers")
+	public ResponseEntity<SuccessResponse<OwnerInfoResponseDTO>> getRealEstateRegisters(
+		@RequestBody OwnerInfoRequestDTO ownerInfoRequestDTO
+	) {
+		log.info("부동산 고유 번호 : {}", ownerInfoRequestDTO.getCommUniqueNo());
+
+		OwnerInfoResponseDTO ownerInfoResponseDTO = propertyService.getRealEstateRegisters(ownerInfoRequestDTO);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "등기부등본 열람이 성공하였습니다.", ownerInfoResponseDTO)
+		);
+	}
+
+	@PostMapping("/properties")
+	public ResponseEntity<SuccessResponse<Void>> createProperty(
+		@RequestPart("propertyRequest") PropertyRequestDTO propertyRequestDTO,
+		@RequestPart("images") List<MultipartFile> imageFiles,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
+	) {
+
+		propertyService.createProperty(propertyRequestDTO, imageFiles, customUserDetails.getProviderId());
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "매물 등록이 완료되었습니다.", null)
+		);
+	}
+
+	@GetMapping("/properties/options")
+	public ResponseEntity<SuccessResponse<List<OptionDTO>>> getOptionList() {
+		List<OptionDTO> optionDTOList = propertyService.getOptionList();
+		return ResponseEntity.ok(
+			new SuccessResponse<>(true, "옵션 조회가 완료되었습니다.", optionDTOList)
+		);
+	}
+
+	// 매물 상세 페이지 체크리스트 목록 출력
+	@GetMapping("/properties/checklist")
+	public ResponseEntity<List<ChecklistTitleDTO>> getChecklistTitles(
+		@AuthenticationPrincipal CustomUserDetails userDetails
+	) {
+		// 인증 정보 -> userId
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		// 사용자가 만든 체크리스트 제목 목록 조회
+		List<ChecklistTitleDTO> list = propertyService.getChecklistTitlesByUserId(userId);
+
+		return ResponseEntity.ok(list);
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
+	@GetMapping("/properties/checklist/{checklistId}/items")
+	public ResponseEntity<List<ChecklistItemDTO>> getChecklistItems(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long checklistId
+	) {
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		return ResponseEntity.ok(propertyService.getChecklistItemsByChecklistId(userId, checklistId));
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
+	@PutMapping("/properties/checklist/{checklistId}/items")
+	public ResponseEntity<Void> updateChecklistItems(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long checklistId,
+		@RequestBody List<ChecklistItemUpdateRequestDTO> updates
+	) {
+
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		propertyService.updateChecklistItems(userId, checklistId, updates);
+
+		return ResponseEntity.ok().build();
 	}
 }

@@ -1,23 +1,45 @@
 package org.livin.property.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
+import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
+import org.livin.global.codef.dto.realestateregister.response.RealEstateRegisterResponseDTO;
+import org.livin.global.codef.service.CodefService;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
+import org.livin.property.dto.ChecklistItemDTO;
+import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
+import org.livin.property.dto.ChecklistTitleDTO;
+import org.livin.global.s3.service.S3ServiceImpl;
 import org.livin.property.dto.FilteringDTO;
+import org.livin.property.dto.ManagementDTO;
+import org.livin.property.dto.OptionDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
+import org.livin.property.dto.PropertyImgRequestDTO;
+import org.livin.property.dto.PropertyRequestDTO;
+import org.livin.property.dto.PropertyTemporaryDTO;
+import org.livin.property.entity.BuildingVO;
+import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
 import org.livin.property.mapper.FavoritePropertyMapper;
+import org.livin.property.mapper.PropertyChecklistMapper;
 import org.livin.property.mapper.PropertyMapper;
-import org.livin.user.mapper.UserMapper;
+import org.livin.risk.dto.RiskTemporaryDTO;
+import org.livin.risk.service.RiskService;
 import org.livin.user.service.UserService;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -27,10 +49,14 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class PropertyServiceImpl implements PropertyService {
 
-	private final UserMapper userMapper;
-	private final FavoritePropertyMapper favoritePropertyMapper;
 	private final PropertyMapper propertyMapper;
 	private final UserService userService;
+	private final PropertyChecklistMapper propertyChecklistMapper;
+	private final CodefService codefService;
+	private final RiskService riskService;
+	private final S3ServiceImpl s3ServiceImpl;
+	private final RedisTemplate<String, RiskTemporaryDTO> riskTemporaryRedisTemplate;
+	private final RedisTemplate<String, PropertyTemporaryDTO> propertyTemporaryRedisTemplate;
 
 	// 관심 매물
 	@Override
@@ -118,7 +144,8 @@ public class PropertyServiceImpl implements PropertyService {
 		PropertyDetailsDTO propertyDetailsDTO = PropertyDetailsDTO.fromPropertyDetailsVO(propertyDetailsVO);
 		log.info(propertyDetailsDTO);
 		return propertyDetailsDTO;
-  }
+	}
+
 	// 관심 매물 리스트 조회 (지역, 체크리스트 필터링 및 페이징 포함)
 	@Override
 	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO) {
@@ -134,7 +161,8 @@ public class PropertyServiceImpl implements PropertyService {
 
 			// 각 매물에 썸네일 이미지 주입
 			for (PropertyVO property : list) {
-				List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(property.getPropertyId());
+				List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(
+					property.getPropertyId());
 				property.setImages(images);
 			}
 
@@ -194,5 +222,158 @@ public class PropertyServiceImpl implements PropertyService {
 		addedProperty.setImages(images);
 
 		return PropertyDTO.of(addedProperty);
+	}
+
+	public OwnerInfoResponseDTO getRealEstateRegisters(OwnerInfoRequestDTO ownerInfoRequestDTO) {
+		RealEstateRegisterResponseDTO realEstateRegisterResponseDTO = codefService.requestRealEstateResister(
+			ownerInfoRequestDTO
+		);
+		Long maximumBondAmount = RealEstateRegisterResponseDTO.parseMaximumBondAmount(
+			realEstateRegisterResponseDTO
+		);
+		OwnerInfoResponseDTO ownerInfoResponseDTO = OwnerInfoResponseDTO.fromRealEstateRegisterResponseDTO(
+			realEstateRegisterResponseDTO);
+		RiskTemporaryDTO riskTemporaryDTO = RiskTemporaryDTO.builder()
+			.isOwner(Objects.equals(ownerInfoResponseDTO.getOwnerName(), ownerInfoRequestDTO.getOwnerName()))
+			.maximum_bond_amount(maximumBondAmount)
+			.build();
+		long ownerExpiration = 1000L * 60 * 60 * 24;
+
+		riskTemporaryRedisTemplate.opsForValue()
+			.set(ownerInfoResponseDTO.getCommUniqueNo(), riskTemporaryDTO, Duration.ofMillis(ownerExpiration));
+		return ownerInfoResponseDTO;
+	}
+
+	public void createProperty(PropertyRequestDTO propertyRequestDTO, List<MultipartFile> imageFiles,
+		String providerId) {
+		try {
+			Long userId = userService.getUserIdByProviderId(providerId);
+			PropertyTemporaryDTO propertyTemporaryDTO = propertyTemporaryRedisTemplate.opsForValue()
+				.get(propertyRequestDTO.getPropertyNum());
+			long buildingId = createBuilding(propertyTemporaryDTO.getBuildingVO());
+			PropertyVO propertyVO = PropertyRequestDTO.toPropertyVO(propertyRequestDTO,
+				buildingId, userId);
+			propertyMapper.createProperty(propertyVO);
+			riskService.createRiskAnalysis(propertyTemporaryDTO.getRiskAnalysisVO(), propertyVO.getPropertyId());
+
+			// 옵션 리스트 처리
+			List<Long> optionIdList = propertyRequestDTO.getOptionIdList();
+			if (optionIdList != null && !optionIdList.isEmpty()) {
+				propertyMapper.createPropertyOptions(propertyVO.getPropertyId(), optionIdList);
+			}
+
+			// 관리비 리스트 처리
+			List<ManagementDTO> managementDTOList = propertyRequestDTO.getManagementDTOList();
+			if (managementDTOList != null && !managementDTOList.isEmpty()) {
+				propertyMapper.createManagement(propertyVO.getPropertyId(), managementDTOList);
+			}
+
+			// 이미지 리스트 처리
+			List<PropertyImgRequestDTO> imageMetadataList = propertyRequestDTO.getImgRepresentList();
+			if (imageFiles != null && !imageFiles.isEmpty() && imageMetadataList != null
+				&& !imageMetadataList.isEmpty()) {
+				if (imageFiles.size() != imageMetadataList.size()) {
+					throw new IllegalArgumentException("이미지 파일 수와 메타데이터 수가 일치하지 않습니다.");
+				}
+				List<PropertyImageVO> propertyImages = new ArrayList<>();
+				for (int i = 0; i < imageFiles.size(); i++) {
+					MultipartFile file = imageFiles.get(i);
+					boolean represent = imageMetadataList.get(i).getRepresent();
+
+					if (!file.isEmpty()) {
+						String imageUrl = s3ServiceImpl.uploadFile(file);
+						PropertyImageVO propertyImageVO = PropertyImageVO.builder()
+							.propertyId(propertyVO.getPropertyId())
+							.represent(represent)
+							.imageUrl(imageUrl)
+							.build();
+						propertyImages.add(propertyImageVO);
+					}
+				}
+				// 생성된 이미지 URL들을 DB에 저장
+				propertyMapper.createPropertyImages(propertyImages);
+				propertyTemporaryRedisTemplate.delete(propertyRequestDTO.getPropertyNum());
+			}
+
+		} catch (Exception e) {
+			// 예외 발생 시, 롤백 로직 추가 필요
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	private Long createBuilding(BuildingVO buildingVO) {
+		BuildingVO building;
+		if (propertyMapper.existsBuilding(buildingVO.getRoadAddress())) {
+			building = propertyMapper.getBuilding(buildingVO.getRoadAddress());
+			return building.getBuildingId();
+		}
+		propertyMapper.createBuilding(buildingVO);
+		return buildingVO.getBuildingId();
+	}
+
+	public List<OptionDTO> getOptionList() {
+		List<OptionVO> optionVOList = propertyMapper.getOptionList();
+		if (optionVOList.isEmpty()) {
+			throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+		return optionVOList.stream()
+			.map(OptionDTO::fromOptionVO)
+			.toList();
+	}
+
+	// 매물 상세 페이지 체크리스트 목록 출력
+	@Transactional
+	@Override
+	public List<ChecklistTitleDTO> getChecklistTitlesByUserId(Long userId) {
+
+		Objects.requireNonNull(userId, "userId must not be null");
+
+		try {
+			List<ChecklistTitleDTO> titles = propertyChecklistMapper.selectChecklistTitlesByUserId(userId);
+			return (titles == null) ? java.util.Collections.emptyList() : titles;
+		} catch (Exception e) {
+			log.error("체크리스트 제목 조회 실패 userId={}", userId, e);
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
+	@Transactional(readOnly = true)
+	@Override
+	public List<ChecklistItemDTO> getChecklistItemsByChecklistId(Long userId, Long checklistId) {
+		Objects.requireNonNull(userId, "userId must not be null");
+		Objects.requireNonNull(checklistId, "checklistId must not be null");
+
+		List<ChecklistItemDTO> items = propertyChecklistMapper.selectChecklistItemsOwnedByUser(userId, checklistId);
+
+		if (items.isEmpty()) {
+			// 정책에 따라 404(없음) 또는 403(권한 없음) 반환
+			// throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+		return items;
+	}
+
+	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
+	@Transactional
+	@Override
+	public void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates) {
+		Objects.requireNonNull(userId, "userId must not be null");
+		Objects.requireNonNull(checklistId, "checklistId must not be null");
+		Objects.requireNonNull(updates, "updates must not be null");
+
+		// 로그 추가: 메서드 시작 시 주요 파라미터 값 출력
+		log.info("Starting updateChecklistItems. userId: {}, checklistId: {}, updates count: {}", userId, checklistId, updates.size());
+
+		for (ChecklistItemUpdateRequestDTO update : updates) {
+			// 로그 추가: 각 아이템 업데이트 직전에 파라미터 값 출력
+			log.info("Attempting to update checklist item. checklistItemId: {}, isChecked: {}", update.getChecklistItemId(), update.isChecked());
+
+			propertyChecklistMapper.updateChecklistItemIsChecked(userId, checklistId, update.getChecklistItemId(),
+				update.isChecked());
+
+			// MyBatis 업데이트 결과 로그 출력
+			// 이 부분은 MyBatis 설정을 통해 확인할 수 있으므로, 별도의 로그 코드를 추가하지 않아도 됩니다.
+		}
+		log.info("Finished updateChecklistItems for checklistId: {}", checklistId);
 	}
 }

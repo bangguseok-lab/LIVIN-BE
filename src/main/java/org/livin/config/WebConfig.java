@@ -1,16 +1,17 @@
 package org.livin.config;
 
+import javax.servlet.Filter;
+
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-import javax.servlet.Filter;
-
 public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
-    @Override
-    protected Class<?>[] getRootConfigClasses() {
-        return new Class[]{RootConfig.class, RedisConfig.class, SecurityConfig.class};
-    }
+	@Override
+	protected Class<?>[] getRootConfigClasses() {
+		return new Class[] {RootConfig.class, RedisConfig.class, SecurityConfig.class, S3Config.class};
+	}
+
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
@@ -29,11 +30,12 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
             };
     }
 
-    // POST body 문자 인코딩 필터 설정- UTF-8 설정
-    protected Filter[] getServletFilters() {
-        CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
-        characterEncodingFilter.setEncoding("UTF-8");
-        characterEncodingFilter.setForceEncoding(true);
-        return new Filter[]{characterEncodingFilter};
-    }
+
+	// POST body 문자 인코딩 필터 설정- UTF-8 설정
+	protected Filter[] getServletFilters() {
+		CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
+		characterEncodingFilter.setEncoding("UTF-8");
+		characterEncodingFilter.setForceEncoding(true);
+		return new Filter[] {characterEncodingFilter};
+	}
 }

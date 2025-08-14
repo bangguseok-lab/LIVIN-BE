@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.livin.property.entity.ManagementVO;
 import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.property_enum.TransactionType;
@@ -80,7 +79,7 @@ public class PropertyDetailsDTO {
 			.management(Optional.ofNullable(propertyDetailsVO.getManagementVOList())
 				.orElseGet(Collections::emptyList)
 				.stream()
-				.filter(ManagementVO::getExcludeInclude)
+				// .filter(ManagementVO::getExcludeInclude)
 				.map(ManagementDTO::fromManagementVO)
 				.collect(Collectors.toList()))
 			.options(propertyDetailsVO.getOptionVOList().stream()

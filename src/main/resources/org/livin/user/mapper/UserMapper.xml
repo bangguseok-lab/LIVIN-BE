@@ -60,7 +60,7 @@
     </select>
 
     <select id="findUserById" resultType="org.livin.user.entity.UserVO">
-        SELECT user_id, name, nickname, phone, birth_date, role, profile_image
+        SELECT user_id, name, nickname, phone, birth_date, role, profile_image, deposit
         FROM livin.User
         WHERE user_id = #{userId}
     </select>
@@ -96,5 +96,26 @@
         FROM livin.User
         WHERE id = #{userId}
     </select>
+
+    <!--  보증금 조회  -->
+    <select id="getUserDeposit" resultType="java.lang.Long">
+        SELECT deposit
+        FROM User
+        WHERE provider_id = #{providerId}
+    </select>
+
+    <!-- 보증금 저장/수정 -->
+    <update id="updateDeposit" parameterType="org.livin.user.entity.UserVO">
+        UPDATE livin.User
+        SET deposit = #{deposit}
+        WHERE provider_id = #{providerId}
+    </update>
+
+    <!-- 보증금 초기화 -->
+    <update id="clearDeposit" parameterType="org.livin.user.entity.UserVO">
+        UPDATE livin.User
+        SET deposit = NULL
+        WHERE provider_id = #{providerId}
+    </update>
 
 </mapper>
