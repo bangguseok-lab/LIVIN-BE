@@ -54,5 +54,7 @@ public interface PropertyMapper {
 	void createPropertyImages(@Param("propertyImages") List<PropertyImageVO> propertyImages);
 
 	List<OptionVO> getOptionList();
+
+	Optional<LocalDateTime> findSavedAtByPropertyIdAndUserId(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
 }
 

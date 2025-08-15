@@ -157,6 +157,14 @@ public class PropertyServiceImpl implements PropertyService {
 		}
 
 		try {
+			if (filteringDTO.getLastId() != null && filteringDTO.getLastId() > 0) {
+				propertyMapper.findSavedAtByPropertyIdAndUserId(filteringDTO.getLastId(), filteringDTO.getUserId())
+					.ifPresent(savedAt -> {
+						filteringDTO.setLastCreatedAt(savedAt);
+						log.info("Favorite lastId {} -> saved_at: {}", filteringDTO.getLastId(), savedAt);
+					});
+			}
+
 			List<PropertyVO> list = propertyMapper.selectFavoritePropertiesWithFilter(filteringDTO);
 
 			// 각 매물에 썸네일 이미지 주입

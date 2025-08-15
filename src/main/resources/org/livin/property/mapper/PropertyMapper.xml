@@ -368,6 +368,13 @@
         WHERE p.property_id = #{propertyId}
     </select>
 
+    <select id="findSavedAtByPropertyIdAndUserId" resultType="java.time.LocalDateTime">
+        SELECT saved_at
+        FROM FavoriteProperty
+        WHERE property_id = #{propertyId}
+          AND user_id = #{userId}
+    </select>
+
     <!-- ✅ 공통 resultMap -->
     <resultMap id="BasePropertyMap" type="org.livin.property.entity.PropertyVO">
         <id property="propertyId" column="property_id"/>
