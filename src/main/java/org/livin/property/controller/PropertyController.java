@@ -224,25 +224,25 @@ public class PropertyController {
 	) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
-		// 새 서비스 메서드 호출
 		List<ChecklistItemDTO> items = propertyService.getPersonalizedChecklistForProperty(userId, propertyId);
 
 		// 프론트엔드는 이 응답이 비어있는지 여부로
-		// 기존 체크리스트를 보여줄지, 새로 생성하는 화면을 보여줄지 결정할 수 있습니다.
+		// 기존 체크리스트를 보여줄지, 새로 생성하는 화면을 보여줄지 결정할 수 있다.
 		return ResponseEntity.ok(items);
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
-	@PutMapping("/properties/checklist/{checklistId}/items")
+	@PutMapping("/properties/{propertyId}/checklist/{checklistId}/items")
 	public ResponseEntity<Void> updateChecklistItems(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long propertyId,
 		@PathVariable Long checklistId,
 		@RequestBody List<ChecklistItemUpdateRequestDTO> updates
 	) {
-
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
-		propertyService.updateChecklistItems(userId, checklistId, updates);
+		// propertyId를 서비스 계층으로 전달
+		propertyService.updateChecklistItems(userId, propertyId, checklistId, updates);
 
 		return ResponseEntity.ok().build();
 	}

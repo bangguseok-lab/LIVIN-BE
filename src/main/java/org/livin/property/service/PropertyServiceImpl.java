@@ -33,7 +33,6 @@ import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
-import org.livin.property.mapper.FavoritePropertyMapper;
 import org.livin.property.mapper.PropertyChecklistMapper;
 import org.livin.property.mapper.PropertyMapper;
 import org.livin.risk.dto.RiskTemporaryDTO;
@@ -361,28 +360,38 @@ public class PropertyServiceImpl implements PropertyService {
 		// 1. 원본 데이터 조회
 		// 원본 체크리스트가 사용자의 소유인지 확인하며 조회
 		ChecklistVO sourceChecklist = propertyChecklistMapper.findChecklistByIdAndUserId(sourceChecklistId, userId);
+
 		if (sourceChecklist == null) {
+			log.warn("원본 체크리스트를 찾을 수 없거나 소유자가 아닙니다: sourceChecklistId={}", sourceChecklistId);
 			throw new CustomException(ErrorCode.FORBIDDEN);   // 내 템플릿이 아니면 거부
 		}
+		log.info("원본 체크리스트 조회 성공: title='{}'", sourceChecklist.getTitle());
+
 		// 원본 체크리스트의 아이템들 조회
+		log.info("이제 원본 체크리스트의 아이템 목록을 조회합니다: checklistId={}", sourceChecklistId);
 		List<ChecklistItemVO> sourceItems = propertyChecklistMapper.findItemsByChecklistId(sourceChecklistId);
+
+		// [핵심 로그] 조회된 아이템 개수 확인
+		// sourceItems가 null일 경우를 대비하여 3항 연산자 사용
+		log.info("조회된 원본 아이템 개수: {}개", sourceItems == null ? 0 : sourceItems.size());
 
 		// 2. Checklist 복제 및 삽입
 		ChecklistVO newChecklist = new ChecklistVO();
-
 		newChecklist.setUserId(userId);
-		// String.format을 이용해 '체크리스트 템플릿 제목(propertyId)' 형식으로 새 제목을 설정합니다.
+		// String.format을 이용해 '체크리스트 템플릿 제목(propertyId)' 형식으로 새 제목을 설정한다.
 		newChecklist.setTitle(String.format("%s(%d)", sourceChecklist.getTitle(), propertyId));
 		newChecklist.setDescription(sourceChecklist.getDescription());
 		newChecklist.setType(sourceChecklist.getType());
 
-		// 복제된 Checklist를 DB에 삽입하고, 생성된 PK(ID)를 newChecklist 객체에 받아옴
+		// 복제된 Checklist를 DB에 삽입하고, 생성된 PK(ID)를 newChecklist 객체에 받아온다
 		propertyChecklistMapper.insertAndGetId(newChecklist);
 		Long newChecklistId = newChecklist.getChecklistId();
 		log.info("새로운 체크리스트 생성 완료: newChecklistId={}", newChecklistId);
 
 		// 3. ChecklistItem 복제 및 삽입
 		if (sourceItems != null && !sourceItems.isEmpty()) {
+			// 복제 로직 진입 확인
+			log.info("아이템 복제 로직을 시작합니다...");
 			// 복제할 아이템들을 담을 리스트 생성
 			List<ChecklistItemVO> newItems = new ArrayList<>();
 			for (ChecklistItemVO sourceItem : sourceItems) {
@@ -394,14 +403,13 @@ public class PropertyServiceImpl implements PropertyService {
 				newItem.setType(sourceItem.getType());
 				newItems.add(newItem);
 			}
-			// 복제된 아이템들을 DB에 Batch Insert
+			// 복제된 ChecklistItem 목록 한 번에 삽입
 			propertyChecklistMapper.batchInsertItems(newItems);
-			log.info("{}개의 체크리스트 아이템 복제 완료", newItems.size());
 		}
 
-		// === 4. (핵심) Property_Checklist 테이블에 연결 ===
-		// 이전에 만든 연결용 메서드를 재사용
-		log.info("매물과 새 체크리스트 연결 시작: propertyId={}, newChecklistId={}", propertyId, newChecklistId);
+		// === 4. Property_Checklist 테이블에 연결 ===
+		// 복제된 Checklist를 Property_Checklist 테이블에 추가
+		log.info("매물과 새 체크리스트 연결 시작: propertyId=" + propertyId + ", newChecklistId=" + newChecklistId);
 		propertyChecklistMapper.insertPropertyChecklist(propertyId, newChecklistId);
 
 		// 새로 생성된 체크리스트 ID 반환
@@ -410,101 +418,32 @@ public class PropertyServiceImpl implements PropertyService {
 	}
 
 
-	// @Transactional
-	// @Override
-	// public void linkChecklistToProperty(Long userId, Long propertyId, Long checklistId) {
-	// 	// ✅ {} 플레이스홀더를 사용하면 성능에 이점이 있습니다.
-	// 	log.info(">> 매물-체크리스트 연결 시작: userId={}, propertyId={}, checklistId={}", userId, propertyId, checklistId);
-	//
-	// 	Objects.requireNonNull(userId, "userId must not be null");
-	// 	Objects.requireNonNull(propertyId, "propertyId must not be null");
-	// 	Objects.requireNonNull(checklistId, "checklistId must not be null");
-	//
-	// 	log.info("1. 소유권 검증 시작...");
-	// 	boolean isOwner = propertyChecklistMapper.isChecklistOwnedByUser(userId, checklistId);
-	// 	if (!isOwner) {
-	// 		log.warn("소유권 검증 실패: userId={}는 checklistId={}의 소유자가 아님", userId, checklistId);
-	// 		throw new CustomException(ErrorCode.FORBIDDEN);
-	// 	}
-	// 	log.info("소유권 검증 통과");
-	//
-	// 	log.info("2. 중복 연결 검증 시작...");
-	// 	boolean alreadyExists = propertyChecklistMapper.existsByPropertyIdAndChecklistId(propertyId, checklistId);
-	// 	if (alreadyExists) {
-	// 		log.warn("중복 연결 발견: propertyId={}와 checklistId={}는 이미 연결되어 있음", propertyId, checklistId);
-	// 		throw new CustomException(ErrorCode.ALREADY_EXISTS);
-	// 	}
-	// 	log.info("중복 연결 없음 확인");
-	//
-	// 	log.info("3. 데이터 삽입 시작...");
-	// 	propertyChecklistMapper.insertPropertyChecklist(propertyId, checklistId);
-	// 	log.info("<< 매물-체크리스트 연결 성공");
-	// }
-
-	// @Transactional
-	// @Override
-	// public void linkChecklistToProperty(Long userId, Long propertyId, Long checklistId) {
-	// 	Objects.requireNonNull(userId, "userId must not be null");
-	// 	Objects.requireNonNull(propertyId, "propertyId must not be null");
-	// 	Objects.requireNonNull(checklistId, "checklistId must not be null");
-	//
-	// 	// 1. 해당 체크리스트가 사용자의 소유인지 권한 검증
-	// 	boolean isOwner = propertyChecklistMapper.isChecklistOwnedByUser(userId, checklistId);
-	// 	if (!isOwner) {
-	// 		// 내 체크리스트가 아니면 예외 처리 (예: 403 Forbidden)
-	// 		throw new CustomException(ErrorCode.FORBIDDEN);
-	// 	}
-	//
-	// 	// 2. 이미 매물에 해당 체크리스트가 연결되어 있는지 중복 검증
-	// 	boolean alreadyExists = propertyChecklistMapper.existsByPropertyIdAndChecklistId(propertyId, checklistId);
-	// 	if (alreadyExists) {
-	// 		// 이미 연결된 경우 예외 처리 (예: 409 Conflict)
-	// 		throw new CustomException(ErrorCode.ALREADY_EXISTS);
-	// 	}
-	//
-	// 	// 3. 검증 통과 후, Property_Checklist 테이블에 데이터 삽입
-	// 	propertyChecklistMapper.insertPropertyChecklist(propertyId, checklistId);
-	// }
-
 	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (이미 생성된 매물 체크리스트가 있으면 → 그 체크리스트 조회)
 	@Transactional(readOnly = true)
 	@Override
 	public List<ChecklistItemDTO> getPersonalizedChecklistForProperty(Long userId, Long propertyId) {
-		// 1. Property_Checklist 테이블에서 이 매물(propertyId)과 사용자(userId)에게
-		//    연결된 체크리스트 ID를 찾습니다.
+		// 1. Property_Checklist 테이블에서 이 매물(propertyId)과 사용자(userId)에게 연결된 체크리스트 ID를 찾는다.
 		Long checklistId = propertyChecklistMapper.findChecklistIdByPropertyAndUser(propertyId, userId);
 
-		// 2. 만약 연결된 체크리스트가 없다면 (null), 빈 리스트를 반환합니다.
+		// 2. 만약 연결된 체크리스트가 없다면 (null), 빈 리스트를 반환한다.
 		if (checklistId == null) {
 			return Collections.emptyList();
 		}
 
-		// 3. 연결된 checklistId를 찾았다면, 해당 ID를 이용해 모든 아이템을 조회하여 반환합니다.
-		//    (보안을 위해 userId로 다시 한번 소유권을 확인하는 것이 좋습니다.)
+		// 3. 연결된 checklistId를 찾았을 경우, 해당 ID를 이용해 모든 옵션을 조회하여 반환한다.
+		//    (보안을 위해 userId로 다시 한번 소유권을 확인)
 		return propertyChecklistMapper.findChecklistItemsByChecklistIdAndUser(checklistId, userId);
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
 	@Transactional
 	@Override
-	public void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates) {
-		Objects.requireNonNull(userId, "userId must not be null");
-		Objects.requireNonNull(checklistId, "checklistId must not be null");
-		Objects.requireNonNull(updates, "updates must not be null");
-
-		// 로그 추가: 메서드 시작 시 주요 파라미터 값 출력
-		log.info("Starting updateChecklistItems. userId: {}, checklistId: {}, updates count: {}", userId, checklistId, updates.size());
-
-		for (ChecklistItemUpdateRequestDTO update : updates) {
-			// 로그 추가: 각 아이템 업데이트 직전에 파라미터 값 출력
-			log.info("Attempting to update checklist item. checklistItemId: {}, isChecked: {}", update.getChecklistItemId(), update.isChecked());
-
-			propertyChecklistMapper.updateChecklistItemIsChecked(userId, checklistId, update.getChecklistItemId(),
-				update.isChecked());
-
-			// MyBatis 업데이트 결과 로그 출력
-			// 이 부분은 MyBatis 설정을 통해 확인할 수 있으므로, 별도의 로그 코드를 추가하지 않아도 됩니다.
+	public void updateChecklistItems(Long userId, Long propertyId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates) {
+		if (updates == null || updates.isEmpty()) {
+			return; // 업데이트할 내용이 없으면 종료
 		}
-		log.info("Finished updateChecklistItems for checklistId: {}", checklistId);
+
+		// 업데이트 목록 전체를 매퍼 메서드에 한 번에 전달
+		propertyChecklistMapper.batchUpdateItemIsChecked(userId, checklistId, updates);
 	}
 }
