@@ -1,11 +1,13 @@
 package org.livin.property.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
 import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
+import org.livin.property.dto.ChecklistCloneRequest;
 import org.livin.property.dto.ChecklistItemDTO;
 import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
 import org.livin.property.dto.ChecklistTitleDTO;
@@ -199,7 +201,22 @@ public class PropertyController {
 		return ResponseEntity.ok(list);
 	}
 
-	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
+	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (아직 없으면 → 체크리스트 '복제' 기능을 통해 새로 생성)
+	@PostMapping("/properties/{propertyId}/checklists")
+	public ResponseEntity<Map<String, Long>> cloneChecklistForProperty(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long propertyId,
+		@RequestBody ChecklistCloneRequest request
+	) {
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		Long newChecklistId = propertyService.cloneChecklistForProperty(userId, propertyId, request.getSourceChecklistId());
+
+		// 성공 시, 새로 생성된 체크리스트의 ID를 반환
+		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("newChecklistId", newChecklistId));
+	}
+
+	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (이미 생성된 매물 체크리스트가 있으면 → 그 체크리스트 조회)
 	@GetMapping("/properties/{propertyId}/checklist/{checklistId}/items")
 	public ResponseEntity<List<ChecklistItemDTO>> getChecklistItems(
 		@AuthenticationPrincipal CustomUserDetails userDetails,

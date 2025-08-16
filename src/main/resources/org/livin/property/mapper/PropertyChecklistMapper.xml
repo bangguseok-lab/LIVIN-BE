@@ -16,6 +16,41 @@
         ORDER BY created_at DESC
     </select>
 
+    <select id="existsByPropertyIdAndChecklistId" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM Property_Checklist
+            WHERE property_id = #{propertyId}
+              AND checklist_id = #{checklistId}
+        )
+    </select>
+
+    <insert id="insertPropertyChecklist">
+        INSERT INTO Property_Checklist (property_id, checklist_id)
+        VALUES (#{propertyId}, #{checklistId})
+    </insert>
+
+    <select id="findChecklistByIdAndUserId" resultType="org.livin.property.entity.ChecklistVO">
+        SELECT * FROM Checklist WHERE checklist_id = #{checklistId} AND user_id = #{userId}
+    </select>
+
+    <select id="findItemsByChecklistId" resultType="org.livin.property.entity.ChecklistItemVO">
+        SELECT * FROM ChecklistItem WHERE checklist_id = #{checklistId}
+    </select>
+
+    <insert id="insertAndGetId" useGeneratedKeys="true" keyProperty="checklistId">
+        INSERT INTO Checklist (user_id, title, description, type, created_at, updated_at)
+        VALUES (#{userId}, #{title}, #{description}, #{type}, NOW(), NOW())
+    </insert>
+
+    <insert id="batchInsertItems" parameterType="java.util.List">
+        INSERT INTO ChecklistItem (checklist_id, keyword, is_active, is_checked, type)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.checklistId}, #{item.keyword}, #{item.isActive}, #{item.isChecked}, #{item.type})
+        </foreach>
+    </insert>
+
     <select id="selectChecklistItemsForProperty"
             parameterType="map"
             resultType="org.livin.property.dto.ChecklistItemDTO">

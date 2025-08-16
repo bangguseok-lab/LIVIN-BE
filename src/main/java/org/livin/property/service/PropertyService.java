@@ -39,6 +39,8 @@ public interface PropertyService {
 
 	List<ChecklistTitleDTO> getChecklistTitlesByUserId(Long userId);
 
+	Long cloneChecklistForProperty(Long userId, Long propertyId, Long sourceChecklistId);
+
 	List<ChecklistItemDTO> getChecklistItemsForProperty(Long userId, Long propertyId, Long checklistId);
 
 	void updateChecklistItems(Long userId, Long checklistId, List<ChecklistItemUpdateRequestDTO> updates);

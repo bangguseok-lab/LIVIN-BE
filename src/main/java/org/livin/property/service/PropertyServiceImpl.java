@@ -26,6 +26,8 @@ import org.livin.property.dto.PropertyImgRequestDTO;
 import org.livin.property.dto.PropertyRequestDTO;
 import org.livin.property.dto.PropertyTemporaryDTO;
 import org.livin.property.entity.BuildingVO;
+import org.livin.property.entity.ChecklistItemVO;
+import org.livin.property.entity.ChecklistVO;
 import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
@@ -348,6 +350,119 @@ public class PropertyServiceImpl implements PropertyService {
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+
+	@Transactional
+	@Override
+	public Long cloneChecklistForProperty(Long userId, Long propertyId, Long sourceChecklistId) {
+		log.info(">> 체크리스트 복제 시작: userId={}, propertyId={}, sourceChecklistId={}", userId, propertyId, sourceChecklistId);
+
+		// 1. 원본 데이터 조회
+		// 원본 체크리스트가 사용자의 소유인지 확인하며 조회
+		ChecklistVO sourceChecklist = propertyChecklistMapper.findChecklistByIdAndUserId(sourceChecklistId, userId);
+		if (sourceChecklist == null) {
+			throw new CustomException(ErrorCode.FORBIDDEN);   // 내 템플릿이 아니면 거부
+		}
+		// 원본 체크리스트의 아이템들 조회
+		List<ChecklistItemVO> sourceItems = propertyChecklistMapper.findItemsByChecklistId(sourceChecklistId);
+
+		// 2. Checklist 복제 및 삽입
+		ChecklistVO newChecklist = new ChecklistVO();
+
+		newChecklist.setUserId(userId);
+		newChecklist.setTitle(sourceChecklist.getTitle());
+		newChecklist.setDescription(sourceChecklist.getDescription());
+		newChecklist.setType(sourceChecklist.getType());
+
+		// 복제된 Checklist를 DB에 삽입하고, 생성된 PK(ID)를 newChecklist 객체에 받아옴
+		propertyChecklistMapper.insertAndGetId(newChecklist);
+		Long newChecklistId = newChecklist.getChecklistId();
+		log.info("새로운 체크리스트 생성 완료: newChecklistId={}", newChecklistId);
+
+		// 3. ChecklistItem 복제 및 삽입
+		if (sourceItems != null && !sourceItems.isEmpty()) {
+			// 복제할 아이템들을 담을 리스트 생성
+			List<ChecklistItemVO> newItems = new ArrayList<>();
+			for (ChecklistItemVO sourceItem : sourceItems) {
+				ChecklistItemVO newItem = new ChecklistItemVO();
+				newItem.setChecklistId(newChecklistId); // 새로 생성된 Checklist ID 설정
+				newItem.setKeyword(sourceItem.getKeyword());
+				newItem.setIsActive(sourceItem.getIsActive());
+				newItem.setIsChecked(false); // 복사본의 체크 상태는 항상 false로 초기화
+				newItem.setType(sourceItem.getType());
+				newItems.add(newItem);
+			}
+			// 복제된 아이템들을 DB에 Batch Insert
+			propertyChecklistMapper.batchInsertItems(newItems);
+			log.info("{}개의 체크리스트 아이템 복제 완료", newItems.size());
+		}
+
+		// === 4. (핵심) Property_Checklist 테이블에 연결 ===
+		// 이전에 만든 연결용 메서드를 재사용
+		log.info("매물과 새 체크리스트 연결 시작: propertyId={}, newChecklistId={}", propertyId, newChecklistId);
+		propertyChecklistMapper.insertPropertyChecklist(propertyId, newChecklistId);
+
+		// 새로 생성된 체크리스트 ID 반환
+		log.info("<< 체크리스트 복제 및 연결 전체 과정 성공");
+		return newChecklistId;
+	}
+
+
+	// @Transactional
+	// @Override
+	// public void linkChecklistToProperty(Long userId, Long propertyId, Long checklistId) {
+	// 	// ✅ {} 플레이스홀더를 사용하면 성능에 이점이 있습니다.
+	// 	log.info(">> 매물-체크리스트 연결 시작: userId={}, propertyId={}, checklistId={}", userId, propertyId, checklistId);
+	//
+	// 	Objects.requireNonNull(userId, "userId must not be null");
+	// 	Objects.requireNonNull(propertyId, "propertyId must not be null");
+	// 	Objects.requireNonNull(checklistId, "checklistId must not be null");
+	//
+	// 	log.info("1. 소유권 검증 시작...");
+	// 	boolean isOwner = propertyChecklistMapper.isChecklistOwnedByUser(userId, checklistId);
+	// 	if (!isOwner) {
+	// 		log.warn("소유권 검증 실패: userId={}는 checklistId={}의 소유자가 아님", userId, checklistId);
+	// 		throw new CustomException(ErrorCode.FORBIDDEN);
+	// 	}
+	// 	log.info("소유권 검증 통과");
+	//
+	// 	log.info("2. 중복 연결 검증 시작...");
+	// 	boolean alreadyExists = propertyChecklistMapper.existsByPropertyIdAndChecklistId(propertyId, checklistId);
+	// 	if (alreadyExists) {
+	// 		log.warn("중복 연결 발견: propertyId={}와 checklistId={}는 이미 연결되어 있음", propertyId, checklistId);
+	// 		throw new CustomException(ErrorCode.ALREADY_EXISTS);
+	// 	}
+	// 	log.info("중복 연결 없음 확인");
+	//
+	// 	log.info("3. 데이터 삽입 시작...");
+	// 	propertyChecklistMapper.insertPropertyChecklist(propertyId, checklistId);
+	// 	log.info("<< 매물-체크리스트 연결 성공");
+	// }
+
+	// @Transactional
+	// @Override
+	// public void linkChecklistToProperty(Long userId, Long propertyId, Long checklistId) {
+	// 	Objects.requireNonNull(userId, "userId must not be null");
+	// 	Objects.requireNonNull(propertyId, "propertyId must not be null");
+	// 	Objects.requireNonNull(checklistId, "checklistId must not be null");
+	//
+	// 	// 1. 해당 체크리스트가 사용자의 소유인지 권한 검증
+	// 	boolean isOwner = propertyChecklistMapper.isChecklistOwnedByUser(userId, checklistId);
+	// 	if (!isOwner) {
+	// 		// 내 체크리스트가 아니면 예외 처리 (예: 403 Forbidden)
+	// 		throw new CustomException(ErrorCode.FORBIDDEN);
+	// 	}
+	//
+	// 	// 2. 이미 매물에 해당 체크리스트가 연결되어 있는지 중복 검증
+	// 	boolean alreadyExists = propertyChecklistMapper.existsByPropertyIdAndChecklistId(propertyId, checklistId);
+	// 	if (alreadyExists) {
+	// 		// 이미 연결된 경우 예외 처리 (예: 409 Conflict)
+	// 		throw new CustomException(ErrorCode.ALREADY_EXISTS);
+	// 	}
+	//
+	// 	// 3. 검증 통과 후, Property_Checklist 테이블에 데이터 삽입
+	// 	propertyChecklistMapper.insertPropertyChecklist(propertyId, checklistId);
+	// }
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
 	@Transactional(readOnly = true)
