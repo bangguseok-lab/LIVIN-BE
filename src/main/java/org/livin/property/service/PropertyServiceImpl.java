@@ -21,6 +21,7 @@ import org.livin.global.s3.service.S3ServiceImpl;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.ManagementDTO;
 import org.livin.property.dto.OptionDTO;
+import org.livin.property.dto.PersonalizedChecklistDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.dto.PropertyImgRequestDTO;
@@ -433,18 +434,21 @@ public class PropertyServiceImpl implements PropertyService {
 	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (이미 생성된 매물 체크리스트가 있으면 → 그 체크리스트 조회)
 	@Transactional(readOnly = true)
 	@Override
-	public List<ChecklistItemDTO> getPersonalizedChecklistForProperty(Long userId, Long propertyId) {
+	public PersonalizedChecklistDTO getPersonalizedChecklistForProperty(Long userId, Long propertyId) {
 		// 1. Property_Checklist 테이블에서 이 매물(propertyId)과 사용자(userId)에게 연결된 체크리스트 ID를 찾는다.
 		Long checklistId = propertyChecklistMapper.findChecklistIdByPropertyAndUser(propertyId, userId);
 
 		// 2. 만약 연결된 체크리스트가 없다면 (null), 빈 리스트를 반환한다.
 		if (checklistId == null) {
-			return Collections.emptyList();
+			return null;
 		}
 
-		// 3. 연결된 checklistId를 찾았을 경우, 해당 ID를 이용해 모든 옵션을 조회하여 반환한다.
-		//    (보안을 위해 userId로 다시 한번 소유권을 확인)
-		return propertyChecklistMapper.findChecklistItemsByChecklistIdAndUser(checklistId, userId);
+		// 3. checklistId로 제목과 아이템 목록을 각각 조회한다.
+		String title = propertyChecklistMapper.findChecklistTitleById(checklistId);
+		List<ChecklistItemDTO> items = propertyChecklistMapper.findChecklistItemsByChecklistIdAndUser(checklistId, userId);
+
+		// 4. 새로 만든 DTO에 모든 정보를 담아 반환한다.
+		return new PersonalizedChecklistDTO(checklistId, title, items);
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정

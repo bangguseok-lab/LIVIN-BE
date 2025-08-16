@@ -13,6 +13,7 @@ import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
 import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.OptionDTO;
+import org.livin.property.dto.PersonalizedChecklistDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.dto.PropertyRequestDTO;
@@ -218,17 +219,21 @@ public class PropertyController {
 
 	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (이미 생성된 매물 체크리스트가 있으면 → 그 체크리스트 조회)
 	@GetMapping("/properties/{propertyId}/checklist")
-	public ResponseEntity<List<ChecklistItemDTO>> getPersonalizedChecklistForProperty(
+	public ResponseEntity<PersonalizedChecklistDTO> getPersonalizedChecklistForProperty(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long propertyId
 	) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
-		List<ChecklistItemDTO> items = propertyService.getPersonalizedChecklistForProperty(userId, propertyId);
+		PersonalizedChecklistDTO checklistDTO = propertyService.getPersonalizedChecklistForProperty(userId, propertyId);
 
-		// 프론트엔드는 이 응답이 비어있는지 여부로
-		// 기존 체크리스트를 보여줄지, 새로 생성하는 화면을 보여줄지 결정할 수 있다.
-		return ResponseEntity.ok(items);
+		// 서비스 결과가 null이면 (연결된 체크리스트가 없으면) 200 OK와 빈 Body를 반환할 수 있습니다.
+		// 프론트엔드는 응답 body가 비었는지 여부로 분기 처리합니다.
+		if (checklistDTO == null) {
+			return ResponseEntity.ok().build();
+		}
+
+		return ResponseEntity.ok(checklistDTO);
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정

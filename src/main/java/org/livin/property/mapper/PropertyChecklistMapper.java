@@ -40,6 +40,9 @@ public interface PropertyChecklistMapper {
 
 	// ====================================================================================
 
+	// 체크리스트 ID로 제목 조회
+	String findChecklistTitleById(@Param("checklistId") Long checklistId);
+
 	// Property_Checklist 테이블에서 이 매물(propertyId)과 사용자(userId)에게 연결된 체크리스트 ID를 찾는다.
 	Long findChecklistIdByPropertyAndUser(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
 

@@ -69,6 +69,11 @@
 
 <!--  ===========================================================================================  -->
 
+    <!--체크리스트 ID로 제목 조회-->
+    <select id="findChecklistTitleById" resultType="string">
+        SELECT title FROM Checklist WHERE checklist_id = #{checklistId}
+    </select>
+
     <!--두 개의 새 select 메서드 선언 추가-->
     <select id="findChecklistIdByPropertyAndUser" resultType="long">
         SELECT
