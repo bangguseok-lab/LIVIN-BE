@@ -370,7 +370,8 @@ public class PropertyServiceImpl implements PropertyService {
 		ChecklistVO newChecklist = new ChecklistVO();
 
 		newChecklist.setUserId(userId);
-		newChecklist.setTitle(sourceChecklist.getTitle());
+		// String.format을 이용해 '체크리스트 템플릿 제목(propertyId)' 형식으로 새 제목을 설정합니다.
+		newChecklist.setTitle(String.format("%s(%d)", sourceChecklist.getTitle(), propertyId));
 		newChecklist.setDescription(sourceChecklist.getDescription());
 		newChecklist.setType(sourceChecklist.getType());
 
