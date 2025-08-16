@@ -38,11 +38,12 @@ public interface PropertyChecklistMapper {
 
 	// ====================================================================================
 
-	List<ChecklistItemDTO> selectChecklistItemsForProperty(
-		@Param("userId") Long userId,
-		@Param("propertyId") Long propertyId,
-		@Param("checklistId") Long checklistId
-	);
+	// ✅ 두 개의 새 select 메서드 선언 추가
+	Long findChecklistIdByPropertyAndUser(@Param("propertyId") Long propertyId, @Param("userId") Long userId);
+
+	List<ChecklistItemDTO> findChecklistItemsByChecklistIdAndUser(@Param("checklistId") Long checklistId, @Param("userId") Long userId);
+
+	// ====================================================================================
 
 	void updateChecklistItemIsChecked(
 		@Param("userId") Long userId,

@@ -217,16 +217,19 @@ public class PropertyController {
 	}
 
 	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (이미 생성된 매물 체크리스트가 있으면 → 그 체크리스트 조회)
-	@GetMapping("/properties/{propertyId}/checklist/{checklistId}/items")
-	public ResponseEntity<List<ChecklistItemDTO>> getChecklistItems(
+	@GetMapping("/properties/{propertyId}/checklist")
+	public ResponseEntity<List<ChecklistItemDTO>> getPersonalizedChecklistForProperty(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PathVariable Long propertyId,
-		@PathVariable Long checklistId
+		@PathVariable Long propertyId
 	) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
-		// 서비스 호출 시 propertyId 전달
-		return ResponseEntity.ok(propertyService.getChecklistItemsForProperty(userId, propertyId, checklistId));
+		// 새 서비스 메서드 호출
+		List<ChecklistItemDTO> items = propertyService.getPersonalizedChecklistForProperty(userId, propertyId);
+
+		// 프론트엔드는 이 응답이 비어있는지 여부로
+		// 기존 체크리스트를 보여줄지, 새로 생성하는 화면을 보여줄지 결정할 수 있습니다.
+		return ResponseEntity.ok(items);
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정

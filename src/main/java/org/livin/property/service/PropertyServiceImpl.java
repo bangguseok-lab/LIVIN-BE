@@ -3,6 +3,7 @@ package org.livin.property.service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -465,22 +466,22 @@ public class PropertyServiceImpl implements PropertyService {
 	// 	propertyChecklistMapper.insertPropertyChecklist(propertyId, checklistId);
 	// }
 
-	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
+	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (이미 생성된 매물 체크리스트가 있으면 → 그 체크리스트 조회)
 	@Transactional(readOnly = true)
 	@Override
-	public List<ChecklistItemDTO> getChecklistItemsForProperty(Long userId, Long propertyId, Long checklistId) {
-		Objects.requireNonNull(userId, "userId must not be null");
-		Objects.requireNonNull(propertyId, "propertyId must not be null");
-		Objects.requireNonNull(checklistId, "checklistId must not be null");
+	public List<ChecklistItemDTO> getPersonalizedChecklistForProperty(Long userId, Long propertyId) {
+		// 1. Property_Checklist 테이블에서 이 매물(propertyId)과 사용자(userId)에게
+		//    연결된 체크리스트 ID를 찾습니다.
+		Long checklistId = propertyChecklistMapper.findChecklistIdByPropertyAndUser(propertyId, userId);
 
-		// 매퍼 메서드 호출
-		List<ChecklistItemDTO> items = propertyChecklistMapper.selectChecklistItemsForProperty(userId, propertyId, checklistId);
-
-		if (items.isEmpty()) {
-			// 정책에 따라 404(없음) 또는 403(권한 없음) 반환
-			// throw new CustomException(ErrorCode.NOT_FOUND);
+		// 2. 만약 연결된 체크리스트가 없다면 (null), 빈 리스트를 반환합니다.
+		if (checklistId == null) {
+			return Collections.emptyList();
 		}
-		return items;
+
+		// 3. 연결된 checklistId를 찾았다면, 해당 ID를 이용해 모든 아이템을 조회하여 반환합니다.
+		//    (보안을 위해 userId로 다시 한번 소유권을 확인하는 것이 좋습니다.)
+		return propertyChecklistMapper.findChecklistItemsByChecklistIdAndUser(checklistId, userId);
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
