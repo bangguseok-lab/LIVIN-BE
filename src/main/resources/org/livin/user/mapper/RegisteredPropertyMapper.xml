@@ -2,7 +2,41 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.livin.user.mapper.RegisteredPropertyMapper">
 
-    <select id="selectMyProperties" resultType="org.livin.property.entity.PropertyVO">
+    <resultMap id="MyPropertyResultMap" type="org.livin.property.entity.PropertyVO">
+        <id property="propertyId" column="property_id"/>
+        <result property="name" column="name"/>
+        <result property="detailAddress" column="detail_address"/>
+        <result property="jeonseDeposit" column="jeonse_deposit"/>
+        <result property="monthlyDeposit" column="monthly_deposit"/>
+        <result property="monthlyRent" column="monthly_rent"/>
+        <result property="propertyType" column="property_type"/>
+        <result property="transactionType" column="transaction_type"/>
+        <result property="supplyAreaM2" column="supply_area_m2"/>
+        <result property="exclusiveAreaM2" column="exclusive_area_m2"/>
+        <result property="floor" column="floor"/>
+        <result property="numRoom" column="num_room"/>
+        <result property="numBathrooms" column="num_bathrooms"/>
+        <result property="mainDirection" column="main_direction"/>
+        <result property="duplexStructure" column="duplex_structure"/>
+        <result property="moveInDate" column="move_in_date"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="sido" column="sido"/>
+        <result property="sigungu" column="sigungu"/>
+        <result property="eupmyendong" column="eupmyendong"/>
+        <result property="propertyNum" column="property_num"/>
+        <result property="pet" column="pet"/>
+        <result property="loan" column="loan"/>
+        <result property="buildingId" column="building_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="isSafe" column="is_safe"/>
+        <result property="isFavorite" column="is_favorite"/> <result property="savedAt" column="saved_at"/>
+        <result property="totalFloors" column="total_floors"/>
+        <result property="roadAddress" column="road_address"/>
+    </resultMap>
+
+    <select id="selectMyProperties" resultMap="MyPropertyResultMap">
         SELECT
             p.property_id,
             p.name,
@@ -64,4 +98,168 @@
             property_id = #{propertyId} AND user_id = #{userId}
     </delete>
 
+    <update id="updatePropertyDetails" parameterType="org.livin.user.dto.EditPropertyDTO">
+        UPDATE Property
+        <set>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="transactionType eq '전세'">
+                jeonse_deposit = #{jeonseDeposit},
+                monthly_deposit = NULL,
+                monthly_rent = NULL,
+            </if>
+            <if test="transactionType eq '월세'">
+                monthly_deposit = #{monthlyDeposit},
+                monthly_rent = #{monthlyRent},
+                jeonse_deposit = NULL,
+            </if>
+            updated_at = NOW()
+        </set>
+        WHERE property_id = #{propertyId}
+    </update>
+
+    <select id="getUserIdByPropertyId" resultType="long">
+        SELECT user_id
+        FROM Property
+        WHERE property_id = #{propertyId}
+    </select>
+
+    <resultMap id="propertyDetailsResultMap" type="org.livin.property.entity.PropertyDetailsVO">
+        <id column="p_id" property="propertyId"/>
+        <result column="name" property="name"/>
+        <result column="detail_address" property="detailAddress"/>
+        <result column="jeonse_deposit" property="jeonseDeposit"/>
+        <result column="monthly_deposit" property="monthlyDeposit"/>
+        <result column="monthly_rent" property="monthlyRent"/>
+        <result column="property_type" property="propertyType"/>
+        <result column="transaction_type" property="transactionType"/>
+        <result column="supply_area_m2" property="supplyAreaM2"/>
+        <result column="exclusive_area_m2" property="exclusiveAreaM2"/>
+        <result column="floor" property="floor"/>
+        <result column="num_room" property="numRoom"/>
+        <result column="num_bathrooms" property="numBathrooms"/>
+        <result column="main_direction" property="mainDirection"/>
+        <result column="duplex_structure" property="duplexStructure"/>
+        <result column="move_in_date" property="moveInDate"/>
+        <result column="description" property="description"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="sido" property="sido"/>
+        <result column="sigungu" property="sigungu"/>
+        <result column="eupmyendong" property="eupmyendong"/>
+        <result column="property_num" property="propertyNum"/>
+        <result column="pet" property="pet"/>
+        <result column="loan" property="loan"/>
+        <association property="favoritePropertyVO" javaType="org.livin.property.entity.FavoritePropertyVO">
+            <result column="property_id" property="propertyId"/>
+            <result column="user_id" property="userId"/>
+        </association>
+        <association property="buildingVO" javaType="org.livin.property.entity.BuildingVO">
+            <result column="building_id" property="buildingId"/>
+            <result column="total_floors" property="totalFloors"/>
+            <result column="num_parking" property="numParking"/>
+            <result column="parking" property="parking"/>
+            <result column="elevator" property="elevator"/>
+            <result column="entrance_structure" property="entranceStructure"/>
+            <result column="heating_type" property="heatingType"/>
+            <result column="heating_fuel" property="heatingFuel"/>
+            <result column="total_unit" property="totalUnit"/>
+            <result column="completion_year" property="completionYear"/>
+            <result column="post_code" property="postcode"/>
+            <result column="road_address" property="roadAddress"/>
+        </association>
+        <association property="riskAnalysisVO" javaType="org.livin.risk.entity.RiskAnalysisVO">
+            <result column="riskanalysis_id" property="riskAnalysisId"/>
+            <result column="is_safe" property="isSafe"/>
+            <result column="floating_charge" property="floatingCharge"/>
+            <result column="check_landlord" property="checkLandlord"/>
+            <result column="injustice_building" property="injusticeBuilding"/>
+            <result column="jeonse_ratio" property="jeonseRatio"/>
+        </association>
+        <collection property="managementVOList" ofType="org.livin.property.entity.ManagementVO">
+            <result column="management_type" property="managementType"/>
+            <result column="management_fee" property="managementFee"/>
+            <result column="exclude_include" property="excludeInclude"/>
+        </collection>
+        <collection property="propertyImageVOList" ofType="org.livin.property.entity.PropertyImageVO">
+            <result column="image_url" property="imageUrl"/>
+            <result column="represent" property="represent"/>
+        </collection>
+        <collection property="optionVOList" ofType="org.livin.property.entity.OptionVO">
+            <result column="option_id" property="optionId"/>
+            <result column="option_type" property="optionType"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectPropertyDetails" resultMap="propertyDetailsResultMap">
+        SELECT p.property_id      AS p_id,
+               p.name,
+               p.detail_address,
+               p.jeonse_deposit,
+               p.monthly_deposit,
+               p.monthly_rent,
+               p.property_type,
+               p.transaction_type,
+               p.supply_area_m2,
+               p.exclusive_area_m2,
+               p.floor,
+               p.num_room,
+               p.num_bathrooms,
+               p.main_direction,
+               p.duplex_structure,
+               p.move_in_date,
+               p.description,
+               p.created_at,
+               p.updated_at,
+               p.sido,
+               p.sigungu,
+               p.eupmyendong,
+               p.property_num,
+               p.pet,
+               p.loan,
+
+               fp.property_id     AS favorite_property_id,
+               fp.user_id,
+
+               b.building_id,
+               b.total_floors,
+               b.num_parking,
+               b.parking,
+               b.elevator,
+               b.entrance_structure,
+               b.heating_type,
+               b.heating_fuel,
+               b.total_unit,
+               b.completion_year,
+               b.postcode         AS post_code,
+               b.road_address,
+
+               ra.riskAnalysis_id AS riskanalysis_id,
+               ra.is_safe,
+               ra.floating_charge,
+               ra.check_landlord,
+               ra.injustice_building,
+               ra.jeonse_ratio,
+
+               m.management_type,
+               m.management_fee,
+               m.exclude_include,
+
+               pi.image_url,
+               pi.represent,
+
+               opt.option_id,
+               opt.option_type
+
+        FROM Property p
+                 LEFT JOIN Building b ON p.building_id = b.building_id
+                 LEFT JOIN riskAnalysis ra ON p.property_id = ra.property_id
+                 LEFT JOIN Management m ON p.property_id = m.property_id
+                 LEFT JOIN PropertyImage pi ON p.property_id = pi.property_id
+                 LEFT JOIN Option_Property op ON p.property_id = op.property_id
+                 LEFT JOIN `Option` opt ON op.option_id = opt.option_id
+                 LEFT JOIN FavoriteProperty fp ON p.property_id = fp.property_id AND fp.user_id = #{userId}
+        WHERE p.property_id = #{propertyId}
+    </select>
 </mapper>

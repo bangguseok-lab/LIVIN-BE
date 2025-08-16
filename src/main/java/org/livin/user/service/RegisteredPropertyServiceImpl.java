@@ -1,15 +1,17 @@
 package org.livin.user.service;
 
-import lombok.RequiredArgsConstructor; // 추가
-import lombok.extern.log4j.Log4j2; // 추가
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
 import org.livin.property.dto.PropertyDTO;
+import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
-import org.livin.property.mapper.PropertyMapper; // 추가
+import org.livin.property.entity.PropertyDetailsVO;
+import org.livin.property.mapper.PropertyMapper;
+import org.livin.user.dto.EditPropertyDTO;
 import org.livin.user.mapper.RegisteredPropertyMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +20,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor // 생성자 주입을 위한 Lombok 어노테이션 추가
-@Log4j2 // Log4j2를 사용하기 위한 어노테이션 추가
+@RequiredArgsConstructor
+@Log4j2
 public class RegisteredPropertyServiceImpl implements RegisteredPropertyService {
 
-	private final RegisteredPropertyMapper registeredPropertyMapper; // Mapper 의존성 주입
-	private final PropertyMapper propertyMapper; // 이미지 조회를 위한 Mapper 의존성 주입
+	private final RegisteredPropertyMapper registeredPropertyMapper;
+	private final PropertyMapper propertyMapper;
 
 	@Override
 	public List<PropertyDTO> getMyProperties(Long userId) {
@@ -35,7 +37,6 @@ public class RegisteredPropertyServiceImpl implements RegisteredPropertyService 
 
 		List<PropertyVO> propertyVOList = registeredPropertyMapper.selectMyProperties(userId);
 
-		// 각 매물에 썸네일 이미지 주입
 		for (PropertyVO property : propertyVOList) {
 			List<PropertyImageVO> images = propertyMapper.selectThumbnailImageByPropertyId(property.getPropertyId());
 			property.setImages(images);
@@ -69,5 +70,41 @@ public class RegisteredPropertyServiceImpl implements RegisteredPropertyService 
 			throw new CustomException(ErrorCode.NOT_FOUND);
 		}
 		log.info("deleteMyProperty: 매물 {}이 사용자 {}에 의해 성공적으로 삭제되었습니다.", propertyId, userId);
+	}
+
+	@Transactional
+	@Override
+	public PropertyDetailsDTO updatePropertyDetailsAndFetch(EditPropertyDTO editPropertyDTO, Long userId) {
+		log.info("서비스: 사용자 등록 매물 수정 요청 - propertyId: {}, userId: {}", editPropertyDTO.getPropertyId(), userId);
+		if (userId == null) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
+		}
+
+		if (editPropertyDTO.getPropertyId() == null) {
+			throw new CustomException(ErrorCode.BAD_REQUEST);
+		}
+
+		Long ownerId = registeredPropertyMapper.getUserIdByPropertyId(editPropertyDTO.getPropertyId());
+		if (ownerId == null || !ownerId.equals(userId)) {
+			log.warn("updatePropertyDetailsAndFetch: 매물 {}이 사용자 {}의 소유가 아님.", editPropertyDTO.getPropertyId(), userId);
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
+		}
+
+		int updatedRows = registeredPropertyMapper.updatePropertyDetails(editPropertyDTO);
+
+		if (updatedRows == 0) {
+			log.warn("updatePropertyDetailsAndFetch: 매물 {} 업데이트 실패", editPropertyDTO.getPropertyId());
+			throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+		log.info("updatePropertyDetailsAndFetch: 매물 {} 정보가 성공적으로 수정되었습니다.", editPropertyDTO.getPropertyId());
+
+		PropertyDetailsVO updatedVO = registeredPropertyMapper.selectPropertyDetails(editPropertyDTO.getPropertyId(), userId);
+
+		if (updatedVO == null) {
+			log.error("updatePropertyDetailsAndFetch: 수정 후 매물 {} 조회 실패", editPropertyDTO.getPropertyId());
+			throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+
+		return PropertyDetailsDTO.fromPropertyDetailsVO(updatedVO);
 	}
 }
