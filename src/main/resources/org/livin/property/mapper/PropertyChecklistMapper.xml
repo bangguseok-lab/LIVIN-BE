@@ -23,6 +23,19 @@
 
 <!--  ===========================================================================================  -->
 
+    <!--3개의 삭제 메서드 선언 추가-->
+    <delete id="deletePropertyChecklistLink">
+        DELETE FROM Property_Checklist WHERE checklist_id = #{checklistId}
+    </delete>
+
+    <delete id="deleteChecklistItemsByChecklistId">
+        DELETE FROM ChecklistItem WHERE checklist_id = #{checklistId}
+    </delete>
+
+    <delete id="deleteChecklistById">
+        DELETE FROM Checklist WHERE checklist_id = #{checklistId}
+    </delete>
+
     <!--원본 Checklist 조회-->
     <select id="findChecklistByIdAndUserId" resultType="org.livin.property.entity.ChecklistVO">
         SELECT * FROM Checklist WHERE checklist_id = #{checklistId} AND user_id = #{userId}

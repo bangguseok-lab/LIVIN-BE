@@ -18,6 +18,11 @@ public interface PropertyChecklistMapper {
 
 	// ====================================================================================
 
+	// 3개의 삭제 메서드 선언 추가
+	void deletePropertyChecklistLink(@Param("checklistId") Long checklistId);
+	void deleteChecklistItemsByChecklistId(@Param("checklistId") Long checklistId);
+	void deleteChecklistById(@Param("checklistId") Long checklistId);
+
 	// 원본 Checklist 조회
 	ChecklistVO findChecklistByIdAndUserId(@Param("checklistId") Long checklistId, @Param("userId") Long userId);
 

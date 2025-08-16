@@ -357,6 +357,18 @@ public class PropertyServiceImpl implements PropertyService {
 	public Long cloneChecklistForProperty(Long userId, Long propertyId, Long sourceChecklistId) {
 		log.info(">> 체크리스트 복제 시작: userId={}, propertyId={}, sourceChecklistId={}", userId, propertyId, sourceChecklistId);
 
+		// [사전 작업] 이 매물에 이미 연결된 기존 개인화 체크리스트가 있는지 확인하고, 있다면 삭제
+		Long existingChecklistId = propertyChecklistMapper.findChecklistIdByPropertyAndUser(propertyId, userId);
+
+		if (existingChecklistId != null) {
+			log.info("기존에 연결된 체크리스트(ID: {})를 삭제하고 새로 생성합니다.", existingChecklistId);
+
+			// 순서 중요: 외래 키 제약 조건 때문에 자식 테이블 데이터부터 삭제해야 해야 한다.
+			propertyChecklistMapper.deletePropertyChecklistLink(existingChecklistId); 			// 1) Property_Checklist 연결 삭제
+			propertyChecklistMapper.deleteChecklistItemsByChecklistId(existingChecklistId); 	// 2) ChecklistItem 들 삭제
+			propertyChecklistMapper.deleteChecklistById(existingChecklistId); 					// 3) Checklist 본체 삭제
+		}
+
 		// 1. 원본 데이터 조회
 		// 원본 체크리스트가 사용자의 소유인지 확인하며 조회
 		ChecklistVO sourceChecklist = propertyChecklistMapper.findChecklistByIdAndUserId(sourceChecklistId, userId);
