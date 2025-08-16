@@ -151,6 +151,10 @@ public class PropertyServiceImpl implements PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO) {
 		log.info("서비스: 필터링된 관심 매물 조회 요청 - filteringDTO: {}", filteringDTO);
 
+		if (filteringDTO.getChecklistId() != null && !filteringDTO.getChecklistId().isEmpty()) {
+			filteringDTO.setChecklistIdSize(filteringDTO.getChecklistId().size());
+		}
+
 		if (filteringDTO.getUserId() == null) {
 			log.error("getFavoritePropertiesWithFilter: userId가 FilteringDTO에 설정되지 않았습니다.");
 			throw new IllegalArgumentException("사용자 ID가 필요합니다.");

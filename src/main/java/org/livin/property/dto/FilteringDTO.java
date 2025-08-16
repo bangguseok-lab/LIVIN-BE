@@ -1,6 +1,7 @@
 package org.livin.property.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,5 +43,6 @@ public class FilteringDTO {
         this.limit = (limit <= 0) ? 20 : limit;
     }
 
-    private Long checklistId;
+    private List<Long> checklistId;
+    private Integer checklistIdSize;
 }

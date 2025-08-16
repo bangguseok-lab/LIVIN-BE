@@ -86,8 +86,16 @@
     </sql>
 
     <sql id="ChecklistFilterCondition">
-        <if test="checklistId != null">
-            AND pcl.checklist_id = #{checklistId}
+        <if test="checklistId != null and !checklistId.isEmpty()">
+            AND p.property_id IN (
+            SELECT pcl.property_id
+            FROM Property_Checklist pcl
+            WHERE pcl.checklist_id IN
+            <foreach item="id" collection="checklistId" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            GROUP BY pcl.property_id
+            HAVING COUNT(DISTINCT pcl.checklist_id) = #{checklistIdSize}            )
         </if>
     </sql>
 
@@ -178,14 +186,16 @@
         <include refid="SelectPropertyListBase"/>,
         true AS is_favorite,
         f.saved_at
-        FROM Property p
-        LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
-        LEFT JOIN Building b ON p.building_id = b.building_id
-        LEFT JOIN PropertyImage pi ON p.property_id = pi.property_id AND pi.represent = true
-        INNER JOIN FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
-        <if test="checklistId != null">
-            INNER JOIN Property_Checklist pcl ON p.property_id = pcl.property_id
-        </if>
+        FROM
+        Property p
+        INNER JOIN
+        FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
+        LEFT JOIN
+        riskAnalysis r ON p.property_id = r.property_id
+        LEFT JOIN
+        Building b ON p.building_id = b.building_id
+        LEFT JOIN
+        PropertyImage pi ON p.property_id = pi.property_id AND pi.represent = true
         <where>
             1 = 1
             <include refid="RegionFilterCondition"/>
@@ -193,10 +203,7 @@
             <include refid="ChecklistFilterCondition"/>
 
             <if test="lastId != null and lastCreatedAt != null">
-                AND (
-                f.saved_at &lt; #{lastCreatedAt}
-                OR (f.saved_at = #{lastCreatedAt} AND p.property_id &lt; #{lastId})
-                )
+                AND (f.saved_at &lt; #{lastCreatedAt} OR (f.saved_at = #{lastCreatedAt} AND p.property_id &lt; #{lastId}))
             </if>
         </where>
         ORDER BY f.saved_at DESC, p.property_id DESC
