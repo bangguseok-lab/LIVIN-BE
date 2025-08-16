@@ -3,6 +3,7 @@ package org.livin.config;
 import javax.servlet.Filter;
 
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
@@ -11,16 +12,24 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 		return new Class[] {RootConfig.class, RedisConfig.class, SecurityConfig.class, S3Config.class};
 	}
 
-	@Override
-	protected Class<?>[] getServletConfigClasses() {
-		return new Class[] {ServletConfig.class};
-	}
 
-	// 스프링의 FrontController인 DispatcherServlet이 담당할 Url 매핑 패턴, / : 모든 요청에 대해 매핑
-	@Override
-	protected String[] getServletMappings() {
-		return new String[] {"/"};
-	}
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{ServletConfig.class, SwaggerConfig.class};
+    }
+
+    // 스프링의 FrontController인 DispatcherServlet이 담당할 Url 매핑 패턴, / : 모든 요청에 대해 매핑
+    @Override
+    protected String[] getServletMappings() {
+            return new String[]{
+                "/",
+                "/swagger-ui.html",
+                "/swagger-resources/**",
+                "/v2/api-docs",
+                "/webjars/**"
+            };
+    }
+
 
 	// POST body 문자 인코딩 필터 설정- UTF-8 설정
 	protected Filter[] getServletFilters() {

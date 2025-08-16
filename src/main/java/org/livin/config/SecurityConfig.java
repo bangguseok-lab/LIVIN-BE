@@ -29,11 +29,11 @@ import javax.annotation.PostConstruct;
 
 @RequiredArgsConstructor
 @Configuration
-@EnableWebSecurity		// SpringSecurity 설정 활성화, WebSecurityConfigurerAdapter 설정을 적용할 수 있게 함
+@EnableWebSecurity        // SpringSecurity 설정 활성화, WebSecurityConfigurerAdapter 설정을 적용할 수 있게 함
 @ComponentScan(basePackages = {"org.livin.global.jwt", "org.livin.config"})
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private final JwtUtil jwtUtil;	// JWT 토큰 생성, 검증 등의 유틸 클래스
+	private final JwtUtil jwtUtil;    // JWT 토큰 생성, 검증 등의 유틸 클래스
 	private final JwtAuthenticationFilter jwtAuthenticationFilter; // JWT 인증 필터, 사용자의 토큰을 확인 및 인증 객체를 SecurityContextHolder에 저장하는 역할
 
 	@Bean
@@ -41,21 +41,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return configuration.getAuthenticationManager();
 	}
 
-
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
 			.cors().and()
 			.csrf().disable()
 			.authorizeRequests()
-			.antMatchers("/api/auth/**", "/swagger-ui/**").permitAll()	// 인증 없이 접근 허용
+			.antMatchers("/api/auth/**").permitAll()    // 인증 없이 접근 허용
+			.antMatchers(
+				"/swagger-ui/**",
+				"/swagger-ui.html",   // 예전 버전 호환
+				"/v3/api-docs/**",    // OpenAPI 3.0 JSON 문서
+				"/swagger-resources/**",
+				"/webjars/**"
+			).permitAll()
 			.antMatchers("/api/kakao/**", "/api/naver/**", "/api/users/refresh").permitAll()
-			.antMatchers("/api/**").authenticated()	// 반드시 인증(로그인)된 사용자만 접근 가능
-			.anyRequest().permitAll()	// 위에서 지정한 경로 외에는 모두 인증 없이 접근 허용
+			.antMatchers("/api/users/**",
+				"/api/properties/**",
+				"/api/checklists/**",
+				"/api/checklist-filters/**").hasAnyRole("LANDLORD", "TENANT")
+			.antMatchers("/api/**").authenticated()    // 반드시 인증(로그인)된 사용자만 접근 가능
+			.anyRequest().permitAll()    // 위에서 지정한 경로 외에는 모두 인증 없이 접근 허용
 			.and()
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 	}
-
 
 	/**
 	 * CORS 설정 (전역 허용 or 프론트만 허용)
