@@ -13,10 +13,10 @@ import org.livin.global.codef.dto.realestateregister.response.RealEstateRegister
 import org.livin.global.codef.service.CodefService;
 import org.livin.global.exception.CustomException;
 import org.livin.global.exception.ErrorCode;
+import org.livin.global.s3.service.S3ServiceImpl;
 import org.livin.property.dto.ChecklistItemDTO;
 import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
 import org.livin.property.dto.ChecklistTitleDTO;
-import org.livin.global.s3.service.S3ServiceImpl;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.ManagementDTO;
 import org.livin.property.dto.OptionDTO;
@@ -30,7 +30,6 @@ import org.livin.property.entity.OptionVO;
 import org.livin.property.entity.PropertyDetailsVO;
 import org.livin.property.entity.PropertyImageVO;
 import org.livin.property.entity.PropertyVO;
-import org.livin.property.mapper.FavoritePropertyMapper;
 import org.livin.property.mapper.PropertyChecklistMapper;
 import org.livin.property.mapper.PropertyMapper;
 import org.livin.risk.dto.RiskTemporaryDTO;
@@ -263,9 +262,9 @@ public class PropertyServiceImpl implements PropertyService {
 			}
 
 			// 관리비 리스트 처리
-			List<ManagementDTO> managementDTOList = propertyRequestDTO.getManagementDTOList();
-			if (managementDTOList != null && !managementDTOList.isEmpty()) {
-				propertyMapper.createManagement(propertyVO.getPropertyId(), managementDTOList);
+			List<ManagementDTO> managementList = propertyRequestDTO.getManagementList();
+			if (managementList != null && !managementList.isEmpty()) {
+				propertyMapper.createManagement(propertyVO.getPropertyId(), managementList);
 			}
 
 			// 이미지 리스트 처리
@@ -362,11 +361,13 @@ public class PropertyServiceImpl implements PropertyService {
 		Objects.requireNonNull(updates, "updates must not be null");
 
 		// 로그 추가: 메서드 시작 시 주요 파라미터 값 출력
-		log.info("Starting updateChecklistItems. userId: {}, checklistId: {}, updates count: {}", userId, checklistId, updates.size());
+		log.info("Starting updateChecklistItems. userId: {}, checklistId: {}, updates count: {}", userId, checklistId,
+			updates.size());
 
 		for (ChecklistItemUpdateRequestDTO update : updates) {
 			// 로그 추가: 각 아이템 업데이트 직전에 파라미터 값 출력
-			log.info("Attempting to update checklist item. checklistItemId: {}, isChecked: {}", update.getChecklistItemId(), update.isChecked());
+			log.info("Attempting to update checklist item. checklistItemId: {}, isChecked: {}",
+				update.getChecklistItemId(), update.isChecked());
 
 			propertyChecklistMapper.updateChecklistItemIsChecked(userId, checklistId, update.getChecklistItemId(),
 				update.isChecked());

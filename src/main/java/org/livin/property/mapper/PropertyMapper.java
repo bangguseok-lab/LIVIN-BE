@@ -49,7 +49,7 @@ public interface PropertyMapper {
 	void createPropertyOptions(@Param("propertyId") Long propertyId, @Param("optionIdList") List<Long> optionIdList);
 
 	void createManagement(@Param("propertyId") Long propertyId,
-		@Param("managementDTOList") List<ManagementDTO> managementDTOList);
+		@Param("managementList") List<ManagementDTO> managementList);
 
 	void createPropertyImages(@Param("propertyImages") List<PropertyImageVO> propertyImages);
 
