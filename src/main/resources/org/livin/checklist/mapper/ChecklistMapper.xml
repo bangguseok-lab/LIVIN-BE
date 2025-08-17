@@ -153,6 +153,17 @@
           AND livin.ChecklistItem.type = 'CUSTOM'
     </delete>
 
+    <select id="findClonedChecklistIdsByTitle" resultType="long">
+        SELECT checklist_id
+        FROM Checklist
+        WHERE user_id = #{userId} AND title LIKE #{searchPattern}
+    </select>
+
+    <select id="findChecklistTitleById" resultType="string">
+        SELECT title
+        FROM Checklist
+        WHERE checklist_id = #{checklistId}
+    </select>
 
     <!--  특정 체크리스트가 적용된 매물 조회 중 등록순 정렬  -->
     <select id="findChecklistCreatedAtByPropertyId" resultType="java.time.LocalDateTime">
@@ -208,6 +219,16 @@
         b.total_floors,
         b.road_address,
         pi.image_url
+    </sql>
+
+    <sql id="ChecklistFilterCondition">
+        <if test="checklistId != null and checklistId > 0">
+            AND p.property_id IN (
+            SELECT property_id
+            FROM Property_Checklist
+            WHERE checklist_id = #{checklistId}
+            )
+        </if>
     </sql>
 
     <!--  매물 관련 조회해야 하는 테이블 조인 처리  -->
@@ -336,18 +357,30 @@
         SELECT
         <include refid="SelectPropertyListBase"/>,
         CASE WHEN f.user_id IS NOT NULL THEN true ELSE false END AS is_favorite
-        FROM Property_Checklist pc
-        JOIN Property p ON pc.property_id = p.property_id
-        LEFT JOIN riskAnalysis r ON p.property_id = r.property_id
-        LEFT JOIN Building b ON p.building_id = b.building_id
-        LEFT JOIN FavoriteProperty f
-        ON p.property_id = f.property_id
-        AND f.user_id = #{userId}
-        LEFT JOIN PropertyImage pi
-        ON p.property_id = pi.property_id
-        AND pi.represent = true
+
+        FROM
+        Property_Checklist pc
+        JOIN
+        Property p ON pc.property_id = p.property_id
+        LEFT JOIN
+        riskAnalysis r ON p.property_id = r.property_id
+        LEFT JOIN
+        Building b ON p.building_id = b.building_id
+        LEFT JOIN
+        FavoriteProperty f ON p.property_id = f.property_id AND f.user_id = #{userId}
+        LEFT JOIN
+        PropertyImage pi ON p.property_id = pi.property_id AND pi.represent = true
+
         <where>
-            pc.checklist_id = #{checklistId}
+            <if test="clonedChecklistIds != null and !clonedChecklistIds.isEmpty()">
+                pc.checklist_id IN
+                <foreach collection="clonedChecklistIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="clonedChecklistIds == null or clonedChecklistIds.isEmpty()">
+                pc.checklist_id = #{checklistId}
+            </if>
 
             <include refid="FavoritePropertyFilterCondition"/>
             <include refid="TransactionTypeFilterCondition"/>
