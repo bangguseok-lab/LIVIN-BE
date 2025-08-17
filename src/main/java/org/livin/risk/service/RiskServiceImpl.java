@@ -83,15 +83,24 @@ public class RiskServiceImpl implements RiskService {
 	private BuildingInfoDTO requestBuildingInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
 		if (riskAnalysisRequestDTO.isGeneral()) {
 			GeneralBuildingRegisterResponseDTO response = requestGeneralBuildingRegister(riskAnalysisRequestDTO);
-			return BuildingInfoParser.parse(response);
+			if ("CF-00000".equals(response.getResult().getCode())) {
+				return BuildingInfoParser.parse(response);
+			}
+			return BuildingInfoParser.parse();
 		} else {
 			try {
 				BuildingRegisterCollgationResponseDTO response = requestBuildingCollgationRegister(
 					riskAnalysisRequestDTO);
-				return BuildingInfoParser.parse(response);
+				if ("CF-00000".equals(response.getResult().getCode())) {
+					return BuildingInfoParser.parse(response);
+				}
+				return BuildingInfoParser.parse();
 			} catch (Exception e) {
 				SetBuildingRegisterResponseDTO response = requestSetBuildingRegister(riskAnalysisRequestDTO);
-				return BuildingInfoParser.parse(response);
+				if ("CF-00000".equals(response.getResult().getCode())) {
+					return BuildingInfoParser.parse(response);
+				}
+				return BuildingInfoParser.parse();
 			}
 		}
 	}
