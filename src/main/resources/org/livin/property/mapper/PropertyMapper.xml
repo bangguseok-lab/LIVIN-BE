@@ -436,6 +436,10 @@
         <result column="property_num" property="propertyNum"/>
         <result column="pet" property="pet"/>
         <result column="loan" property="loan"/>
+        <association property="landlordVO" javaType="UserVO">
+            <result column="landlord_name" property="name"/>
+            <result column="landlord_phone" property="phone"/>
+        </association>
         <association property="favoritePropertyVO" javaType="org.livin.property.entity.FavoritePropertyVO">
             <result column="property_id" property="propertyId"/>
             <result column="user_id" property="userId"/>
@@ -506,8 +510,12 @@
                p.pet,
                p.loan,
 
+               -- Landlord (User) 테이블 컬럼
+               l.name             AS landlord_name,
+               l.phone            AS landlord_phone,
+
                -- FavoriteProperty 테이블 컬럼
-               fp.property_id     AS favorite_property_id, -- resultMap에 property_id로 매핑될 컬럼
+               fp.property_id     AS favorite_property_id,
                fp.user_id,
 
                -- Building 테이블 컬럼
@@ -546,6 +554,7 @@
                opt.option_type
 
         FROM Property p
+                 LEFT JOIN User l ON p.user_id = l.user_id
                  LEFT JOIN Building b ON p.building_id = b.building_id
                  LEFT JOIN riskAnalysis ra ON p.property_id = ra.property_id
                  LEFT JOIN Management m ON p.property_id = m.property_id

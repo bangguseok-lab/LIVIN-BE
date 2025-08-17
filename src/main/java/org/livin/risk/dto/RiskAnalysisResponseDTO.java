@@ -36,8 +36,11 @@ public class RiskAnalysisResponseDTO {
 		Long maximumBondAmountValue) {
 		Long salePriceValue = riskAnalysisVO.getSalePrice();
 		String floatingCharge;
-		if (salePriceValue == null || salePriceValue == 0L) {
-			floatingCharge = "계산 불가";
+		if (maximumBondAmountValue == 0L) {
+			floatingCharge = "안전";
+		} else if ((salePriceValue == null || salePriceValue == 0L) && (riskAnalysisVO.getMaximumBondAmount()
+			!= null)) {
+			floatingCharge = "?";
 		} else {
 			double debtRatio = (double)(userDepositValue + maximumBondAmountValue) / salePriceValue;
 			long debtPercentage = Math.round(debtRatio * 100);
@@ -45,7 +48,7 @@ public class RiskAnalysisResponseDTO {
 			if (debtPercentage >= 70) {
 				floatingCharge = "위험";
 			} else {
-				floatingCharge = "안전";
+				floatingCharge = debtPercentage + "%";
 			}
 		}
 		return floatingCharge;

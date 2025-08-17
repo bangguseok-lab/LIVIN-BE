@@ -44,6 +44,7 @@ public class PropertyDetailsDTO {
 	private List<PropertyImageDTO> imgUrls;
 	private List<ManagementDTO> management;
 	private List<String> options;
+	private LandlordDTO landlord;
 
 	public static PropertyDetailsDTO fromPropertyDetailsVO(PropertyDetailsVO propertyDetailsVO) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -85,6 +86,7 @@ public class PropertyDetailsDTO {
 			.options(propertyDetailsVO.getOptionVOList().stream()
 				.map(OptionVO::getOptionType)
 				.collect(Collectors.toList()))
+			.landlord(LandlordDTO.fromUserVO(propertyDetailsVO.getLandlordVO()))
 			.build();
 	}
 }

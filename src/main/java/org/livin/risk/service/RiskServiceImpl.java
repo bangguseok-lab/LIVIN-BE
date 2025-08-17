@@ -19,6 +19,7 @@ import org.livin.property.entity.property_enum.AbleStatus;
 import org.livin.property.entity.property_enum.EntranceStructure;
 import org.livin.property.entity.property_enum.HeatingFuel;
 import org.livin.property.entity.property_enum.HeatingType;
+import org.livin.risk.dto.RiskAddressResponseDTO;
 import org.livin.risk.dto.RiskAnalysisRequestDTO;
 import org.livin.risk.dto.RiskAnalysisResponseDTO;
 import org.livin.risk.dto.RiskTemporaryDTO;
@@ -43,7 +44,7 @@ public class RiskServiceImpl implements RiskService {
 	private final UserService userService;
 
 	@Override
-	public void createRiskTemporaryInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
+	public RiskAddressResponseDTO createRiskTemporaryInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO) {
 		try {
 			BuildingInfoDTO buildingInfoDTO = requestBuildingInfo(riskAnalysisRequestDTO);
 			MarketPriceInfoDTO marketPriceInfoDTO = requestMarketPriceInfo(buildingInfoDTO, riskAnalysisRequestDTO);
@@ -66,6 +67,13 @@ public class RiskServiceImpl implements RiskService {
 
 			propertyTemporaryRedisTemplate.opsForValue()
 				.set(riskAnalysisRequestDTO.getCommUniqueNo(), propertyTemporaryDTO);
+
+			return RiskAddressResponseDTO.builder()
+				.sido(buildingInfoDTO.getSido())
+				.sigungu(buildingInfoDTO.getSigungu())
+				.eupmyeondong(buildingInfoDTO.getEupmyeondong())
+				.commUniqueNo(riskAnalysisRequestDTO.getCommUniqueNo())
+				.build();
 		} catch (Exception e) {
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}

@@ -1,11 +1,12 @@
 package org.livin.risk.service;
 
+import org.livin.risk.dto.RiskAddressResponseDTO;
 import org.livin.risk.dto.RiskAnalysisRequestDTO;
 import org.livin.risk.dto.RiskAnalysisResponseDTO;
 import org.livin.risk.entity.RiskAnalysisVO;
 
 public interface RiskService {
-	void createRiskTemporaryInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO);
+	RiskAddressResponseDTO createRiskTemporaryInfo(RiskAnalysisRequestDTO riskAnalysisRequestDTO);
 
 	void deleteRiskTemporaryInfo(String commUniqueNo);
 
