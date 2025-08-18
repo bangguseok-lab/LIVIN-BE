@@ -1,45 +1,70 @@
-  ##📄 docker-compose.yml
+version: '3.8'
 
-  version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: livin
+      MYSQL_USER: ${JDBC_USERNAME}
+      MYSQL_PASSWORD: ${JDBC_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
 
-  services:
-    db:
-      image: mysql:8.0
-      container_name: mysql
-      restart: always
-      environment:
-        MYSQL_ROOT_PASSWORD: root
-        MYSQL_DATABASE: livin
-        MYSQL_USER: livinuser
-        MYSQL_PASSWORD: livinpass
-      ports:
-        - "3306:3306"
-      volumes:
-        - db-data:/var/lib/mysql
+  redis:
+    image: redis:7.2
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
 
-    redis:
-      image: redis:7.2
-      container_name: redis
-      restart: always
-      ports:
-        - "6379:6379"
+  backend:
+    image: livinorg/livin-be:latest
+    container_name: livin-be
+    depends_on:
+      - db
+      - redis
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${JDBC_DRIVER}
+      SPRING_DATASOURCE_URL: ${JDBC_URL}
+      SPRING_DATASOURCE_USERNAME: ${JDBC_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${JDBC_PASSWORD}
+      SPRING_REDIS_HOST: ${REDIS_HOST}
+      SPRING_REDIS_PORT: ${REDIS_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+      NAVER_CLIENT_ID: ${NAVER_CLIENT_ID}
+      NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET}
+      NAVER_REDIRECT_URI: ${NAVER_REDIRECT_URI}
+      CODEF_REAL_ESTATE_REGISTRY: ${CODEF_REAL_ESTATE_REGISTRY}
+      CODEF_BUILDING_REGISTRY_GENERAL: ${CODEF_BUILDING_REGISTRY_GENERAL}
+      CODEF_BUILDING_REGISTRY_SET: ${CODEF_BUILDING_REGISTRY_SET}
+      CODEF_BUILDING_REGISTRY_COLLIGATION: ${CODEF_BUILDING_REGISTRY_COLLIGATION}
+      CODEF_BUILDING_INFO: ${CODEF_BUILDING_INFO}
+      CODEF_MARKET_PRICE_INFO: ${CODEF_MARKET_PRICE_INFO}
+      CODEF_EXTERNAL_KEY: ${CODEF_EXTERNAL_KEY}
+      CODEF_PASSWORD: ${CODEF_PASSWORD}
+      CODEF_EPREPAY_NO: ${CODEF_EPREPAY_NO}
+      CODEF_EPREPAY_PASS: ${CODEF_EPREPAY_PASS}
+      CODEF_CLIENT_ID: ${CODEF_CLIENT_ID}
+      CODEF_CLIENT_SECRET: ${CODEF_CLIENT_SECRET}
+      CODEF_USER_ID: ${CODEF_USER_ID}
+      CODEF_USER_PASSWORD: ${CODEF_USER_PASSWORD}
+      JUSO_API_URL: ${JUSO_API_URL}
+      JUSO_API_CONFM_KEY: ${JUSO_API_CONFM_KEY}
+      CLOUD_AWS_CREDENTIALS_ACCESS_KEY: ${CLOUD_AWS_ACCESS_KEY}
+      CLOUD_AWS_CREDENTIALS_SECRET_KEY: ${CLOUD_AWS_SECRET_KEY}
+      CLOUD_AWS_S3_BUCKET: ${CLOUD_AWS_S3_BUCKET}
+      CLOUD_AWS_REGION_STATIC: ${CLOUD_AWS_REGION}
+      TZ: Asia/Seoul
 
-    backend:
-      image: livinorg/livin-be:latest # ← 실제 Docker Hub 이미지 이름으로 변경
-      container_name: livin-be
-      depends_on:
-        - db
-        - redis
-      restart: always
-      ports:
-        - "8080:8080"
-      environment:
-        SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/livin
-        SPRING_DATASOURCE_USERNAME: livinuser
-        SPRING_DATASOURCE_PASSWORD: livinpass
-        SPRING_REDIS_HOST: redis
-        SPRING_REDIS_PORT: 6379
-        TZ: Asia/Seoul
-
-  volumes:
-    db-data:
+volumes:
+  db-data:
