@@ -57,7 +57,7 @@ jobs:
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_KEY }}
           source: "docker/*"
-          target: /home/ubuntu/app/
+          target: "/home/ubuntu/app/docker-compose.yml"
 
       - name: 🚀 Deploy using docker-compose
         uses: appleboy/ssh-action@v1.0.0
