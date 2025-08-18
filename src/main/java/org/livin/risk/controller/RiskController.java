@@ -2,6 +2,7 @@ package org.livin.risk.controller;
 
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
+import org.livin.risk.dto.RiskAddressResponseDTO;
 import org.livin.risk.dto.RiskAnalysisRequestDTO;
 import org.livin.risk.dto.RiskAnalysisResponseDTO;
 import org.livin.risk.service.RiskService;
@@ -24,12 +25,12 @@ public class RiskController {
 	private final RiskService riskService;
 
 	@PostMapping("/risk-analysis")
-	public ResponseEntity<SuccessResponse<Void>> analysisRisk(
+	public ResponseEntity<SuccessResponse<RiskAddressResponseDTO>> analysisRisk(
 		@RequestBody RiskAnalysisRequestDTO riskAnalysisRequestDTO
 	) {
-		riskService.createRiskTemporaryInfo(riskAnalysisRequestDTO);
+		RiskAddressResponseDTO riskAddressResponseDTO = riskService.createRiskTemporaryInfo(riskAnalysisRequestDTO);
 		return ResponseEntity.ok(
-			new SuccessResponse<>(true, "위험도 분석이 완료되었습니다.", null)
+			new SuccessResponse<>(true, "위험도 분석이 완료되었습니다.", riskAddressResponseDTO)
 		);
 	}
 

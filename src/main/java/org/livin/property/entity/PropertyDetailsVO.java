@@ -8,6 +8,7 @@ import java.util.List;
 import org.livin.property.entity.property_enum.AbleStatus;
 import org.livin.property.entity.property_enum.TransactionType;
 import org.livin.risk.entity.RiskAnalysisVO;
+import org.livin.user.entity.UserVO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,4 +51,5 @@ public class PropertyDetailsVO {
 	private List<PropertyImageVO> propertyImageVOList;
 	private RiskAnalysisVO riskAnalysisVO;
 	private List<OptionVO> optionVOList;
+	private UserVO landlordVO;
 }
