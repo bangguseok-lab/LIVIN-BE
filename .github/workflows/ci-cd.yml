@@ -101,6 +101,7 @@ jobs:
             echo "CLOUD_AWS_REGION=${{ secrets.CLOUD_AWS_REGION }}" >> .env
             echo "TZ=Asia/Seoul" >> .env
 
+
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
             docker-compose down
             docker-compose pull
