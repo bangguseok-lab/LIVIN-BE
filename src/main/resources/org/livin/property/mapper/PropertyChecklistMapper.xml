@@ -106,6 +106,8 @@
             ci.checklist_id = #{checklistId}
           AND
             c.user_id = #{userId}
+          AND
+            ci.is_active = TRUE
         ORDER BY
             ci.checklistitem_id ASC
     </select>
@@ -130,4 +132,16 @@
         </foreach>
     </update>
 
+<!--  ===========================================================================================  -->
+
+    <select id="findClonedChecklistIdsByTitle" resultType="long">
+        SELECT
+            checklist_id
+        FROM
+            Checklist
+        WHERE
+            user_id = #{userId}
+          AND
+            title LIKE #{searchPattern}
+    </select>
 </mapper>

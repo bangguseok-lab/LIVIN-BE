@@ -154,13 +154,27 @@ public class PropertyServiceImpl implements PropertyService {
 	public List<PropertyDTO> getFavoritePropertiesWithFilter(FilteringDTO filteringDTO) {
 		log.info("서비스: 필터링된 관심 매물 조회 요청 - filteringDTO: {}", filteringDTO);
 
+		// 1. 프론트에서 체크리스트 필터(템플릿 ID 목록)를 전달했는지 확인
 		if (filteringDTO.getChecklistId() != null && !filteringDTO.getChecklistId().isEmpty()) {
-			filteringDTO.setChecklistIdSize(filteringDTO.getChecklistId().size());
-		}
 
-		if (filteringDTO.getUserId() == null) {
-			log.error("getFavoritePropertiesWithFilter: userId가 FilteringDTO에 설정되지 않았습니다.");
-			throw new IllegalArgumentException("사용자 ID가 필요합니다.");
+			// 2. 전달받은 모든 템플릿 ID에 대해, 파생된 복제본 ID들을 모두 찾아낸다
+			List<Long> allClonedIds = new ArrayList<>();
+			for (Long templateId : filteringDTO.getChecklistId()) {
+				String templateTitle = propertyChecklistMapper.findChecklistTitleById(templateId);
+				if (templateTitle != null) {
+					String searchPattern = templateTitle + "(%";
+					List<Long> clonedIds = propertyChecklistMapper.findClonedChecklistIdsByTitle(filteringDTO.getUserId(), searchPattern);
+					allClonedIds.addAll(clonedIds);
+				}
+			}
+
+			// 3. 만약 해당하는 복제본이 하나도 없다면, 결과가 없으므로 빈 리스트를 반환
+			if (allClonedIds.isEmpty()) {
+				return Collections.emptyList();
+			}
+
+			// 4. 찾은 복제본 ID 목록을 DTO에 설정
+			filteringDTO.setClonedChecklistIds(allClonedIds);
 		}
 
 		try {

@@ -57,4 +57,9 @@ public interface PropertyChecklistMapper {
 		@Param("checklistId") Long checklistId,
 		@Param("updates") List<ChecklistItemUpdateRequestDTO> updates
 	);
+
+	// ====================================================================================
+
+	// 찜 매물 페이지에서 체크리스트 필터링
+	List<Long> findClonedChecklistIdsByTitle(@Param("userId") Long userId, @Param("searchPattern") String searchPattern);
 }
