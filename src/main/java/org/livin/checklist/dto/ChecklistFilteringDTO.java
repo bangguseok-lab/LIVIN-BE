@@ -1,6 +1,7 @@
 package org.livin.checklist.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -58,4 +59,6 @@ public class ChecklistFilteringDTO {
 		this.limit = (limit <= 0) ? 20 : limit;
 	}
 
+	// 템플릿에서 파생된 모든 복제본 checklist_id를 담을 리스트
+	private List<Long> clonedChecklistIds;
 }

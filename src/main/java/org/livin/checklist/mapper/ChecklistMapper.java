@@ -52,6 +52,10 @@ public interface ChecklistMapper {
 	// 나만의 아이템 삭제
 	void deleteCustomItem(@Param("checklistId") Long checklistId, @Param("checklistItemId") Long checklistItemId);
 
+	String findChecklistTitleById(Long checklistId);
+
+	List<Long> findClonedChecklistIdsByTitle(@Param("userId") Long userId, @Param("searchPattern") String searchPattern);
+
 	LocalDateTime findChecklistCreatedAtByPropertyId(Long PropertyId);
 
 	List<PropertyVO> selectChecklistPropertyListByRegion(ChecklistFilteringDTO checklistFilteringDTO);

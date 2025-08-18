@@ -1,16 +1,19 @@
 package org.livin.property.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.livin.global.codef.dto.realestateregister.request.OwnerInfoRequestDTO;
 import org.livin.global.codef.dto.realestateregister.response.OwnerInfoResponseDTO;
 import org.livin.global.jwt.filter.CustomUserDetails;
 import org.livin.global.response.SuccessResponse;
+import org.livin.property.dto.ChecklistCloneRequest;
 import org.livin.property.dto.ChecklistItemDTO;
 import org.livin.property.dto.ChecklistItemUpdateRequestDTO;
 import org.livin.property.dto.ChecklistTitleDTO;
 import org.livin.property.dto.FilteringDTO;
 import org.livin.property.dto.OptionDTO;
+import org.livin.property.dto.PersonalizedChecklistDTO;
 import org.livin.property.dto.PropertyDTO;
 import org.livin.property.dto.PropertyDetailsDTO;
 import org.livin.property.dto.PropertyRequestDTO;
@@ -199,28 +202,52 @@ public class PropertyController {
 		return ResponseEntity.ok(list);
 	}
 
-	// 매물 상세 페이지 체크리스트 아이템(옵션) 조회
-	@GetMapping("/properties/checklist/{checklistId}/items")
-	public ResponseEntity<List<ChecklistItemDTO>> getChecklistItems(
+	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (아직 없으면 → 체크리스트 '복제' 기능을 통해 새로 생성)
+	@PostMapping("/properties/{propertyId}/checklists")
+	public ResponseEntity<Map<String, Long>> cloneChecklistForProperty(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PathVariable Long checklistId
+		@PathVariable Long propertyId,
+		@RequestBody ChecklistCloneRequest request
 	) {
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
-		return ResponseEntity.ok(propertyService.getChecklistItemsByChecklistId(userId, checklistId));
+		Long newChecklistId = propertyService.cloneChecklistForProperty(userId, propertyId, request.getSourceChecklistId());
+
+		// 성공 시, 새로 생성된 체크리스트의 ID를 반환
+		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("newChecklistId", newChecklistId));
+	}
+
+	// 매물 상세 페이지 체크리스트 목록에서 선택한 체크리스트 (이미 생성된 매물 체크리스트가 있으면 → 그 체크리스트 조회)
+	@GetMapping("/properties/{propertyId}/checklist")
+	public ResponseEntity<PersonalizedChecklistDTO> getPersonalizedChecklistForProperty(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long propertyId
+	) {
+		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
+
+		PersonalizedChecklistDTO checklistDTO = propertyService.getPersonalizedChecklistForProperty(userId, propertyId);
+
+		// 서비스 결과가 null이면 (연결된 체크리스트가 없으면) 200 OK와 빈 Body를 반환할 수 있습니다.
+		// 프론트엔드는 응답 body가 비었는지 여부로 분기 처리합니다.
+		if (checklistDTO == null) {
+			return ResponseEntity.ok().build();
+		}
+
+		return ResponseEntity.ok(checklistDTO);
 	}
 
 	// 매물 상세 페이지 체크리스트 아이템(옵션) 수정
-	@PutMapping("/properties/checklist/{checklistId}/items")
+	@PutMapping("/properties/{propertyId}/checklist/{checklistId}/items")
 	public ResponseEntity<Void> updateChecklistItems(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long propertyId,
 		@PathVariable Long checklistId,
 		@RequestBody List<ChecklistItemUpdateRequestDTO> updates
 	) {
-
 		Long userId = userService.getUserIdByProviderId(userDetails.getProviderId());
 
-		propertyService.updateChecklistItems(userId, checklistId, updates);
+		// propertyId를 서비스 계층으로 전달
+		propertyService.updateChecklistItems(userId, propertyId, checklistId, updates);
 
 		return ResponseEntity.ok().build();
 	}

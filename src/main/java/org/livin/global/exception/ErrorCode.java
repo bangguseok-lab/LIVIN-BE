@@ -19,6 +19,8 @@ public enum ErrorCode {
     NOT_FOUND(HttpStatus.NOT_FOUND, "요청하신 리소스를 찾을 수 없습니다."),
     // 405 Method not allowed (잘못된 HTTP 메서드, 예: GET만 지원하는 API에 POST 요청을 한 경우)
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "허용되지 않은 HTTP 메서드입니다."),
+    // 409 CONFLICT: 리소스 충돌 (중복된 데이터)
+    ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다."),
 
     // 서버 오류 (5xx)
     // 500 Internal Server Error (서버 오류)

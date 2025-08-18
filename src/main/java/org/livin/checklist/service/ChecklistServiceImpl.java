@@ -210,22 +210,37 @@ public class ChecklistServiceImpl implements ChecklistService {
 	@Transactional(readOnly = true)
 	public List<PropertyDTO> getPropertiesByChecklist(ChecklistFilteringDTO dto) {
 		// DTO null 방어
-		if (dto == null) {
-			throw new IllegalArgumentException("ChecklistFilteringDTO is null");
-		}
-		if (dto.getChecklistId() == null) {
-			throw new IllegalArgumentException("checklistId is required");
+		if (dto == null || dto.getChecklistId() == null) {
+			throw new IllegalArgumentException("ChecklistFilteringDTO or checklistId is null");
 		}
 
-		// limit 기본값 설정
-		if (dto.getLimit() == null || dto.getLimit() <= 0) {
-			dto.setLimit(20);
-		} else if (dto.getLimit() > 50) {
-			dto.setLimit(50);
+		// 1. Controller가 준 checklistId를 "템플릿 ID"로 간주하고, 제목을 조회합니다.
+		String templateTitle = checklistMapper.findChecklistTitleById(dto.getChecklistId());
+		if (templateTitle == null || templateTitle.isEmpty()) {
+			log.warn("ID {}에 해당하는 템플릿 체크리스트가 없습니다.", dto.getChecklistId());
+			return List.of(); // 원본 템플릿이 없으면 빈 목록 반환
 		}
 
+		// 2. '원본 제목(%)' 패턴으로 모든 복제본 체크리스트의 ID 목록을 조회합니다.
+		String searchPattern = templateTitle + "(%";
+		List<Long> clonedChecklistIds = checklistMapper.findClonedChecklistIdsByTitle(dto.getUserId(), searchPattern);
+
+		// 3. 만약 이 템플릿을 사용한 매물이 하나도 없다면, 빈 목록을 반환합니다.
+		if (clonedChecklistIds.isEmpty()) {
+			return List.of();
+		}
+
+		// 4. DTO에 복제본 ID 목록을 설정하여, 쿼리에서 사용할 수 있도록 합니다.
+		dto.setClonedChecklistIds(clonedChecklistIds);
+
+		// --- ▼ 기존 무한 스크롤 및 조회 로직은 그대로 재사용합니다 ▼ ---
 		try {
-			// lastId → lastCreatedAt 변환
+			// limit 기본값 설정
+			if (dto.getLimit() == null || dto.getLimit() <= 0) {
+				dto.setLimit(20);
+			}
+
+			// lastId → lastCreatedAt 변환 (무한 스크롤 커서)
 			if (dto.getLastId() != null && dto.getLastId() > 0) {
 				LocalDateTime cursorCreatedAt =
 					checklistMapper.findChecklistCreatedAtByPropertyId(dto.getLastId());
@@ -240,7 +255,6 @@ public class ChecklistServiceImpl implements ChecklistService {
 			}
 
 			return list.stream()
-				.filter(Objects::nonNull) // null 요소 제거
 				.map(PropertyDTO::of)
 				.collect(Collectors.toList());
 
