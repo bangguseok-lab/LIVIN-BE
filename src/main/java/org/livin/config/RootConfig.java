@@ -18,7 +18,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-@PropertySource({"classpath:/application.properties"})
+@PropertySource({"classpath:/application-deploy.properties"})
 @ComponentScan(basePackages = {"org.livin.property.service", "org.livin.user.service", "org.livin.auth.service",
 	"org.livin.checklist.service", "org.livin.global.exception", "org.livin.risk.service",
 	"org.livin.global.codef.service", "org.livin.global.s3.service"})
