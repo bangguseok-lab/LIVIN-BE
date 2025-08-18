@@ -63,13 +63,15 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       # 🛠️ multi-arch 빌드 (중요)
-      - name: 🏗️ Docker Build (linux/amd64)
+      # 🛠️ multi-arch 빌드 (amd64 + arm64)
+      - name: 🏗️ Docker Build (multi-arch)
         run: |
           docker buildx create --use
           docker buildx build \
-            --platform linux/amd64 \
+            --platform linux/amd64,linux/arm64 \
             -t ${{ secrets.DOCKER_REPO }} \
             --push .
+
 
   deploy-to-ec2:
     name: 🚀 Deploy to EC2
