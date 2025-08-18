@@ -17,7 +17,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         // 클라이언트에서 쿠키/헤더 허용
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        config.setAllowedOrigins(Arrays.asList("https://livin-fe.vercel.app"));
         // 모든 헤더 허용
         config.setAllowedHeaders(Arrays.asList("*"));
         // 메서드 허용
