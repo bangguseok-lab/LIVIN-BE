@@ -53,3 +53,7 @@ services:
 
 volumes:
   db-data:
+
+networks:
+  default:
+    name: livin-network
