@@ -12,7 +12,6 @@ services:
     image: livinorg/livin-be:latest
     container_name: livin-be
     depends_on:
-      - db
       - redis
     restart: always
     ports:
