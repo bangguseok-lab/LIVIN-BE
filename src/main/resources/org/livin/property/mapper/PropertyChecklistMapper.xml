@@ -132,4 +132,16 @@
         </foreach>
     </update>
 
+<!--  ===========================================================================================  -->
+
+    <select id="findClonedChecklistIdsByTitle" resultType="long">
+        SELECT
+            checklist_id
+        FROM
+            Checklist
+        WHERE
+            user_id = #{userId}
+          AND
+            title LIKE #{searchPattern}
+    </select>
 </mapper>

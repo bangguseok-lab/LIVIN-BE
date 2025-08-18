@@ -45,4 +45,7 @@ public class FilteringDTO {
 
     private List<Long> checklistId;
     private Integer checklistIdSize;
+
+    // 복제된 체크리스트 ID 목록을 담을 필드
+    private List<Long> clonedChecklistIds;
 }
