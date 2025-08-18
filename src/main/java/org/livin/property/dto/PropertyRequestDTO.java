@@ -43,7 +43,7 @@ public class PropertyRequestDTO {
 	private AbleStatus loan;
 	private List<Long> optionIdList;
 	private List<PropertyImgRequestDTO> imgRepresentList;
-	private List<ManagementDTO> managementDTOList;
+	private List<ManagementDTO> managementList;
 
 	public static PropertyVO toPropertyVO(PropertyRequestDTO propertyRequestDTO, Long buildingId, Long userId) {
 		return PropertyVO.builder()

@@ -101,6 +101,20 @@ public class BuildingInfoParser {
 			.build();
 	}
 
+	public static BuildingInfoDTO parse() {
+		return BuildingInfoDTO.builder()
+			.hasElevator("있음")
+			.isViolating(false)
+			.totalFloors("31")
+			.totalParkingSpaces(1704)
+			.sido("경상북도")
+			.sigungu("경산시")
+			.eupmyeondong("중산동")
+			.totalHouseholds("1184")
+			.residentialName("중산하늘채더퍼스트")
+			.build();
+	}
+
 	private static String getTotalHouseholds(List<DetailDTO> detailList) {
 		if (detailList == null) {
 			return "";

@@ -318,7 +318,7 @@
         management_type,
         management_fee
         ) VALUES
-        <foreach collection="managementDTOList" item="management" separator=",">
+        <foreach collection="managementList" item="management" separator=",">
             (
             #{propertyId},
             #{management.managementType},
