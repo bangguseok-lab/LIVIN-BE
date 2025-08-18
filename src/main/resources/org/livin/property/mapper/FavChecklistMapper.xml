@@ -15,6 +15,8 @@
             Checklist
         WHERE
             user_id = #{userId}
+          AND
+            title NOT REGEXP '\\([0-9]+\\)$'
         ORDER BY
             created_at DESC
     </select>
