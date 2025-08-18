@@ -62,11 +62,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: 🏗️ Docker Build
-        run: docker build -t ${{ secrets.DOCKER_REPO }} .
-
-      - name: 📤 Docker Push
-        run: docker push ${{ secrets.DOCKER_REPO }}
+      # 🛠️ multi-arch 빌드 (중요)
+      - name: 🏗️ Docker Build (linux/amd64)
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --platform linux/amd64 \
+            -t ${{ secrets.DOCKER_REPO }} \
+            --push .
 
   deploy-to-ec2:
     name: 🚀 Deploy to EC2
