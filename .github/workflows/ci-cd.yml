@@ -53,7 +53,7 @@ jobs:
           host: ${{ env.EC2_HOST }}
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_KEY }}
-          source: LIVIN-BE/docker/docker-compose.yml
+          source: docker/docker-compose.yml
           target: /home/ubuntu/app/
 
       - name: 🚀 Deploy using docker-compose
