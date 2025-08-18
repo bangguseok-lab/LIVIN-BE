@@ -86,7 +86,7 @@ public class PropertyDetailsDTO {
 			.options(propertyDetailsVO.getOptionVOList().stream()
 				.map(OptionVO::getOptionType)
 				.collect(Collectors.toList()))
-			.landlord(LandlordDTO.fromUserVO(propertyDetailsVO.getLandlordVO()))
+			.landlord(propertyDetailsVO.getLandlordVO() != null ? LandlordDTO.fromUserVO(propertyDetailsVO.getLandlordVO()) : null)
 			.build();
 	}
 }
