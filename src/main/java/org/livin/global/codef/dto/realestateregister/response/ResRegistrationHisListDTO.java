@@ -1,0 +1,18 @@
+package org.livin.global.codef.dto.realestateregister.response;
+
+import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ResRegistrationHisListDTO {
+	private String resType;
+	private List<ResContentsListDTO> resContentsList;
+	private String resType1;
+}

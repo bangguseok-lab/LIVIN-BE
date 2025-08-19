@@ -1,20 +1,6 @@
 version: '3.8'
 
 services:
-  db:
-    image: mysql:8.0
-    container_name: mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: livin
-      MYSQL_USER: ${JDBC_USERNAME}
-      MYSQL_PASSWORD: ${JDBC_PASSWORD}
-    ports:
-      - "3306:3306"
-    volumes:
-      - db-data:/var/lib/mysql
-
   redis:
     image: redis:7.2
     container_name: redis
@@ -26,18 +12,17 @@ services:
     image: livinorg/livin-be:latest
     container_name: livin-be
     depends_on:
-      - db
       - redis
     restart: always
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${JDBC_DRIVER}
-      SPRING_DATASOURCE_URL: ${JDBC_URL}
-      SPRING_DATASOURCE_USERNAME: ${JDBC_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${JDBC_PASSWORD}
-      SPRING_REDIS_HOST: ${REDIS_HOST}
-      SPRING_REDIS_PORT: ${REDIS_PORT}
+      JDBC_DRIVER: ${JDBC_DRIVER}
+      JDBC_URL: ${JDBC_URL}
+      JDBC_USERNAME: ${JDBC_USERNAME}
+      JDBC_PASSWORD: ${JDBC_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
       JWT_SECRET: ${JWT_SECRET}
       KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
       KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
@@ -68,3 +53,7 @@ services:
 
 volumes:
   db-data:
+
+networks:
+  default:
+    name: livin-network

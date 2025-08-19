@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.livin.property.mapper.FavoritePropertyMapper">
+
+    <select id="getFavoritePropertiesWithImageByUserId" resultMap="PropertyWithImageMap">
+        SELECT p.property_id,
+               p.name,
+               p.detail_address,
+               p.description,
+               i.image_url
+        FROM FavoriteProperty f
+                 JOIN Property p ON f.property_id = p.property_id
+                 LEFT JOIN PropertyImage i ON p.property_id = i.property_id AND i.represent = TRUE
+        WHERE f.user_id = #{userId}
+        ORDER BY f.saved_at DESC
+            LIMIT #{limit}
+    </select>
+
+    <!--    반환 type은 DTO로 -->
+    <resultMap id="PropertyWithImageMap" type="PropertyVO">
+        <result column="property_id" property="propertyId"/>
+        <result column="name" property="name"/>
+        <result column="detail_address" property="detailAddress"/>
+        <result column="description" property="description"/>
+        <result column="image_url" property="imageUrl"/>
+    </resultMap>
+
+
+</mapper>
+
