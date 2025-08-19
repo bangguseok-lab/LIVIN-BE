@@ -38,7 +38,7 @@ public class RiskAnalysisResponseDTO {
 		String floatingCharge;
 		if (maximumBondAmountValue == 0L) {
 			floatingCharge = "안전";
-		} else if ((salePriceValue == null || salePriceValue == 0L) && (riskAnalysisVO.getMaximumBondAmount()
+		} else if ((userDepositValue == null || userDepositValue == 0L) && (riskAnalysisVO.getMaximumBondAmount()
 			!= null)) {
 			floatingCharge = "?";
 		} else {
