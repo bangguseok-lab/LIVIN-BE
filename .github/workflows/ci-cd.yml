@@ -99,6 +99,7 @@ jobs:
           key: ${{ env.EC2_KEY }}
           port: 22
           script: |
+
             cd /home/ubuntu/app/docker
 
             echo "🔐 Generate .env file from secrets"
