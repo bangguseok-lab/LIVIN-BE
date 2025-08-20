@@ -1,79 +1,119 @@
+![livin_cover.png](src%2Fmain%2Fresources%2Fimage%2Flivin_cover.png)
+
 # LIVIN - 안전한 부동산 거래 도우미
 
 안전하고 투명한 부동산 거래를 위해 **매물 위험도 분석, 맞춤형 체크리스트, 거래 가이드**를 제공하는 서비스입니다.
 
 사용자는 **매물을 등록**하고 **위험도를 분석**할 수 있으며, **관심 매물 관리와 커스터마이징 체크리스트**를 통해 더 안전한 거래를 경험할 수 있습니다.
 
-![랜딩-1.gif](..%2F..%2F..%2FDownloads%2F%EB%9E%9C%EB%94%A9-1.gif)
+<div align="center">
+
+![landing.gif](src%2Fmain%2Fresources%2Fimage%2Flanding.gif)
+</div>
 
 ## 📆프로젝트 기간
 
 - 2025-07-09 ~ 2025-08-19
 
----
+## ⚙️ 설치 및 실행
+
+### Frontend (로컬 실행)
+
+```bash
+# 프로젝트 클론
+git clone https://github.com/LIVIN-ORG/LIVIN-FE.git
+cd LIVIN-FE
+
+npm install
+npm run dev
+```
+
+### Backend (로컬 실행)
+
+```bash
+# 프로젝트 클론
+git clone https://github.com/LIVIN-ORG/LIVIN-BE.git
+cd LIVIN-BE
+
+# Gradle 빌드
+./gradlew clean build
+
+# Docker 실행
+docker-compose -f docker/docker-compose.yml up -d
+```
 
 ## 💻 주요 기능
 
 <details>
 <summary>소셜 로그인</summary>
 
-![스크린샷 2025-08-20 105513.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20105513.png)
-
 > 카카오 · 네이버 OAuth2 소셜 로그인
 
+<div align="center">
+
+  ![로그인 화면](src/main/resources/image/login_image.png)
+</div>
 </details>
 <br/>
 
 <details>
 <summary>매물 등록</summary>
 
-![스크린샷 2025-08-20 131158.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20131158.png)
-![스크린샷 2025-08-20 131457.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20131457.png)
-
 > 임대인 매물 등록
 
+<div align="center">
+
+  ![매물등록](src%2Fmain%2Fresources%2Fimage%2Fproperty_add.gif)
+</div>
 </details>
 <br/>
 
 <details>
 <summary>위험도 분석</summary>
 
-![스크린샷 2025-08-20 131300.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20131300.png)
-![스크린샷 2025-08-20 131329.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20131329.png)
 > 근저당권, 소유주와 임대인 일치 여부, 위반 건축물 여부, 전세가율로 매물의 위험도를 분석
 
+<div align="center">
+
+![risk_analysis1.png](src%2Fmain%2Fresources%2Fimage%2Frisk_analysis1.png)
+![risk_analysis2.png](src%2Fmain%2Fresources%2Fimage%2Frisk_analysis2.png)
+</div>
 </details>
 <br/>
 
 <details>
 <summary>체크리스트</summary>
 
-![스크린샷 2025-08-20 131932.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20131932.png)
-![스크린샷 2025-08-20 132038.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20132038.png)
 > 매물의 확인하고 싶은 사항을 담는 체크리스트 생성  
 > 나만의 항목을 생성하여 체크리스트 작성  
 > 특정 체크리스트가 적용된 매물 조회 가능
+<div align="center">
 
+![checklist.gif](src%2Fmain%2Fresources%2Fimage%2Fchecklist.gif)
+</div>
 </details>
 <br/>
 
 <details>
 <summary>안심 뱃지</summary>
 
-![스크린샷 2025-08-20 132150.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20132150.png)
 > 안심 뱃지 클릭 시 위험도 분석 결과 제공
+<div align="center">
 
+![risk_alanysis_report.gif](src%2Fmain%2Fresources%2Fimage%2Frisk_alanysis_report.gif)
+</div>
 </details>
 <br/>
 
 <details>
 <summary>관심 매물 관리</summary>
 
-![스크린샷 2025-08-20 132218.png](..%2F..%2F..%2FPictures%2FScreenshots%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-08-20%20132218.png)
 > 매물 즐겨찾기 및 조회
+<div align="center">
 
+![favorite_property.gif](src%2Fmain%2Fresources%2Fimage%2Ffavorite_property.gif)
+</div>
 </details>
-
 
 ## 🛠️ 기술 스택
 
@@ -151,30 +191,3 @@
 ### 🎨 디자인 시안
 
 - [🖌️ Figma 바로가기](https://www.figma.com/design/CNyHyGkOsdD4HWwRa98waf/%EB%B0%A9%EA%B5%AC%EC%84%9D%EB%9E%A9--20%EB%B0%98-1%ED%8C%80--%ED%94%BC%EA%B7%B8%EB%A7%88?node-id=257-4636&p=f&t=QWnhw68SKXGqkiv1-0)
-
-## ⚙️ 설치 및 실행
-
-### Frontend (로컬 실행)
-
-```bash
-# 프로젝트 클론
-git clone https://github.com/LIVIN-ORG/LIVIN-FE.git
-cd LIVIN-FE
-
-npm install
-npm run dev
-```
-
-### Backend (로컬 실행)
-
-```bash
-# 프로젝트 클론
-git clone https://github.com/LIVIN-ORG/LIVIN-BE.git
-cd LIVIN-BE
-
-# Gradle 빌드
-./gradlew clean build
-
-# Docker 실행
-docker-compose -f docker/docker-compose.yml up -d
-```
