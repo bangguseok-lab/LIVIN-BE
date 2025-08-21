@@ -1,8 +1,7 @@
 package org.livin.config;
 
+import javax.sql.DataSource;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
@@ -10,54 +9,70 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
-import javax.sql.DataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-@PropertySource({"classpath:/application.properties"})
-@MapperScan(basePackages = {"org.livin.mapper"})
+@PropertySource({"classpath:/application-deploy.properties"})
+@ComponentScan(basePackages = {"org.livin.property.service", "org.livin.user.service", "org.livin.auth.service",
+	"org.livin.checklist.service", "org.livin.global.exception", "org.livin.risk.service",
+	"org.livin.global.codef.service", "org.livin.global.s3.service"})
+@MapperScan(basePackages = {"org.livin.property.mapper", "org.livin.user.mapper", "org.livin.checklist.mapper",
+	"org.livin.risk.mapper"})
 public class RootConfig {
-    @Value("${jdbc.driver}")
-    String driver;
+	@Value("${jdbc.driver}")
+	String driver;
 
-    @Value("${jdbc.url}")
-    String url;
+	@Value("${jdbc.url}")
+	String url;
 
-    @Value("${jdbc.username}")
-    String username;
+	@Value("${jdbc.username}")
+	String username;
 
-    @Value("${jdbc.password}")
-    String password;
+	@Value("${jdbc.password}")
+	String password;
 
-    @Bean
-    public DataSource dataSource(){
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName(driver);
-        config.setJdbcUrl(url);
-        config.setUsername(username);
-        config.setPassword(password);
-        HikariDataSource dataSource = new HikariDataSource(config); //데이터소스 커넥션 풀
-        return dataSource;
-    }
+	@Bean
+	public DataSource dataSource() {
+		HikariConfig config = new HikariConfig();
+		config.setDriverClassName(driver);
+		config.setJdbcUrl(url);
+		config.setUsername(username);
+		config.setPassword(password);
+		HikariDataSource dataSource = new HikariDataSource(config); //데이터소스 커넥션 풀
+		return dataSource;
+	}
 
-    @Autowired
-    ApplicationContext applicationContext;
+	@Autowired
+	ApplicationContext applicationContext;
 
-    @Bean
-    public SqlSessionFactory sqlSessionFactory() throws Exception {
-        SqlSessionFactoryBean sqlSessionFactory = new SqlSessionFactoryBean();
-        sqlSessionFactory.setConfigLocation(applicationContext.getResource("classpath:/mybatis-config.xml"));
-        sqlSessionFactory.setDataSource(dataSource());
-        return (SqlSessionFactory) sqlSessionFactory.getObject();
-    }
+	@Bean
+	public SqlSessionFactory sqlSessionFactory() throws Exception {
+		SqlSessionFactoryBean sqlSessionFactory = new SqlSessionFactoryBean();
+		sqlSessionFactory.setConfigLocation(applicationContext.getResource("classpath:/mybatis-config.xml"));
 
-    @Bean
-    public DataSourceTransactionManager transactionManager() {
-        DataSourceTransactionManager manager = new DataSourceTransactionManager(dataSource());
-        return manager;
-    }
+		// Mapper XML 파일 위치 설정 (src/main/resources/mapper 하위 구조 포함)
+		// sqlSessionFactory.setMapperLocations(
+		//     new PathMatchingResourcePatternResolver().getResources("classpath:/org/livin/mapper/**/*.xml")
+		// );
+
+		// DB 연결 설정
+		sqlSessionFactory.setDataSource(dataSource());
+
+		// 최종 SqlSessionFactory 객체 반환
+		return (SqlSessionFactory)sqlSessionFactory.getObject();
+		// return sqlSessionFactory.getObject();
+	}
+
+	@Bean
+	public DataSourceTransactionManager transactionManager() {
+		DataSourceTransactionManager manager = new DataSourceTransactionManager(dataSource());
+		return manager;
+	}
 
 }
