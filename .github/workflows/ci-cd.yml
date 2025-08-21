@@ -104,12 +104,12 @@ jobs:
 
             echo "🔐 Generate .env file from secrets"
             cat > .env <<EOF
-            JDBC_DRIVER=${{ secrets.JDBC_DRIVER }}
+            JDBC_DRIVER=com.mysql.cj.jdbc.Drivercom.mysql.cj.jdbc.Driver
             JDBC_URL=${{ secrets.JDBC_URL }}
             JDBC_USERNAME=${{ secrets.JDBC_USERNAME }}
             JDBC_PASSWORD=${{ secrets.JDBC_PASSWORD }}
-            REDIS_HOST=${{ secrets.REDIS_HOST }}
-            REDIS_PORT=${{ secrets.REDIS_PORT }}
+            REDIS_HOST=redis
+            REDIS_PORT=6379
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
             KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
