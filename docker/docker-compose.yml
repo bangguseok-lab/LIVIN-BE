@@ -17,12 +17,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      JDBC_DRIVER: ${JDBC_DRIVER}
+      JDBC_DRIVER: com.mysql.cj.jdbc.Drivercom.mysql.cj.jdbc.Driver
       JDBC_URL: ${JDBC_URL}
       JDBC_USERNAME: ${JDBC_USERNAME}
       JDBC_PASSWORD: ${JDBC_PASSWORD}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET}
       KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
       KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
