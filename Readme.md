@@ -11,6 +11,12 @@
 ![landing.gif](src%2Fmain%2Fresources%2Fimage%2Flanding.gif)
 </div>
 
+<p align="center">
+  <a href="https://livin-fe.vercel.app/landing" target="_blank" rel="noopener noreferrer">
+    LIVIN 바로가기
+  </a>
+</p>
+
 ## 📆프로젝트 기간
 
 - 2025-07-09 ~ 2025-08-19
